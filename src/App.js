@@ -1,84 +1,89 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { Layout } from "antd";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Home from "./components/Home";
 import Settings from "./components/Settings";
 import CustomerRegistration from "./components/CustomerRegistration";
-import Login from "./components/Login"; // Import Login page
-import "./App.css"; // Import global styles
+import Login from "./components/Login";
+import "antd/dist/reset.css"; // Reset for Ant Design version 5.0
+
+const { Sider, Content, Header } = Layout;
 
 const App = () => {
-  // State to track if the user is authenticated
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check if the user is authenticated when the app loads
   useEffect(() => {
     const loggedInStatus = localStorage.getItem("isAuthenticated");
     if (loggedInStatus === "true") {
-      setIsAuthenticated(true); // Set user as authenticated if status is found in localStorage
+      setIsAuthenticated(true);
     }
-  }, []); // Only run once on component mount
+  }, []);
 
-  // Handle login by updating state and persisting in localStorage
   const handleLogin = () => {
     setIsAuthenticated(true);
-    localStorage.setItem("isAuthenticated", "true"); // Persist login status in localStorage
+    localStorage.setItem("isAuthenticated", "true");
   };
 
-  // Handle logout by updating state and removing from localStorage
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem("isAuthenticated"); // Remove login status from localStorage
+    localStorage.removeItem("isAuthenticated");
   };
 
   return (
     <Router>
-      <div style={styles.pageContainer}>
-        {/* If the user is authenticated, show Sidebar and Navbar */}
+      <Layout style={{ minHeight: "100vh", backgroundColor: "#1f1f1f" }}>
         {isAuthenticated ? (
           <>
-            <Sidebar />
-            <div style={styles.mainContent}>
-              <Navbar onLogout={handleLogout} />
-              {/* Routes for other pages */}
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/CustomerRegistration" element={<CustomerRegistration />} />
-                {/* Other routes can go here */}
-              </Routes>
-            </div>
+            <Sider
+              width={250}
+              style={{
+                backgroundColor: "#2f2f2f",
+                color: "#ffffff",
+              }}
+            >
+              <Sidebar />
+            </Sider>
+            <Layout>
+              <Header
+                style={{
+                  backgroundColor: "#3a3a3a",
+                  padding: "0 20px",
+                  color: "#ffffff",
+                }}
+              >
+                <Navbar onLogout={handleLogout} />
+              </Header>
+              <Content
+                style={{
+                  margin: "20px",
+                  padding: "20px",
+                  backgroundColor: "#2f2f2f",
+                  color: "#e0e0e0",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                }}
+              >
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/CustomerRegistration" element={<CustomerRegistration />} />
+                </Routes>
+              </Content>
+            </Layout>
           </>
         ) : (
-          // If not authenticated, show the Login page
-          <Routes>
-            {/* Login route */}
-            <Route path="/" element={<Login onLogin={handleLogin} />} />
-            {/* If not authenticated, redirect to the Login page */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+          <Content style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+            <Routes>
+              <Route path="/" element={<Login onLogin={handleLogin} />} />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </Content>
         )}
-      </div>
+      </Layout>
     </Router>
   );
-};
-
-// Global styles for the App
-const styles = {
-  pageContainer: {
-    display: "flex", // Aligns the sidebar and content horizontally
-    minHeight: "100vh", // Ensures the page takes full height
-  },
-  mainContent: {
-    marginLeft: "250px", // To make space for the sidebar
-    paddingTop: "70px", // To avoid navbar overlap
-    padding: "20px",
-    flexGrow: 1, // The content takes the remaining space
-    // REMOVE backgroundColor here to avoid overriding
-    // backgroundColor: "#2f2f2f", // Remove this line!
-    color: "#e0e0e0", // Light text color
-  },
 };
 
 export default App;

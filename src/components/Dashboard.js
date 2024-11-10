@@ -1,61 +1,44 @@
 import React from "react";
+import { Layout, Typography } from "antd";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 
+const { Sider, Content } = Layout;
+const { Title, Text } = Typography;
+
 const Dashboard = () => {
   return (
-    <div style={styles.dashboardContainer}>
-      <Navbar />
-      <div style={styles.mainContent}>
+    <Layout style={{ minHeight: "100vh" }}>
+      <Sider style={{ backgroundColor: "#2f2f2f", color: "#ffffff" }}>
         <Sidebar />
-        <div style={styles.dashboardContent}>
-          <h2>Welcome to the Dashboard!</h2>
-          <p style={styles.description}>
-            You have successfully logged in. This is your dashboard.
-          </p>
-        </div>
-      </div>
-    </div>
+      </Sider>
+      <Layout>
+        <Navbar />
+        <Content style={{
+          backgroundColor: "#1f1f1f",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "40px"
+        }}>
+          <div style={{
+            backgroundColor: "#3a3a3a",
+            padding: "40px",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+            maxWidth: "800px",
+            width: "100%",
+            textAlign: "center"
+          }}>
+            <Title level={2} style={{ color: "#ffffff" }}>Welcome to the Dashboard!</Title>
+            <Text style={{ color: "#e0e0e0", fontSize: "18px" }}>
+              You have successfully logged in. This is your dashboard.
+            </Text>
+          </div>
+        </Content>
+      </Layout>
+    </Layout>
   );
-};
-
-const styles = {
-  dashboardContainer: {
-    display: "flex", // Use flexbox to layout navbar, sidebar, and content
-    flexDirection: "column", // Stack navbar on top
-    backgroundColor: "#2f2f2f", // Dark background for the page
-    minHeight: "100vh", // Full screen height
-  },
-  mainContent: {
-    display: "flex", // Align sidebar and content side by side
-    height: "100vh", // Full height for the content area
-  },
-  sidebarContainer: {
-    position: "fixed",
-    top: "70px", // Space for navbar
-    left: 0,
-    width: "250px",
-    height: "100vh",
-  },
-  dashboardContent: {
-    marginLeft: "250px", // Offset for the sidebar width
-    marginTop: "70px", // Offset for navbar height
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    flexDirection: "column",
-    backgroundColor: "#fff", // This should be white
-    padding: "40px",
-    borderRadius: "8px",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)", // Darker shadow
-    maxWidth: "800px",
-    width: "100%",
-    textAlign: "center", // Center content text
-},
-  description: {
-    fontSize: "18px",
-    color: "#333", // Dark text color for the description (to contrast with the white background)
-  },
 };
 
 export default Dashboard;

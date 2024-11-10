@@ -1,81 +1,66 @@
 import React, { useState, useEffect } from "react";
+import { Input, Dropdown, Button, Menu } from "antd";
+import { MenuOutlined, SearchOutlined, LogoutOutlined } from "@ant-design/icons";
 
 const Navbar = ({ onLogout }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);  // State to toggle dropdown visibility
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // Track if mobile screen
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   // Listen for window resizing and update `isMobile` state
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
     };
-    
     window.addEventListener("resize", handleResize);
-
-    // Cleanup event listener on unmount
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
+  const handleSearch = () => {
     console.log("Searching for:", searchQuery);
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleSearch(e); // Trigger search on Enter key
-    }
+    if (e.key === "Enter") handleSearch();
   };
 
-  // Handle clicking outside to close the dropdown
-  const handleOutsideClick = (e) => {
-    if (!e.target.closest(".dropdown-menu") && !e.target.closest(".hamburger")) {
-      setIsDropdownOpen(false);
-    }
-  };
-
-  // Open/close the dropdown menu
-  const toggleDropdown = () => {
-    setIsDropdownOpen((prev) => !prev);
-  };
-
-  useEffect(() => {
-    // Add event listener to close dropdown if clicked outside
-    document.addEventListener("click", handleOutsideClick);
-
-    return () => {
-      document.removeEventListener("click", handleOutsideClick);
-    };
-  }, []);
+  // Dropdown menu items
+  const menu = (
+    <Menu>
+      <Menu.Item key="logout">
+        <Button 
+          type="text" 
+          icon={<LogoutOutlined />} 
+          onClick={onLogout} 
+          style={styles.logoutButton}
+        >
+          Logout
+        </Button>
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <nav style={styles.navbar}>
-      <div style={styles.searchContainer}>
-        <input
-          type="text"
+      <div style={styles.navContent}>
+        {/* Centered search bar */}
+        <Input
+          prefix={<SearchOutlined />}
+          placeholder="Search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={handleKeyPress} // Listen for the Enter key press
+          onPressEnter={handleSearch}
           style={styles.searchInput}
-          placeholder="Search"
         />
-      </div>
 
-      {/* Hamburger button (always visible) */}
-      <div className="hamburger" style={styles.hamburger} onClick={toggleDropdown}>
-        <div className="bar" style={styles.bar}></div>
-        <div className="bar" style={styles.bar}></div>
-        <div className="bar" style={styles.bar}></div>
+        {/* Hamburger menu button on the right */}
+        <Dropdown overlay={menu} trigger={["click"]}>
+          <Button 
+            type="text" 
+            icon={<MenuOutlined style={{ color: "white" }} />} 
+            style={styles.hamburgerButton}
+          />
+        </Dropdown>
       </div>
-
-      {isDropdownOpen && (
-        <div className="dropdown-menu" style={styles.dropdownMenu}>
-          <button onClick={onLogout} style={styles.logoutButton}>Logout</button>
-        </div>
-      )}
     </nav>
   );
 };
@@ -86,67 +71,47 @@ const styles = {
     top: 0,
     left: 0,
     width: "100%",
-    backgroundColor: "#2f2f2f", // Dark background for the navbar
+    backgroundColor: "#1a1a1a", // Darker shade (almost charcoal)
     color: "#fff",
-    padding: "15px 20px",
+    padding: "10px 20px",
     display: "flex",
-    justifyContent: "space-between", // Align items (search and hamburger) at opposite ends
-    alignItems: "center",
+    justifyContent: "center", // Center the nav content in the navbar
     zIndex: 1000,
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-    boxSizing: "border-box", // Ensure padding/margin doesn't cause overflow
   },
-  searchContainer: {
+  navContent: {
     display: "flex",
-    justifyContent: "center",
+    justifyContent: "space-between", // Ensures search bar and hamburger are on opposite sides
     alignItems: "center",
-    flexGrow: 1,  // This allows the search input to take up available space and be centered
+    width: "100%",
+    maxWidth: "1200px", // Limit the navbar content width
   },
   searchInput: {
-    padding: "10px",
-    fontSize: "16px",
-    width: "80%", // The search input takes most of the width (but still has some space)
-    maxWidth: "600px",  // Optional: set a max width
-    borderRadius: "4px",
-    border: "1px solid #555",
-    backgroundColor: "#444",
+    flex: 1, // Take available space
+    maxWidth: "600px", // Limit max width
+    margin: "0 auto", // Ensure it is centered
+    backgroundColor: "#444", // Dark background for input field
     color: "#fff",
-    outline: "none",
+    borderRadius: "4px",
+    padding: "10px",
   },
-  hamburger: {
-    display: "flex", // Always display the hamburger button
-    flexDirection: "column",
-    justifyContent: "space-around",
-    width: "30px",
-    height: "25px",
-    cursor: "pointer",
-    zIndex: 1001,
-    marginLeft: "auto", // Push the hamburger button to the right
-    paddingRight: "10px", // Prevent overflow on the right side
-  },
-  bar: {
-    width: "100%",
-    height: "4px",
-    backgroundColor: "#fff",
-  },
-  dropdownMenu: {
-    position: "absolute",
-    top: "50px",
-    right: "20px",
-    backgroundColor: "#333",
-    borderRadius: "8px",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
-    padding: "10px 20px",
-    zIndex: 1000,
+  hamburgerButton: {
+    marginLeft: "auto", // Push it to the right side of the navbar
+    color: "#fff", // Ensure the hamburger icon is white
   },
   logoutButton: {
-    backgroundColor: "#4CAF50",
-    color: "#fff",
+    backgroundColor: "#4CAF50", // Green background for logout button
+    color: "white", // White text color
     border: "none",
     padding: "10px 15px",
     borderRadius: "4px",
     cursor: "pointer",
     width: "100%",
+    textAlign: "center", // Center the text inside the button
+    display: "flex", // Use flexbox for alignment
+    justifyContent: "center", // Center content horizontally
+    alignItems: "center", // Center content vertically
+    marginTop: "5px", // Optional spacing between the logout button and menu
   },
 };
 
