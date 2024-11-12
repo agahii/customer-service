@@ -1,0 +1,31 @@
+/* Apply Ant Design input styling to the PhoneInput wrapper */
+.phone-input-custom {
+    width: 100%;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.85);
+    background-color: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 4px 11px; /* Matches Ant Design padding */
+    transition: all 0.3s;
+  }
+  
+  /* Remove inner input styling */
+  .phone-input-custom input {
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 0;
+    font-size: inherit;
+  }
+  
+  /* Hover and focus styles for outer PhoneInput wrapper */
+  .phone-input-custom:hover {
+    border-color: #40a9ff;
+  }
+  
+  .phone-input-custom:focus-within {
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  }
+  

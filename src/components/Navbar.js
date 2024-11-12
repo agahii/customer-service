@@ -6,7 +6,6 @@ const Navbar = ({ onLogout }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  // Listen for window resizing and update `isMobile` state
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -19,19 +18,14 @@ const Navbar = ({ onLogout }) => {
     console.log("Searching for:", searchQuery);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") handleSearch();
-  };
-
-  // Dropdown menu items
   const menu = (
     <Menu>
       <Menu.Item key="logout">
-        <Button 
-          type="text" 
-          icon={<LogoutOutlined />} 
-          onClick={onLogout} 
-          style={styles.logoutButton}
+        <Button
+          type="text"
+          icon={<LogoutOutlined />}
+          onClick={onLogout}
+          style={{ padding: "10px 15px", width: "100%" }}
         >
           Logout
         </Button>
@@ -40,79 +34,61 @@ const Navbar = ({ onLogout }) => {
   );
 
   return (
-    <nav style={styles.navbar}>
-      <div style={styles.navContent}>
-        {/* Centered search bar */}
+    <nav
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        backgroundColor: "#1a1a1a",
+        color: "#fff",
+        zIndex: 1000,
+        padding: "10px 20px",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+        }}
+      >
         <Input
           prefix={<SearchOutlined />}
           placeholder="Search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onPressEnter={handleSearch}
-          style={styles.searchInput}
+          style={{
+            width: "50%", // Centers search bar by giving it a fixed width
+            maxWidth: "600px",
+            backgroundColor: "#444",
+            color: "#fff",
+            borderRadius: "4px",
+            padding: "10px",
+          }}
         />
-
-        {/* Hamburger menu button on the right */}
-        <Dropdown overlay={menu} trigger={["click"]}>
-          <Button 
-            type="text" 
-            icon={<MenuOutlined style={{ color: "white" }} />} 
-            style={styles.hamburgerButton}
-          />
-        </Dropdown>
       </div>
+      
+      <Dropdown overlay={menu} trigger={["click"]}>
+        <Button
+          type="text"
+          icon={<MenuOutlined style={{ color: "white" }} />}
+          style={{
+            position: "absolute", // Aligns button to the right without affecting layout
+            right: "20px", // Places it at the edge of the navbar
+            color: "white",
+            backgroundColor: "transparent",
+            border: "none",
+            fontSize: "20px",
+          }}
+        />
+      </Dropdown>
     </nav>
   );
-};
-
-const styles = {
-  navbar: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    backgroundColor: "#1a1a1a", // Darker shade (almost charcoal)
-    color: "#fff",
-    padding: "10px 20px",
-    display: "flex",
-    justifyContent: "center", // Center the nav content in the navbar
-    zIndex: 1000,
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-  },
-  navContent: {
-    display: "flex",
-    justifyContent: "space-between", // Ensures search bar and hamburger are on opposite sides
-    alignItems: "center",
-    width: "100%",
-    maxWidth: "1200px", // Limit the navbar content width
-  },
-  searchInput: {
-    flex: 1, // Take available space
-    maxWidth: "600px", // Limit max width
-    margin: "0 auto", // Ensure it is centered
-    backgroundColor: "#444", // Dark background for input field
-    color: "#fff",
-    borderRadius: "4px",
-    padding: "10px",
-  },
-  hamburgerButton: {
-    marginLeft: "auto", // Push it to the right side of the navbar
-    color: "#fff", // Ensure the hamburger icon is white
-  },
-  logoutButton: {
-    backgroundColor: "#4CAF50", // Green background for logout button
-    color: "white", // White text color
-    border: "none",
-    padding: "10px 15px",
-    borderRadius: "4px",
-    cursor: "pointer",
-    width: "100%",
-    textAlign: "center", // Center the text inside the button
-    display: "flex", // Use flexbox for alignment
-    justifyContent: "center", // Center content horizontally
-    alignItems: "center", // Center content vertically
-    marginTop: "5px", // Optional spacing between the logout button and menu
-  },
 };
 
 export default Navbar;
