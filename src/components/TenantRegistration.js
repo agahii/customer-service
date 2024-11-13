@@ -14,9 +14,13 @@ const TenantRegistration = () => {
   const [whatsapp, setWhatsapp] = useState("+1234567890");
 
   const handleFinish = (values) => {
-    console.log("Form Data:", values);
-    alert("Registration Successful!");
-    navigate("/some-path");
+   
+    let payload = {
+      companyName: values.fullName,
+    }
+    console.log("Form Data:", payload);
+    //alert("Registration Successful!");
+    //navigate("/some-path");
   };
 
   const validatePhoneNumber = (rule, value) => {
