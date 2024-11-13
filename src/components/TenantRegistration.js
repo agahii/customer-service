@@ -39,7 +39,15 @@ const TenantRegistration = () => {
     <div style={{ padding: "40px" }}>
       <h1 style={{ textAlign: "center", color: "#333", fontWeight: "bold" }}>Tenant Registration</h1>
       <Divider />
-      <Form form={form} layout="vertical" onFinish={handleFinish} style={{ maxWidth: "100%", margin: "0 auto", width: "80%" }}>
+      <Form form={form} layout="vertical" 
+
+
+initialValues={{
+  fullName: 'Default Full Name' // Set the default value here
+}}
+
+      onFinish={handleFinish} 
+      style={{ maxWidth: "100%", margin: "0 auto", width: "80%" }}>
         
         {/* Full Name and Email Address */}
         <Row gutter={16}>
@@ -49,7 +57,8 @@ const TenantRegistration = () => {
               name="fullName"
               rules={[{ required: true, message: "Please enter your full name" }]}
             >
-              <Input placeholder="Enter full name" />
+             
+              <Input placeholder="Enter full name"  />
             </Form.Item>
           </Col>
           <Col span={12}>
