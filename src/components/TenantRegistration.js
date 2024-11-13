@@ -3,14 +3,15 @@ import { Form, Input, Button, DatePicker, Select, Divider, Row, Col } from "antd
 import { useNavigate } from "react-router-dom";
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { isValidPhoneNumber, parsePhoneNumber } from 'libphonenumber-js';
-import './TenantRegistration.css'; // Import the CSS file
+import { isValidPhoneNumber } from 'react-phone-number-input';
+import moment from 'moment';
+import './TenantRegistration.css';
 
 const TenantRegistration = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const [phone, setPhone] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  const [phone, setPhone] = useState("+1234567890"); // Properly formatted international number
+  const [whatsapp, setWhatsapp] = useState("+1234567890");
 
   const handleFinish = (values) => {
     console.log("Form Data:", values);
@@ -19,28 +20,35 @@ const TenantRegistration = () => {
   };
 
   const validatePhoneNumber = (rule, value) => {
-    if (!value) {
-      return Promise.resolve();
-    }
-
-    try {
-      const phoneNumber = parsePhoneNumber(value);
-      if (isValidPhoneNumber(phoneNumber.number)) {
-        return Promise.resolve();
-      } else {
-        return Promise.reject("Invalid phone number");
-      }
-    } catch (error) {
-      return Promise.reject("Invalid phone number format");
-    }
+    if (!value) return Promise.resolve();
+    return isValidPhoneNumber(value) ? Promise.resolve() : Promise.reject("Invalid phone number format");
   };
 
   return (
     <div style={{ padding: "40px" }}>
       <h1 style={{ textAlign: "center", color: "#333", fontWeight: "bold" }}>Tenant Registration</h1>
       <Divider />
-      <Form form={form} layout="vertical" onFinish={handleFinish} style={{ maxWidth: "100%", margin: "0 auto", width: "80%" }}>
-        
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleFinish}
+        style={{ maxWidth: "100%", margin: "0 auto", width: "80%" }}
+        initialValues={{
+          fullName: "John Doe",
+          email: "johndoe@example.com",
+          phone: "+14155552671",
+          whatsapp: "+14155552671",
+          office: "1234567890",
+          landline: "0987654321",
+          fax: "123456789",
+          alternateEmail: "alternate@example.com",
+          contactPerson: "Jane Doe",
+          registrationDate: moment(), // Set to today's date
+          website: "https://www.company.com",
+          contactMethod: "email",
+          comments: "Sample comments or notes."
+        }}
+      >
         {/* Full Name and Email Address */}
         <Row gutter={16}>
           <Col span={12}>
