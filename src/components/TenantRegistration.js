@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Form, Input, Button, DatePicker, Select, Divider, Row, Col } from "antd";
 import { useNavigate } from "react-router-dom";
 import PhoneInput from 'react-phone-number-input';
@@ -7,17 +8,23 @@ import { isValidPhoneNumber } from 'react-phone-number-input';
 import moment from 'moment';
 import './TenantRegistration.css';
 
+
+
+import { addTenantRegistration}  from "../store/reducers/TenantRegistration/TenantRegistrationAction";  
+
+
+
 const TenantRegistration = () => {
+  const dispatch = useDispatch();
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [phone, setPhone] = useState("+1234567890"); // Properly formatted international number
   const [whatsapp, setWhatsapp] = useState("+1234567890");
-
   const handleFinish = (values) => {
-   
     let payload = {
       companyName: values.fullName,
     }
+    dispatch(addTenantRegistration(payload))
     console.log("Form Data:", payload);
     //alert("Registration Successful!");
     //navigate("/some-path");
