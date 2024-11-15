@@ -37,6 +37,16 @@
   border: none;
 }
 
+/* Layout adjustments */
+.ant-layout {
+  background-color: #f0f0f0;
+}
+
+.ant-layout-content {
+  padding: 20px;
+  background: #fff;
+}
+
 /* Responsive Design for screen widths below 768px */
 @media (max-width: 768px) {
   .sidebar {

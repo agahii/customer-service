@@ -12,13 +12,9 @@ const Sidebar = () => {
       theme="dark"
       selectedKeys={[location.pathname]}
       style={{
-        position: "fixed",
-        top: "60px",
-        left: 0,
-        width: "250px",
         height: "100vh",
         backgroundColor: "#2f2f2f",
-        border: "none", // Remove the border to eliminate the box effect
+        border: "none",
         color: "#fff",
       }}
     >
@@ -27,6 +23,9 @@ const Sidebar = () => {
       </Menu.Item>
       <Menu.Item key="/TenantRegistration" icon={<UserAddOutlined />}>
         <Link to="/TenantRegistration">Tenant Registration</Link>
+      </Menu.Item>
+      <Menu.Item key="/EmployeeRegistration" icon={<UserAddOutlined />}>
+        <Link to="/EmployeeRegistration">Employee Registration</Link>
       </Menu.Item>
       <Menu.Item key="/settings" icon={<SettingOutlined />}>
         <Link to="/settings">Settings</Link>

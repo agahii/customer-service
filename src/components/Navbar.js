@@ -48,14 +48,7 @@ const Navbar = ({ onLogout }) => {
         alignItems: "center",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: "100%",
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}>
         <Input
           prefix={<SearchOutlined />}
           placeholder="Search"
@@ -63,7 +56,7 @@ const Navbar = ({ onLogout }) => {
           onChange={(e) => setSearchQuery(e.target.value)}
           onPressEnter={handleSearch}
           style={{
-            width: "50%", // Centers search bar by giving it a fixed width
+            width: "50%",
             maxWidth: "600px",
             backgroundColor: "#444",
             color: "#fff",
@@ -72,14 +65,14 @@ const Navbar = ({ onLogout }) => {
           }}
         />
       </div>
-      
+
       <Dropdown overlay={menu} trigger={["click"]}>
         <Button
           type="text"
           icon={<MenuOutlined style={{ color: "white" }} />}
           style={{
-            position: "absolute", // Aligns button to the right without affecting layout
-            right: "20px", // Places it at the edge of the navbar
+            position: "absolute",
+            right: "20px",
             color: "white",
             backgroundColor: "transparent",
             border: "none",
