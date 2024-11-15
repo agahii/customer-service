@@ -3,6 +3,7 @@ import { Layout, Typography } from "antd";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 
+
 const { Sider, Content } = Layout;
 const { Title, Text } = Typography;
 
