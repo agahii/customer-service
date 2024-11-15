@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { API } from "../../../utils/services"; // Make sure the API path is correct
+import { API } from "../../../utills/services"; // Make sure the API path is correct
 
 export const addEmployeeRegistration = createAsyncThunk(
   "EmployeeRegistration/addEmployee",
