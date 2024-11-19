@@ -5,7 +5,7 @@ export const addEmployeeRegistration = createAsyncThunk(
   "EmployeeRegistration/addEmployee",
   async (payload, { rejectWithValue }) => {
     try {
-      const response = await API.post("EmployeeRegistration/Add", payload); // Update the URL if needed
+      const response = await API.post("Employee/Add", payload); // Update the URL if needed
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

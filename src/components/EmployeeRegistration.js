@@ -13,13 +13,13 @@ const EmployeeRegistration = () => {
 
   const handleFinish = (values) => {
     const payload = {
+      accountType:1,
       employeeName: values.employeeName,
-      whatsapp,
-      email: values.email,
-      phone,
-      position: values.position,
-      department: values.department,
-      preferredContact: values.preferredContact,
+      emailAddress:"",
+      employeeCode:"00001",
+      "assignAgent": [
+   
+      ]
     };
     dispatch(addEmployeeRegistration(payload)); // Dispatch the action to save data
     console.log("Form Data:", payload);
