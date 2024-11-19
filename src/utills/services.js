@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 export const BASE_DOMAIN = (() => {
-       return 'https://slcloudapi.cloudstronic.com/api/'
+       return 'https://localhost:7131/api/'
 })()
 export const BASE_URL = BASE_DOMAIN
 export const API = axios.create({
