@@ -6,10 +6,10 @@ import Home from "./components/Home";
 import Settings from "./components/Settings";
 import TenantRegistration from "./components/TenantRegistration";
 import EmployeeRegistration from "./components/EmployeeRegistration";
+import IndustryRegistration from "./components/IndustryRegistration"; // Import IndustryRegistration
 import Login from "./components/Login";
 import AppFooter from "./components/AppFooter";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-
 
 const { Sider, Content } = Layout;
 
@@ -78,6 +78,7 @@ const App = () => {
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/TenantRegistration" element={<TenantRegistration />} />
                   <Route path="/EmployeeRegistration" element={<EmployeeRegistration />} />
+                  <Route path="/IndustryRegistration" element={<IndustryRegistration />} /> {/* New Route */}
                 </Routes>
               </Content>
 
