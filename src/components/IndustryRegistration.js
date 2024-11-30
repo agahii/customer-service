@@ -8,9 +8,11 @@ const IndustryRegistration = () => {
 
   const handleFinish = (values) => {
     const payload = {
-      industryName: values.industryName,
+      industryType: values.industryName,
     };
-    dispatch(addIndustryRegistration(payload)); // Dispatch the action to save data
+    const res = dispatch(addIndustryRegistration(payload)); // Dispatch the action to save data
+    console.log("r",res )
+
     console.log("Form Data:", payload);
   };
 
