@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 export const BASE_DOMAIN = (() => {
-       return 'https://localhost:7131/api/'
+       return 'http://135.181.22.115:2323/api/'
 })()
 export const BASE_URL = BASE_DOMAIN
 export const API = axios.create({
