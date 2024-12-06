@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Table, Button, Modal, Form, Input } from "antd";
-import { addIndustryRegistration } from "../store/reducers/IndustryRegistration/IndustryRegistrationAction";
+import { addIndustryRegistration,fetchIndustry} from "../store/reducers/IndustryRegistration/IndustryRegistrationAction";
 
 const IndustryRegistration = () => {
   const [data, setData] = useState([]); // Store table data
@@ -9,21 +9,32 @@ const IndustryRegistration = () => {
   const [form] = Form.useForm(); // Form instance
   const dispatch = useDispatch();
 
+  const [pagingInfo, setpagingInfo] = useState({
+    skip: 0,
+    take: 10, // Initial page size
+    filter: {
+      logic: "and",
+      filters: [],
+    },
+    group: [],
+    sort: [],
+  });
+
+
   // Handle form submission
   const handleAddRecord = (values) => {
     const payload = {
       industryType: values.industryName,
     };
-    dispatch(addIndustryRegistration(payload)); // Dispatch the action
-    // const newData = {
-    //   key: data.length + 1, // Assign unique key
-    //   id: data.length + 1, // Row ID
-    //   industryType: values.industryName, // Industry Name
-    // };
-    // setData([...data, newData]); // Update table data
-    // form.resetFields(); // Reset form
+    dispatch(addIndustryRegistration(payload)); 
     setIsModalVisible(false); // Close modal
   };
+
+  useEffect(() => {
+    const controller = new AbortController();
+    dispatch(fetchIndustry({ pagingInfo, controller }))
+
+  }, []);
 
   // Table columns
   const columns = [
