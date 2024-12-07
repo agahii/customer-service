@@ -34,18 +34,18 @@ const IndustryRegistration = () => {
   };
 
   // Fetch data on mount and whenever pagingInfo changes
-  // useEffect(() => {
-  //   const controller = new AbortController();
-  //   dispatch(fetchIndustry({ pagingInfo, controller }));
-  //   return () => controller.abort(); // Cleanup on unmount
-  // }, [dispatch, pagingInfo]);
-
-
   useEffect(() => {
-     const controller = new AbortController();
-     dispatch(fetchIndustry({ pagingInfo, controller }));
+    const controller = new AbortController();
+    dispatch(fetchIndustry({ pagingInfo, controller }));
     return () => controller.abort(); // Cleanup on unmount
-  }, []);
+  }, [dispatch, pagingInfo]);
+
+
+  // useEffect(() => {
+  //    const controller = new AbortController();
+  //    dispatch(fetchIndustry({ pagingInfo, controller }));
+  //   return () => controller.abort(); // Cleanup on unmount
+  // }, []);
 
 
 
