@@ -1,37 +1,35 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { API } from "../../../utills/services"; // Ensure the API path is correct
+import { API } from "../../../utills/services";
 
+// Add new Industry
 export const addIndustryRegistration = createAsyncThunk(
   "IndustryRegistration/addIndustry",
   async (payload, { rejectWithValue }) => {
     try {
-      const response = await API.post("Industry/Add", payload); // Update the URL if needed
+      const response = await API.post("Industry/Add", payload);
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data);
     }
   }
 );
 
-
+// Fetch Industries
 export const fetchIndustry = createAsyncThunk(
   "industry/fetchIndustry",
   async ({ pagingInfo, controller }, { rejectWithValue }) => {
     try {
-    
       const formData = new FormData();
       formData.append("skip", pagingInfo.skip);
       formData.append("take", pagingInfo.take);
       formData.append("page", Math.ceil((pagingInfo.skip + 1) / pagingInfo.take));
       formData.append("pageSize", pagingInfo.take);
+
       if (pagingInfo.filter && pagingInfo.filter.filters.length > 0) {
         formData.append("filter[logic]", pagingInfo.filter.logic);
         pagingInfo.filter.filters.forEach((filter, index) => {
           formData.append(`filter[filters][${index}][field]`, filter.field);
-          formData.append(
-            `filter[filters][${index}][operator]`,
-            filter.operator
-          );
+          formData.append(`filter[filters][${index}][operator]`, filter.operator);
           formData.append(`filter[filters][${index}][value]`, filter.value);
         });
       }
@@ -45,16 +43,43 @@ export const fetchIndustry = createAsyncThunk(
           }
         });
       }
-      const response = await API.post(`Industry/Get`, formData, {
+
+      const response = await API.post("Industry/Get", formData, {
         signal: controller.signal,
       });
 
-
-      
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data);
     }
   }
 );
 
+// Update Industry (Use PUT method)
+export const updateIndustryRegistration = createAsyncThunk(
+  "IndustryRegistration/updateIndustry",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await API.put("Industry/Update", payload);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
+// Delete Industry (Use POST with FormData since DELETE caused issues)
+export const deleteIndustryRegistration = createAsyncThunk(
+  "IndustryRegistration/deleteIndustry",
+  async (id, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append("id", id);
+
+      const response = await API.post("Industry/Delete", formData);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);

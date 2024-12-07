@@ -1,5 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { addIndustryRegistration,fetchIndustry } from "./IndustryRegistrationAction";
+import {
+  addIndustryRegistration,
+  fetchIndustry,
+  updateIndustryRegistration,
+  deleteIndustryRegistration,
+} from "./IndustryRegistrationAction";
 
 const industryRegistrationSlice = createSlice({
   name: "industryRegistration",
@@ -12,25 +17,23 @@ const industryRegistrationSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-    .addCase(fetchIndustry.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(fetchIndustry.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    })
+      // Fetch
+      .addCase(fetchIndustry.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchIndustry.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchIndustry.fulfilled, (state, { payload }) => {
+        state.entities = payload.data;
+        state.total = payload.totalRecords;
+        state.loading = false;
+        state.error = null;
+      })
 
-    .addCase(fetchIndustry.fulfilled, (state, { payload }) => {
-      state.entities = payload.data;
-      state.total = payload.totalRecords;
-      state.loading = false;
-      state.error = null;
-    })
-
-
-    
-
+      // Add
       .addCase(addIndustryRegistration.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -43,17 +46,41 @@ const industryRegistrationSlice = createSlice({
       .addCase(addIndustryRegistration.rejected, (state, { payload }) => {
         state.loading = false;
         state.error = payload;
+      })
+
+      // Update
+      .addCase(updateIndustryRegistration.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateIndustryRegistration.fulfilled, (state, { payload }) => {
+        const index = state.entities.findIndex((item) => item.id === payload.id);
+        if (index !== -1) {
+          state.entities[index] = payload;
+        }
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(updateIndustryRegistration.rejected, (state, { payload }) => {
+        state.loading = false;
+        state.error = payload;
+      })
+
+      // Delete
+      .addCase(deleteIndustryRegistration.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteIndustryRegistration.fulfilled, (state, { payload }) => {
+        state.entities = state.entities.filter((item) => item.id !== payload);
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(deleteIndustryRegistration.rejected, (state, { payload }) => {
+        state.loading = false;
+        state.error = payload;
       });
-
-
-     
-
   },
 });
-
-
-
-
-
 
 export default industryRegistrationSlice.reducer;
