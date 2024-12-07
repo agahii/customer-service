@@ -22,7 +22,6 @@ const industryRegistrationSlice = createSlice({
     })
 
     .addCase(fetchIndustry.fulfilled, (state, { payload }) => {
-     
       state.entities = payload.data;
       state.total = payload.totalRecords;
       state.loading = false;
