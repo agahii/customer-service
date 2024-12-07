@@ -29,6 +29,7 @@ const industryRegistrationSlice = createSlice({
     })
 
 
+    
 
       .addCase(addIndustryRegistration.pending, (state) => {
         state.loading = true;
