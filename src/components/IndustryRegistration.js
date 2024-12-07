@@ -40,14 +40,25 @@ const IndustryRegistration = () => {
     return () => controller.abort(); // Cleanup on unmount
   }, [dispatch, pagingInfo]);
 
+
+  // useEffect(() => {
+  //    const controller = new AbortController();
+  //    dispatch(fetchIndustry({ pagingInfo, controller }));
+  //   return () => controller.abort(); // Cleanup on unmount
+  // }, []);
+
+
+
+
+
   // Table columns
   const columns = [
-    {
-      title: "Row ID",
-      dataIndex: "id",
-      key: "id",
-      width: "20%",
-    },
+    // {
+    //   title: "Row ID",
+    //   dataIndex: "id",
+    //   key: "id",
+    //   width: "20%",
+    // },
     {
       title: "Industry Name",
       dataIndex: "industryType",

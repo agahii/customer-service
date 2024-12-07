@@ -48,6 +48,9 @@ export const fetchIndustry = createAsyncThunk(
       const response = await API.post(`Industry/Get`, formData, {
         signal: controller.signal,
       });
+
+
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
