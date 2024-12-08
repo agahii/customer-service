@@ -72,10 +72,12 @@ const CustomerRegistration = () => {
     const payload = {
       customerName: values.customerName,
       emailAddress: values.emailAddress,
-      customerProject: values.projects?.map((project) => ({
-        projectName: project.projectName,
-        fK_Employee_ID: project.agentId,
-      })),
+      customerProjectInp:[]
+
+      // customerProjectInp: values.projects?.map((project) => ({
+      //   projectName: project.projectName,
+      //   fK_Employee_ID: project.agentId,
+      // })),
     };
 
     if (isEditing && selectedRecord) {

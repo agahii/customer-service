@@ -6,15 +6,9 @@ export const addCustomerRegistration = createAsyncThunk(
   "customer/add",
   async (payload, { rejectWithValue }) => {
     try {
-      const finalPayload = {
-        customerName: payload.customerName,
-        customerProject: payload.customerProject?.map((project) => ({
-          projectName: project.projectName,
-          fK_Employee_ID: project.agentId, // Ensure this matches the backend
-        })),
-      };
+    
 
-      const response = await API.post("Customer/Add", finalPayload);
+      const response = await API.post("Customer/Add", payload);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(
