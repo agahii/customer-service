@@ -6,12 +6,11 @@ import Home from "./components/Home";
 import Settings from "./components/Settings";
 import TenantRegistration from "./components/TenantRegistration";
 import EmployeeRegistration from "./components/EmployeeRegistration";
-import IndustryRegistration from "./components/IndustryRegistration"; // Import IndustryRegistration
+import IndustryRegistration from "./components/IndustryRegistration";
+import CustomerRegistration from "./components/CustomerRegistration"; // Import CustomerRegistration
 import Login from "./components/Login";
 import AppFooter from "./components/AppFooter";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-
-
 
 const { Sider, Content } = Layout;
 
@@ -50,8 +49,8 @@ const App = () => {
               style={{
                 backgroundColor: "#2f2f2f",
                 position: "fixed",
-                top: 64, // Sidebar starts right below the navbar
-                bottom: 0, // Sidebar ends at the bottom of the viewport
+                top: 64,
+                bottom: 0,
                 zIndex: 1,
               }}
             >
@@ -80,7 +79,8 @@ const App = () => {
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/TenantRegistration" element={<TenantRegistration />} />
                   <Route path="/EmployeeRegistration" element={<EmployeeRegistration />} />
-                  <Route path="/IndustryRegistration" element={<IndustryRegistration />} /> {/* New Route */}
+                  <Route path="/IndustryRegistration" element={<IndustryRegistration />} />
+                  <Route path="/CustomerRegistration" element={<CustomerRegistration />} /> {/* New Route */}
                 </Routes>
               </Content>
 
