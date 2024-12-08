@@ -38,6 +38,7 @@ const IndustryRegistration = () => {
         setIsEditing(false);
         setIsModalVisible(true);
     };
+    
 
     const handleSubmit = (values) => {
         const payload = { industryType: values.industryName };
