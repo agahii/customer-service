@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Table, Modal, Form, Input, message } from "antd";
+import { Button, Table, Modal, Form, Input, Select, message } from "antd";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { isValidPhoneNumber } from "react-phone-number-input";
@@ -10,20 +10,33 @@ import {
   updateCustomerRegistration,
   deleteCustomerRegistration,
 } from "../store/reducers/CustomerRegistration/CustomerRegistrationAction";
+import { fetchIndustry } from "../store/reducers/IndustryRegistration/IndustryRegistrationAction";
+
+const { Option } = Select;
 
 const CustomerRegistration = () => {
   const dispatch = useDispatch();
+
+  // State & Selectors
   const { customers, loading, error } = useSelector((state) => state.customerRegistration);
+  const { entities: industries, loading: industriesLoading } = useSelector(
+    (state) => state.industryRegistration
+  );
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [mobileNumber, setMobileNumber] = useState("");
   const [form] = Form.useForm();
 
-  const [mobileNumber, setMobileNumber] = useState("");
-
+  // Fetch Customers and Industries
   useEffect(() => {
     dispatch(fetchCustomers());
+    const controller = new AbortController();
+    dispatch(fetchIndustry({ pagingInfo: { skip: 0, take: 100 }, controller }))
+      .unwrap()
+      .catch((err) => message.error("Failed to fetch industries."));
+    return () => controller.abort(); // Cleanup to avoid memory leaks
   }, [dispatch]);
 
   useEffect(() => {
@@ -44,6 +57,7 @@ const CustomerRegistration = () => {
     setMobileNumber(record.mobileNumber || "");
     form.setFieldsValue({
       ...record,
+      fK_Industry_ID: record.fK_Industry_ID,
       projects: record.customerProjectInp || [],
     });
     setIsModalVisible(true);
@@ -70,10 +84,16 @@ const CustomerRegistration = () => {
         ? values.projects.map((project) => ({
             projectName: project.projectName,
             fK_Employee_ID: project.agentId,
+            GccAgentInp: project.gccAgentInp
+              ? [{ FK_Employee_ID: project.gccAgentInp }]
+              : [], // Add FK_Employee_ID for GccAgentInp
+            CustomerAgentInp: project.customerAgentInp
+              ? [{ FK_Employee_ID: project.customerAgentInp }]
+              : [], // Add FK_Employee_ID for CustomerAgentInp
           }))
         : [],
     };
-
+  
     if (isEditing && selectedRecord) {
       dispatch(updateCustomerRegistration({ ...payload, id: selectedRecord.id }))
         .then(() => message.success("Customer updated successfully"))
@@ -83,11 +103,12 @@ const CustomerRegistration = () => {
         .then(() => message.success("Customer added successfully"))
         .catch(() => message.error("Failed to add customer"));
     }
-
+  
     setIsModalVisible(false);
     form.resetFields();
     setMobileNumber("");
   };
+  
 
   const columns = [
     { title: "Customer Name", dataIndex: "customerName", key: "customerName" },
@@ -97,7 +118,9 @@ const CustomerRegistration = () => {
       key: "actions",
       render: (_, record) => (
         <>
-          <Button type="primary" onClick={() => handleEdit(record)}>Edit</Button>
+          <Button type="primary" onClick={() => handleEdit(record)}>
+            Edit
+          </Button>
           <Button danger onClick={() => handleDelete(record.id)} style={{ marginLeft: 8 }}>
             Delete
           </Button>
@@ -123,8 +146,15 @@ const CustomerRegistration = () => {
         width={700}
       >
         <Form layout="vertical" form={form} onFinish={handleSubmit}>
-          <Form.Item name="fK_Industry_ID" label="Industry ID" rules={[{ required: true }]}>
-            <Input placeholder="Enter Industry ID" />
+          <Form.Item name="fK_Industry_ID" label="Industry" rules={[{ required: true }]}>
+            <Select placeholder="Select Industry" loading={industriesLoading}>
+              {industries &&
+                industries.map((industry) => (
+                  <Option key={industry.id} value={industry.id}>
+                    {industry.industryType}
+                  </Option>
+                ))}
+            </Select>
           </Form.Item>
           <Form.Item name="customerName" label="Customer Name" rules={[{ required: true }]}>
             <Input placeholder="Enter Customer Name" />
@@ -136,16 +166,13 @@ const CustomerRegistration = () => {
             <Input placeholder="Enter Customer Address" />
           </Form.Item>
           <Form.Item label="Mobile Number" required>
-            <div style={{ border: "1px solid #d9d9d9", borderRadius: "6px", padding: "4px 11px" }}>
-              <PhoneInput
-                international
-                defaultCountry="US"
-                value={mobileNumber}
-                onChange={(value) => setMobileNumber(value || "")}
-                placeholder="Enter Mobile Number"
-                style={{ border: "none", width: "100%" }}
-              />
-            </div>
+            <PhoneInput
+              international
+              defaultCountry="US"
+              value={mobileNumber}
+              onChange={(value) => setMobileNumber(value || "")}
+              placeholder="Enter Mobile Number"
+            />
             {!isValidPhoneNumber(mobileNumber) && mobileNumber && (
               <span style={{ color: "red" }}>Invalid phone number format</span>
             )}
@@ -153,10 +180,7 @@ const CustomerRegistration = () => {
           <Form.Item name="contactPersonName" label="Contact Person Name" rules={[{ required: true }]}>
             <Input placeholder="Enter Contact Person Name" />
           </Form.Item>
-          <Form.Item name="emailAddress" label="Email Address" rules={[
-            { required: true, message: "Email Address is required" },
-            { type: "email", message: "Please enter a valid Email Address" }
-          ]}>
+          <Form.Item name="emailAddress" label="Email Address" rules={[{ required: true, type: "email" }]}>
             <Input placeholder="Enter Email Address" />
           </Form.Item>
           <Form.Item name="webAddress" label="Web Address">
@@ -172,23 +196,19 @@ const CustomerRegistration = () => {
                 <h3>Projects</h3>
                 {fields.map(({ key, name, ...restField }) => (
                   <div key={key} style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-                    <Form.Item
-                      {...restField}
-                      label="Project Name"
-                      name={[name, "projectName"]}
-                      rules={[{ required: true, message: "Project Name is required" }]}
-                    >
+                    <Form.Item {...restField} label="Project Name" name={[name, "projectName"]}>
                       <Input placeholder="Enter Project Name" />
                     </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      label="Assigned Agent ID"
-                      name={[name, "agentId"]}
-                      rules={[{ required: true, message: "Agent ID is required" }]}
-                    >
+                    <Form.Item {...restField} label="Assigned Agent ID" name={[name, "agentId"]}>
                       <Input placeholder="Enter Agent ID" />
                     </Form.Item>
-                    <Button danger onClick={() => remove(name)}>
+                    <Form.Item {...restField} label="GCC Agent Input" name={[name, "gccAgentInp"]}>
+                      <Input placeholder="Enter GCC Agent Input" />
+                    </Form.Item>
+                    <Form.Item {...restField} label="Customer Agent Input" name={[name, "customerAgentInp"]}>
+                      <Input placeholder="Enter Customer Agent Input" />
+                    </Form.Item>
+                    <Button danger onClick={() => remove(name)} style={{ marginTop: "28px" }}>
                       Remove
                     </Button>
                   </div>
