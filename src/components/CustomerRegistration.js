@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Table, Modal, Form, Input, Select, message } from "antd";
+import { Button, Table, Modal, Form, Input, message } from "antd";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import {
   fetchCustomers,
   addCustomerRegistration,
@@ -8,36 +11,28 @@ import {
   deleteCustomerRegistration,
 } from "../store/reducers/CustomerRegistration/CustomerRegistrationAction";
 
-const { Option } = Select;
-
 const CustomerRegistration = () => {
   const dispatch = useDispatch();
+  const { customers, loading, error } = useSelector((state) => state.customerRegistration);
 
-  const { customers, loading, error } = useSelector(
-    (state) => state.customerRegistration
-  );
-
-  // State for modals
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
-
   const [form] = Form.useForm();
 
-  // Fetch customers on component mount
+  const [mobileNumber, setMobileNumber] = useState("");
+
   useEffect(() => {
     dispatch(fetchCustomers());
   }, [dispatch]);
 
   useEffect(() => {
-    if (error) {
-      message.error(`Error: ${error}`);
-    }
+    if (error) message.error(`Error: ${error}`);
   }, [error]);
 
-  // Show Add/Edit Modal
   const showAddModal = () => {
     form.resetFields();
+    setMobileNumber("");
     setIsEditing(false);
     setSelectedRecord(null);
     setIsModalVisible(true);
@@ -46,43 +41,41 @@ const CustomerRegistration = () => {
   const handleEdit = (record) => {
     setSelectedRecord(record);
     setIsEditing(true);
+    setMobileNumber(record.mobileNumber || "");
     form.setFieldsValue({
-      customerName: record.customerName,
-      emailAddress: record.emailAddress,
-      projects: record.customerProject || [],
+      ...record,
+      projects: record.customerProjectInp || [],
     });
     setIsModalVisible(true);
   };
 
   const handleDelete = (id) => {
-    Modal.confirm({
-      title: "Are you sure you want to delete this customer?",
-      okText: "Yes",
-      okType: "danger",
-      cancelText: "No",
-      onOk: () => {
-        dispatch(deleteCustomerRegistration(id)).then(() => {
-          message.success("Customer deleted successfully");
-        });
-      },
-    });
+    dispatch(deleteCustomerRegistration(id))
+      .then(() => message.success("Customer deleted successfully"))
+      .catch(() => message.error("Failed to delete customer"));
   };
 
   const handleSubmit = (values) => {
     const payload = {
+      fK_Industry_ID: values.fK_Industry_ID,
       customerName: values.customerName,
+      customerCode: values.customerCode,
+      customerAddress: values.customerAddress,
+      mobileNumber: mobileNumber,
+      contactPersonName: values.contactPersonName,
       emailAddress: values.emailAddress,
-      customerProjectInp:[]
-
-      // customerProjectInp: values.projects?.map((project) => ({
-      //   projectName: project.projectName,
-      //   fK_Employee_ID: project.agentId,
-      // })),
+      webAddress: values.webAddress,
+      imageUrl: values.imageUrl,
+      customerProjectInp: values.projects
+        ? values.projects.map((project) => ({
+            projectName: project.projectName,
+            fK_Employee_ID: project.agentId,
+          }))
+        : [],
     };
 
     if (isEditing && selectedRecord) {
-      const updatedPayload = { ...payload, id: selectedRecord.id };
-      dispatch(updateCustomerRegistration(updatedPayload))
+      dispatch(updateCustomerRegistration({ ...payload, id: selectedRecord.id }))
         .then(() => message.success("Customer updated successfully"))
         .catch(() => message.error("Failed to update customer"));
     } else {
@@ -93,9 +86,9 @@ const CustomerRegistration = () => {
 
     setIsModalVisible(false);
     form.resetFields();
+    setMobileNumber("");
   };
 
-  // Table columns (Customer Code removed)
   const columns = [
     { title: "Customer Name", dataIndex: "customerName", key: "customerName" },
     { title: "Email", dataIndex: "emailAddress", key: "emailAddress" },
@@ -103,14 +96,12 @@ const CustomerRegistration = () => {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
-        <div style={{ display: "flex", gap: "8px" }}>
-          <Button type="primary" onClick={() => handleEdit(record)}>
-            Edit
-          </Button>
-          <Button danger onClick={() => handleDelete(record.id)}>
+        <>
+          <Button type="primary" onClick={() => handleEdit(record)}>Edit</Button>
+          <Button danger onClick={() => handleDelete(record.id)} style={{ marginLeft: 8 }}>
             Delete
           </Button>
-        </div>
+        </>
       ),
     },
   ];
@@ -122,13 +113,7 @@ const CustomerRegistration = () => {
         Add New Customer
       </Button>
 
-      <Table
-        dataSource={customers}
-        columns={columns}
-        rowKey="id"
-        loading={loading}
-        bordered
-      />
+      <Table dataSource={customers} columns={columns} rowKey="id" loading={loading} />
 
       <Modal
         title={isEditing ? "Edit Customer" : "Add New Customer"}
@@ -138,23 +123,47 @@ const CustomerRegistration = () => {
         width={700}
       >
         <Form layout="vertical" form={form} onFinish={handleSubmit}>
-          <Form.Item
-            label="Customer Name"
-            name="customerName"
-            rules={[{ required: true, message: "Please enter the customer name" }]}
-          >
-            <Input placeholder="Enter customer name" />
+          <Form.Item name="fK_Industry_ID" label="Industry ID" rules={[{ required: true }]}>
+            <Input placeholder="Enter Industry ID" />
           </Form.Item>
-
-          <Form.Item
-            label="Email Address"
-            name="emailAddress"
-            rules={[
-              { required: true, message: "Please enter the email address" },
-              { type: "email", message: "Enter a valid email address" },
-            ]}
-          >
-            <Input placeholder="Enter email address" />
+          <Form.Item name="customerName" label="Customer Name" rules={[{ required: true }]}>
+            <Input placeholder="Enter Customer Name" />
+          </Form.Item>
+          <Form.Item name="customerCode" label="Customer Code" rules={[{ required: true }]}>
+            <Input placeholder="Enter Customer Code" />
+          </Form.Item>
+          <Form.Item name="customerAddress" label="Customer Address" rules={[{ required: true }]}>
+            <Input placeholder="Enter Customer Address" />
+          </Form.Item>
+          <Form.Item label="Mobile Number" required>
+            <div style={{ border: "1px solid #d9d9d9", borderRadius: "6px", padding: "4px 11px" }}>
+              <PhoneInput
+                international
+                defaultCountry="US"
+                value={mobileNumber}
+                onChange={(value) => setMobileNumber(value || "")}
+                placeholder="Enter Mobile Number"
+                style={{ border: "none", width: "100%" }}
+              />
+            </div>
+            {!isValidPhoneNumber(mobileNumber) && mobileNumber && (
+              <span style={{ color: "red" }}>Invalid phone number format</span>
+            )}
+          </Form.Item>
+          <Form.Item name="contactPersonName" label="Contact Person Name" rules={[{ required: true }]}>
+            <Input placeholder="Enter Contact Person Name" />
+          </Form.Item>
+          <Form.Item name="emailAddress" label="Email Address" rules={[
+            { required: true, message: "Email Address is required" },
+            { type: "email", message: "Please enter a valid Email Address" }
+          ]}>
+            <Input placeholder="Enter Email Address" />
+          </Form.Item>
+          <Form.Item name="webAddress" label="Web Address">
+            <Input placeholder="Enter Web Address" />
+          </Form.Item>
+          <Form.Item name="imageUrl" label="Image URL">
+            <Input placeholder="Enter Image URL" />
           </Form.Item>
 
           <Form.List name="projects">
@@ -162,51 +171,31 @@ const CustomerRegistration = () => {
               <>
                 <h3>Projects</h3>
                 {fields.map(({ key, name, ...restField }) => (
-                  <div
-                    key={key}
-                    style={{
-                      border: "1px solid #ddd",
-                      padding: "16px",
-                      marginBottom: "16px",
-                      position: "relative",
-                    }}
-                  >
+                  <div key={key} style={{ display: "flex", gap: 10, marginBottom: 10 }}>
                     <Form.Item
                       {...restField}
                       label="Project Name"
                       name={[name, "projectName"]}
-                      rules={[
-                        { required: true, message: "Please enter project name" },
-                      ]}
+                      rules={[{ required: true, message: "Project Name is required" }]}
                     >
-                      <Input placeholder="Enter project name" />
+                      <Input placeholder="Enter Project Name" />
                     </Form.Item>
-
                     <Form.Item
                       {...restField}
                       label="Assigned Agent ID"
                       name={[name, "agentId"]}
-                      rules={[
-                        { required: true, message: "Please enter agent ID" },
-                      ]}
+                      rules={[{ required: true, message: "Agent ID is required" }]}
                     >
-                      <Input placeholder="Enter agent ID" />
+                      <Input placeholder="Enter Agent ID" />
                     </Form.Item>
-
-                    <Button
-                      type="danger"
-                      onClick={() => remove(name)}
-                      style={{ position: "absolute", top: 0, right: 0 }}
-                    >
+                    <Button danger onClick={() => remove(name)}>
                       Remove
                     </Button>
                   </div>
                 ))}
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block>
-                    + Add Project
-                  </Button>
-                </Form.Item>
+                <Button type="dashed" onClick={() => add()} block>
+                  + Add Project
+                </Button>
               </>
             )}
           </Form.List>
