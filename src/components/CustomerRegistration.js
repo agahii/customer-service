@@ -1,7 +1,18 @@
 // src/components/CustomerRegistration.js
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Table, Button, Modal, Form, Input, Select, message, Switch } from "antd";
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Select,
+  message,
+  Switch,
+  Row,
+  Col,
+} from "antd";
 import {
   addCustomerRegistration,
   fetchCustomerRegistration,
@@ -13,6 +24,50 @@ import { fetchEmployee } from "../store/reducers/EmployeeRegistration/EmployeeRe
 
 const { Option } = Select;
 
+// Reusable Employee Select Component
+const EmployeeSelect = ({ label, name, employees, required }) => (
+  <Form.List name={name}>
+    {(fields, { add, remove }) => (
+      <div style={{ marginBottom: 16 }}>
+        <label style={{ fontWeight: "bold" }}>{label}</label>
+        {fields.map(({ key, name: fieldName, ...restField }) => (
+          <div key={key} style={{ display: "flex", marginBottom: 8 }}>
+            <Form.Item
+              {...restField}
+              name={[fieldName, "fK_Employee_ID"]}
+              rules={[{ required, message: `Select ${label}` }]}
+              style={{ flex: 1, marginRight: 8 }}
+            >
+              <Select
+                showSearch
+                placeholder={`Select ${label}`}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {employees.map((emp) => (
+                  <Option key={emp.id} value={emp.id}>
+                    {emp.employeeName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Button type="link" danger onClick={() => remove(fieldName)}>
+              Remove
+            </Button>
+          </div>
+        ))}
+        <Form.Item>
+          <Button type="dashed" onClick={() => add()} block>
+            Add {label}
+          </Button>
+        </Form.Item>
+      </div>
+    )}
+  </Form.List>
+);
+
 const CustomerRegistration = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -21,17 +76,33 @@ const CustomerRegistration = () => {
   const [submitting, setSubmitting] = useState(false); // For handling form submission state
 
   const dispatch = useDispatch();
-  const { entities, loading, total } = useSelector((state) => state.customerRegistration);
-  const { entities: industries } = useSelector((state) => state.industryRegistration);
-  const { entities: employees } = useSelector((state) => state.employeeRegistration);
+  const { entities, loading, total } = useSelector(
+    (state) => state.customerRegistration
+  );
+  const { entities: industries } = useSelector(
+    (state) => state.industryRegistration
+  );
+  const { entities: employees } = useSelector(
+    (state) => state.employeeRegistration
+  );
 
   const [pagingInfo, setPagingInfo] = useState({ skip: 0, take: 10 });
 
   useEffect(() => {
     const controller = new AbortController();
     dispatch(fetchCustomerRegistration({ pagingInfo, controller }));
-    dispatch(fetchIndustry({ pagingInfo: { skip: 0, take: 100 }, controller: new AbortController() }));
-    dispatch(fetchEmployee({ pagingInfo: { skip: 0, take: 100 }, controller: new AbortController() }));
+    dispatch(
+      fetchIndustry({
+        pagingInfo: { skip: 0, take: 100 },
+        controller: new AbortController(),
+      })
+    );
+    dispatch(
+      fetchEmployee({
+        pagingInfo: { skip: 0, take: 100 },
+        controller: new AbortController(),
+      })
+    );
 
     return () => {
       controller.abort();
@@ -44,12 +115,26 @@ const CustomerRegistration = () => {
       ...values,
       customerProjectInp: values.customerProjectInp?.map((project) => ({
         projectName: project.projectName,
-        gccAgentInp: project.gccAgentInp || [],
-        customerAgentInp: project.customerAgentInp || [],
-        gccSupervisorInp: project.gccSupervisorInp || [],
-        customerSupervisorInp: project.customerSupervisorInp || [],
+        gccAgentInp:
+          project.gccAgents?.map((agent) => ({
+            fK_Employee_ID: agent.fK_Employee_ID,
+          })) || [],
+        customerAgentInp:
+          project.customerAgents?.map((agent) => ({
+            fK_Employee_ID: agent.fK_Employee_ID,
+          })) || [],
+        gccSupervisorInp:
+          project.gccSupervisors?.map((sup) => ({
+            fK_Employee_ID: sup.fK_Employee_ID,
+          })) || [],
+        customerSupervisorInp:
+          project.customerSupervisors?.map((sup) => ({
+            fK_Employee_ID: sup.fK_Employee_ID,
+          })) || [],
       })),
     };
+
+    console.log("Payload to be sent:", payload); // Debugging line
 
     if (isEditing) {
       payload.id = selectedRecord.id;
@@ -98,10 +183,18 @@ const CustomerRegistration = () => {
       ...record,
       customerProjectInp: record.customerProject?.map((project) => ({
         projectName: project.projectName,
-        gccAgentInp: project.gccAgent?.map((agent) => agent.fK_Employee_ID),
-        customerAgentInp: project.customerAgent?.map((agent) => agent.fK_Employee_ID),
-        gccSupervisorInp: project.gccSupervisor?.map((sup) => sup.fK_Employee_ID),
-        customerSupervisorInp: project.customerSupervisor?.map((sup) => sup.fK_Employee_ID),
+        gccAgents: project.gccAgent?.map((agent) => ({
+          fK_Employee_ID: agent.fK_Employee_ID,
+        })),
+        customerAgents: project.customerAgent?.map((agent) => ({
+          fK_Employee_ID: agent.fK_Employee_ID,
+        })),
+        gccSupervisors: project.gccSupervisor?.map((sup) => ({
+          fK_Employee_ID: sup.fK_Employee_ID,
+        })),
+        customerSupervisors: project.customerSupervisor?.map((sup) => ({
+          fK_Employee_ID: sup.fK_Employee_ID,
+        })),
       })),
       isActive: record.isActive,
     });
@@ -132,7 +225,10 @@ const CustomerRegistration = () => {
       key: "actions",
       render: (_, record) => (
         <>
-          <Button onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>
+          <Button
+            onClick={() => handleEdit(record)}
+            style={{ marginRight: 8 }}
+          >
             Edit
           </Button>
           <Button danger onClick={() => handleDelete(record.id)}>
@@ -145,7 +241,11 @@ const CustomerRegistration = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <Button type="primary" onClick={() => setIsModalVisible(true)} style={{ marginBottom: 16 }}>
+      <Button
+        type="primary"
+        onClick={() => setIsModalVisible(true)}
+        style={{ marginBottom: 16 }}
+      >
         Add Customer
       </Button>
 
@@ -173,108 +273,183 @@ const CustomerRegistration = () => {
         }}
         footer={null}
         title={isEditing ? "Edit Customer" : "Add Customer"}
-        width={800}
+        width={1000} // Increased width for better readability
+        destroyOnClose
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item
-            name="customerName"
-            label="Customer Name"
-            rules={[{ required: true, message: "Please enter the customer name" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="customerCode"
-            label="Customer Code"
-            rules={[{ required: true, message: "Please enter the customer code" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="fK_Industry_ID"
-            label="Industry"
-            rules={[{ required: true, message: "Please select an industry" }]}
-          >
-            <Select placeholder="Select Industry">
-              {industries.map((ind) => (
-                <Option key={ind.id} value={ind.id}>
-                  {ind.industryType}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            name="customerAddress"
-            label="Customer Address"
-            rules={[{ required: true, message: "Please enter the customer address" }]}
-          >
-            <Input.TextArea rows={2} />
-          </Form.Item>
-          <Form.Item
-            name="mobileNumber"
-            label="Mobile Number"
-            rules={[
-              { required: true, message: "Please enter the mobile number" },
-              { pattern: /^\d+$/, message: "Mobile number must be numeric" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="contactPersonName"
-            label="Contact Person Name"
-            rules={[{ required: true, message: "Please enter the contact person name" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="emailAddress"
-            label="Email Address"
-            rules={[
-              { required: true, message: "Please enter the email address" },
-              { type: "email", message: "Please enter a valid email address" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="webAddress"
-            label="Web Address"
-            rules={[
-              { required: true, message: "Please enter the web address" },
-              { type: "url", message: "Please enter a valid URL" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="imageUrl"
-            label="Image URL"
-            rules={[
-              { required: false },
-              { type: "url", message: "Please enter a valid URL" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          scrollToFirstError
+        >
+          {/* Customer Details in Two Columns */}
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="customerName"
+                label="Customer Name"
+                rules={[
+                  { required: true, message: "Please enter the customer name" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="customerCode"
+                label="Customer Code"
+                rules={[
+                  { required: true, message: "Please enter the customer code" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="fK_Industry_ID"
+                label="Industry"
+                rules={[
+                  { required: true, message: "Please select an industry" },
+                ]}
+              >
+                <Select
+                  placeholder="Select Industry"
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().includes(input.toLowerCase())
+                  }
+                >
+                  {industries.map((ind) => (
+                    <Option key={ind.id} value={ind.id}>
+                      {ind.industryType}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="customerAddress"
+                label="Customer Address"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter the customer address",
+                  },
+                ]}
+              >
+                <Input.TextArea rows={2} />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="mobileNumber"
+                label="Mobile Number"
+                rules={[
+                  { required: true, message: "Please enter the mobile number" },
+                  {
+                    pattern: /^\d+$/,
+                    message: "Mobile number must be numeric",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="contactPersonName"
+                label="Contact Person Name"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter the contact person name",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="emailAddress"
+                label="Email Address"
+                rules={[
+                  { required: true, message: "Please enter the email address" },
+                  {
+                    type: "email",
+                    message: "Please enter a valid email address",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="webAddress"
+                label="Web Address"
+                rules={[
+                  { required: true, message: "Please enter the web address" },
+                  { type: "url", message: "Please enter a valid URL" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="imageUrl"
+                label="Image URL"
+                rules={[
+                  { required: false },
+                  { type: "url", message: "Please enter a valid URL" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            {/* Empty column to maintain the two-column structure */}
+            <Col xs={24} sm={12}></Col>
+          </Row>
 
           {/* Conditionally show isActive switch when editing */}
           {isEditing && (
-            <Form.Item
-              name="isActive"
-              label="Is Active"
-              valuePropName="checked"
-              initialValue={true}
-            >
-              <Switch />
-            </Form.Item>
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="isActive"
+                  label="Is Active"
+                  valuePropName="checked"
+                  initialValue={true}
+                >
+                  <Switch />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}></Col>
+            </Row>
           )}
 
           {/* Projects Section */}
           <Form.List name="customerProjectInp">
             {(fields, { add, remove }) => (
               <div>
-                <label>Projects</label>
+                <label style={{ fontWeight: "bold" }}>Projects</label>
                 {fields.map(({ key, name, ...restField }) => (
                   <div
                     key={key}
@@ -284,6 +459,7 @@ const CustomerRegistration = () => {
                       marginBottom: 16,
                       borderRadius: 4,
                       position: "relative",
+                      background: "#fafafa",
                     }}
                   >
                     <Button
@@ -294,86 +470,58 @@ const CustomerRegistration = () => {
                     >
                       Remove
                     </Button>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "projectName"]}
-                      label="Project Name"
-                      rules={[{ required: true, message: "Please enter the project name" }]}
-                    >
-                      <Input placeholder="Project Name" />
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "gccAgentInp"]}
+
+                    {/* Project Name in Two Columns */}
+                    <Row gutter={16}>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "projectName"]}
+                          label="Project Name"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please enter the project name",
+                            },
+                          ]}
+                        >
+                          <Input placeholder="Project Name" />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} sm={12}></Col>
+                    </Row>
+
+                    {/* GCC Agents */}
+                    <EmployeeSelect
                       label="GCC Agents"
-                      rules={[{ required: false }]}
-                    >
-                      <Select
-                        mode="multiple"
-                        placeholder="Select GCC Agents"
-                        allowClear
-                      >
-                        {employees.map((emp) => (
-                          <Option key={emp.id} value={emp.id}>
-                            {emp.employeeName}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "customerAgentInp"]}
+                      name={[name, "gccAgents"]}
+                      employees={employees}
+                      required={false}
+                    />
+
+                    {/* Customer Agents */}
+                    <EmployeeSelect
                       label="Customer Agents"
-                      rules={[{ required: false }]}
-                    >
-                      <Select
-                        mode="multiple"
-                        placeholder="Select Customer Agents"
-                        allowClear
-                      >
-                        {employees.map((emp) => (
-                          <Option key={emp.id} value={emp.id}>
-                            {emp.employeeName}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "gccSupervisorInp"]}
+                      name={[name, "customerAgents"]}
+                      employees={employees}
+                      required={false}
+                    />
+
+                    {/* GCC Supervisors */}
+                    <EmployeeSelect
                       label="GCC Supervisors"
-                      rules={[{ required: false }]}
-                    >
-                      <Select
-                        mode="multiple"
-                        placeholder="Select GCC Supervisors"
-                        allowClear
-                      >
-                        {employees.map((emp) => (
-                          <Option key={emp.id} value={emp.id}>
-                            {emp.employeeName}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "customerSupervisorInp"]}
+                      name={[name, "gccSupervisors"]}
+                      employees={employees}
+                      required={false}
+                    />
+
+                    {/* Customer Supervisors */}
+                    <EmployeeSelect
                       label="Customer Supervisors"
-                      rules={[{ required: false }]}
-                    >
-                      <Select
-                        mode="multiple"
-                        placeholder="Select Customer Supervisors"
-                        allowClear
-                      >
-                        {employees.map((emp) => (
-                          <Option key={emp.id} value={emp.id}>
-                            {emp.employeeName}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
+                      name={[name, "customerSupervisors"]}
+                      employees={employees}
+                      required={false}
+                    />
                   </div>
                 ))}
                 <Form.Item>
@@ -385,8 +533,14 @@ const CustomerRegistration = () => {
             )}
           </Form.List>
 
+          {/* Submit and Cancel Buttons */}
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={submitting} style={{ marginRight: 8 }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={submitting}
+              style={{ marginRight: 8 }}
+            >
               {isEditing ? "Update" : "Add"}
             </Button>
             <Button
