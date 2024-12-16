@@ -1,127 +1,141 @@
+// src/components/CustomerRegistration.js
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Table, Modal, Form, Input, Select, message } from "antd";
-import PhoneInput from "react-phone-number-input";
-import "react-phone-number-input/style.css";
-import { isValidPhoneNumber } from "react-phone-number-input";
+import { Table, Button, Modal, Form, Input, Select, message, Switch } from "antd";
 import {
-  fetchCustomers,
   addCustomerRegistration,
+  fetchCustomerRegistration,
   updateCustomerRegistration,
   deleteCustomerRegistration,
 } from "../store/reducers/CustomerRegistration/CustomerRegistrationAction";
 import { fetchIndustry } from "../store/reducers/IndustryRegistration/IndustryRegistrationAction";
+import { fetchEmployee } from "../store/reducers/EmployeeRegistration/EmployeeRegistrationAction";
 
 const { Option } = Select;
 
 const CustomerRegistration = () => {
-  const dispatch = useDispatch();
-
-  // State & Selectors
-  const { customers, loading, error } = useSelector((state) => state.customerRegistration);
-  const { entities: industries, loading: industriesLoading } = useSelector(
-    (state) => state.industryRegistration
-  );
-
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [mobileNumber, setMobileNumber] = useState("");
   const [form] = Form.useForm();
+  const [submitting, setSubmitting] = useState(false); // For handling form submission state
 
-  // Fetch Customers and Industries
+  const dispatch = useDispatch();
+  const { entities, loading, total } = useSelector((state) => state.customerRegistration);
+  const { entities: industries } = useSelector((state) => state.industryRegistration);
+  const { entities: employees } = useSelector((state) => state.employeeRegistration);
+
+  const [pagingInfo, setPagingInfo] = useState({ skip: 0, take: 10 });
+
   useEffect(() => {
-    dispatch(fetchCustomers());
     const controller = new AbortController();
-    dispatch(fetchIndustry({ pagingInfo: { skip: 0, take: 100 }, controller }))
-      .unwrap()
-      .catch((err) => message.error("Failed to fetch industries."));
-    return () => controller.abort(); // Cleanup to avoid memory leaks
-  }, [dispatch]);
+    dispatch(fetchCustomerRegistration({ pagingInfo, controller }));
+    dispatch(fetchIndustry({ pagingInfo: { skip: 0, take: 100 }, controller: new AbortController() }));
+    dispatch(fetchEmployee({ pagingInfo: { skip: 0, take: 100 }, controller: new AbortController() }));
 
-  useEffect(() => {
-    if (error) message.error(`Error: ${error}`);
-  }, [error]);
+    return () => {
+      controller.abort();
+    };
+  }, [dispatch, pagingInfo]);
 
-  const showAddModal = () => {
+  const handleSubmit = async (values) => {
+    setSubmitting(true);
+    const payload = {
+      ...values,
+      customerProjectInp: values.customerProjectInp?.map((project) => ({
+        projectName: project.projectName,
+        gccAgentInp: project.gccAgentInp || [],
+        customerAgentInp: project.customerAgentInp || [],
+        gccSupervisorInp: project.gccSupervisorInp || [],
+        customerSupervisorInp: project.customerSupervisorInp || [],
+      })),
+    };
+
+    if (isEditing) {
+      payload.id = selectedRecord.id;
+      payload.isActive = values.isActive;
+      // Map customerProjectInp to customerProject for update
+      payload.customerProject = payload.customerProjectInp.map((project) => ({
+        ...project,
+        isActive: true, // or derive from form if available
+      }));
+      delete payload.customerProjectInp;
+      dispatch(updateCustomerRegistration(payload))
+        .unwrap()
+        .then(() => {
+          message.success("Customer updated successfully");
+        })
+        .catch((error) => {
+          message.error(`Update failed: ${error}`);
+        })
+        .finally(() => {
+          setSubmitting(false);
+        });
+    } else {
+      dispatch(addCustomerRegistration(payload))
+        .unwrap()
+        .then(() => {
+          message.success("Customer added successfully");
+        })
+        .catch((error) => {
+          message.error(`Addition failed: ${error}`);
+        })
+        .finally(() => {
+          setSubmitting(false);
+        });
+    }
+
+    setIsModalVisible(false);
     form.resetFields();
-    setMobileNumber("");
     setIsEditing(false);
     setSelectedRecord(null);
-    setIsModalVisible(true);
   };
 
   const handleEdit = (record) => {
     setSelectedRecord(record);
     setIsEditing(true);
-    setMobileNumber(record.mobileNumber || "");
     form.setFieldsValue({
       ...record,
-      fK_Industry_ID: record.fK_Industry_ID,
-      projects: record.customerProjectInp || [],
+      customerProjectInp: record.customerProject?.map((project) => ({
+        projectName: project.projectName,
+        gccAgentInp: project.gccAgent?.map((agent) => agent.fK_Employee_ID),
+        customerAgentInp: project.customerAgent?.map((agent) => agent.fK_Employee_ID),
+        gccSupervisorInp: project.gccSupervisor?.map((sup) => sup.fK_Employee_ID),
+        customerSupervisorInp: project.customerSupervisor?.map((sup) => sup.fK_Employee_ID),
+      })),
+      isActive: record.isActive,
     });
     setIsModalVisible(true);
   };
 
   const handleDelete = (id) => {
-    dispatch(deleteCustomerRegistration(id))
-      .then(() => message.success("Customer deleted successfully"))
-      .catch(() => message.error("Failed to delete customer"));
+    Modal.confirm({
+      title: "Are you sure you want to delete this customer?",
+      onOk: () => {
+        dispatch(deleteCustomerRegistration(id))
+          .unwrap()
+          .then(() => {
+            message.success("Customer deleted successfully");
+          })
+          .catch((error) => {
+            message.error(`Deletion failed: ${error}`);
+          });
+      },
+    });
   };
-
-  const handleSubmit = (values) => {
-    const payload = {
-      fK_Industry_ID: values.fK_Industry_ID,
-      customerName: values.customerName,
-      customerCode: values.customerCode,
-      customerAddress: values.customerAddress,
-      mobileNumber: mobileNumber,
-      contactPersonName: values.contactPersonName,
-      emailAddress: values.emailAddress,
-      webAddress: values.webAddress,
-      imageUrl: values.imageUrl,
-      customerProjectInp: values.projects
-        ? values.projects.map((project) => ({
-            projectName: project.projectName,
-            fK_Employee_ID: project.agentId,
-            GccAgentInp: project.gccAgentInp
-              ? [{ FK_Employee_ID: project.gccAgentInp }]
-              : [], // Add FK_Employee_ID for GccAgentInp
-            CustomerAgentInp: project.customerAgentInp
-              ? [{ FK_Employee_ID: project.customerAgentInp }]
-              : [], // Add FK_Employee_ID for CustomerAgentInp
-          }))
-        : [],
-    };
-  
-    if (isEditing && selectedRecord) {
-      dispatch(updateCustomerRegistration({ ...payload, id: selectedRecord.id }))
-        .then(() => message.success("Customer updated successfully"))
-        .catch(() => message.error("Failed to update customer"));
-    } else {
-      dispatch(addCustomerRegistration(payload))
-        .then(() => message.success("Customer added successfully"))
-        .catch(() => message.error("Failed to add customer"));
-    }
-  
-    setIsModalVisible(false);
-    form.resetFields();
-    setMobileNumber("");
-  };
-  
 
   const columns = [
     { title: "Customer Name", dataIndex: "customerName", key: "customerName" },
-    { title: "Email", dataIndex: "emailAddress", key: "emailAddress" },
+    { title: "Customer Code", dataIndex: "customerCode", key: "customerCode" },
     {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
         <>
-          <Button type="primary" onClick={() => handleEdit(record)}>
+          <Button onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>
             Edit
           </Button>
-          <Button danger onClick={() => handleDelete(record.id)} style={{ marginLeft: 8 }}>
+          <Button danger onClick={() => handleDelete(record.id)}>
             Delete
           </Button>
         </>
@@ -130,99 +144,260 @@ const CustomerRegistration = () => {
   ];
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1 style={{ textAlign: "center" }}>Customer Registration</h1>
-      <Button type="primary" onClick={showAddModal} style={{ marginBottom: "20px" }}>
-        Add New Customer
+    <div style={{ padding: 24 }}>
+      <Button type="primary" onClick={() => setIsModalVisible(true)} style={{ marginBottom: 16 }}>
+        Add Customer
       </Button>
 
-      <Table dataSource={customers} columns={columns} rowKey="id" loading={loading} />
+      <Table
+        dataSource={entities}
+        columns={columns}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          total,
+          pageSize: pagingInfo.take,
+          current: Math.floor(pagingInfo.skip / pagingInfo.take) + 1,
+          onChange: (page, pageSize) =>
+            setPagingInfo({ skip: (page - 1) * pageSize, take: pageSize }),
+        }}
+      />
 
       <Modal
-        title={isEditing ? "Edit Customer" : "Add New Customer"}
         visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setIsEditing(false);
+          setSelectedRecord(null);
+          form.resetFields();
+        }}
         footer={null}
-        width={700}
+        title={isEditing ? "Edit Customer" : "Add Customer"}
+        width={800}
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmit}>
-          <Form.Item name="fK_Industry_ID" label="Industry" rules={[{ required: true }]}>
-            <Select placeholder="Select Industry" loading={industriesLoading}>
-              {industries &&
-                industries.map((industry) => (
-                  <Option key={industry.id} value={industry.id}>
-                    {industry.industryType}
-                  </Option>
-                ))}
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          <Form.Item
+            name="customerName"
+            label="Customer Name"
+            rules={[{ required: true, message: "Please enter the customer name" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="customerCode"
+            label="Customer Code"
+            rules={[{ required: true, message: "Please enter the customer code" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="fK_Industry_ID"
+            label="Industry"
+            rules={[{ required: true, message: "Please select an industry" }]}
+          >
+            <Select placeholder="Select Industry">
+              {industries.map((ind) => (
+                <Option key={ind.id} value={ind.id}>
+                  {ind.industryType}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
-          <Form.Item name="customerName" label="Customer Name" rules={[{ required: true }]}>
-            <Input placeholder="Enter Customer Name" />
+          <Form.Item
+            name="customerAddress"
+            label="Customer Address"
+            rules={[{ required: true, message: "Please enter the customer address" }]}
+          >
+            <Input.TextArea rows={2} />
           </Form.Item>
-          <Form.Item name="customerCode" label="Customer Code" rules={[{ required: true }]}>
-            <Input placeholder="Enter Customer Code" />
+          <Form.Item
+            name="mobileNumber"
+            label="Mobile Number"
+            rules={[
+              { required: true, message: "Please enter the mobile number" },
+              { pattern: /^\d+$/, message: "Mobile number must be numeric" },
+            ]}
+          >
+            <Input />
           </Form.Item>
-          <Form.Item name="customerAddress" label="Customer Address" rules={[{ required: true }]}>
-            <Input placeholder="Enter Customer Address" />
+          <Form.Item
+            name="contactPersonName"
+            label="Contact Person Name"
+            rules={[{ required: true, message: "Please enter the contact person name" }]}
+          >
+            <Input />
           </Form.Item>
-          <Form.Item label="Mobile Number" required>
-            <PhoneInput
-              international
-              defaultCountry="US"
-              value={mobileNumber}
-              onChange={(value) => setMobileNumber(value || "")}
-              placeholder="Enter Mobile Number"
-            />
-            {!isValidPhoneNumber(mobileNumber) && mobileNumber && (
-              <span style={{ color: "red" }}>Invalid phone number format</span>
-            )}
+          <Form.Item
+            name="emailAddress"
+            label="Email Address"
+            rules={[
+              { required: true, message: "Please enter the email address" },
+              { type: "email", message: "Please enter a valid email address" },
+            ]}
+          >
+            <Input />
           </Form.Item>
-          <Form.Item name="contactPersonName" label="Contact Person Name" rules={[{ required: true }]}>
-            <Input placeholder="Enter Contact Person Name" />
+          <Form.Item
+            name="webAddress"
+            label="Web Address"
+            rules={[
+              { required: true, message: "Please enter the web address" },
+              { type: "url", message: "Please enter a valid URL" },
+            ]}
+          >
+            <Input />
           </Form.Item>
-          <Form.Item name="emailAddress" label="Email Address" rules={[{ required: true, type: "email" }]}>
-            <Input placeholder="Enter Email Address" />
-          </Form.Item>
-          <Form.Item name="webAddress" label="Web Address">
-            <Input placeholder="Enter Web Address" />
-          </Form.Item>
-          <Form.Item name="imageUrl" label="Image URL">
-            <Input placeholder="Enter Image URL" />
+          <Form.Item
+            name="imageUrl"
+            label="Image URL"
+            rules={[
+              { required: false },
+              { type: "url", message: "Please enter a valid URL" },
+            ]}
+          >
+            <Input />
           </Form.Item>
 
-          <Form.List name="projects">
+          {/* Conditionally show isActive switch when editing */}
+          {isEditing && (
+            <Form.Item
+              name="isActive"
+              label="Is Active"
+              valuePropName="checked"
+              initialValue={true}
+            >
+              <Switch />
+            </Form.Item>
+          )}
+
+          {/* Projects Section */}
+          <Form.List name="customerProjectInp">
             {(fields, { add, remove }) => (
-              <>
-                <h3>Projects</h3>
+              <div>
+                <label>Projects</label>
                 {fields.map(({ key, name, ...restField }) => (
-                  <div key={key} style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-                    <Form.Item {...restField} label="Project Name" name={[name, "projectName"]}>
-                      <Input placeholder="Enter Project Name" />
-                    </Form.Item>
-                    <Form.Item {...restField} label="Assigned Agent ID" name={[name, "agentId"]}>
-                      <Input placeholder="Enter Agent ID" />
-                    </Form.Item>
-                    <Form.Item {...restField} label="GCC Agent Input" name={[name, "gccAgentInp"]}>
-                      <Input placeholder="Enter GCC Agent Input" />
-                    </Form.Item>
-                    <Form.Item {...restField} label="Customer Agent Input" name={[name, "customerAgentInp"]}>
-                      <Input placeholder="Enter Customer Agent Input" />
-                    </Form.Item>
-                    <Button danger onClick={() => remove(name)} style={{ marginTop: "28px" }}>
+                  <div
+                    key={key}
+                    style={{
+                      border: "1px solid #d9d9d9",
+                      padding: 16,
+                      marginBottom: 16,
+                      borderRadius: 4,
+                      position: "relative",
+                    }}
+                  >
+                    <Button
+                      type="link"
+                      danger
+                      onClick={() => remove(name)}
+                      style={{ position: "absolute", top: 0, right: 0 }}
+                    >
                       Remove
                     </Button>
+                    <Form.Item
+                      {...restField}
+                      name={[name, "projectName"]}
+                      label="Project Name"
+                      rules={[{ required: true, message: "Please enter the project name" }]}
+                    >
+                      <Input placeholder="Project Name" />
+                    </Form.Item>
+                    <Form.Item
+                      {...restField}
+                      name={[name, "gccAgentInp"]}
+                      label="GCC Agents"
+                      rules={[{ required: false }]}
+                    >
+                      <Select
+                        mode="multiple"
+                        placeholder="Select GCC Agents"
+                        allowClear
+                      >
+                        {employees.map((emp) => (
+                          <Option key={emp.id} value={emp.id}>
+                            {emp.employeeName}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                    <Form.Item
+                      {...restField}
+                      name={[name, "customerAgentInp"]}
+                      label="Customer Agents"
+                      rules={[{ required: false }]}
+                    >
+                      <Select
+                        mode="multiple"
+                        placeholder="Select Customer Agents"
+                        allowClear
+                      >
+                        {employees.map((emp) => (
+                          <Option key={emp.id} value={emp.id}>
+                            {emp.employeeName}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                    <Form.Item
+                      {...restField}
+                      name={[name, "gccSupervisorInp"]}
+                      label="GCC Supervisors"
+                      rules={[{ required: false }]}
+                    >
+                      <Select
+                        mode="multiple"
+                        placeholder="Select GCC Supervisors"
+                        allowClear
+                      >
+                        {employees.map((emp) => (
+                          <Option key={emp.id} value={emp.id}>
+                            {emp.employeeName}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                    <Form.Item
+                      {...restField}
+                      name={[name, "customerSupervisorInp"]}
+                      label="Customer Supervisors"
+                      rules={[{ required: false }]}
+                    >
+                      <Select
+                        mode="multiple"
+                        placeholder="Select Customer Supervisors"
+                        allowClear
+                      >
+                        {employees.map((emp) => (
+                          <Option key={emp.id} value={emp.id}>
+                            {emp.employeeName}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
                   </div>
                 ))}
-                <Button type="dashed" onClick={() => add()} block>
-                  + Add Project
-                </Button>
-              </>
+                <Form.Item>
+                  <Button type="dashed" onClick={() => add()} block>
+                    Add Project
+                  </Button>
+                </Form.Item>
+              </div>
             )}
           </Form.List>
 
-          <Form.Item style={{ textAlign: "right" }}>
-            <Button type="primary" htmlType="submit">
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={submitting} style={{ marginRight: 8 }}>
               {isEditing ? "Update" : "Add"}
+            </Button>
+            <Button
+              onClick={() => {
+                setIsModalVisible(false);
+                setIsEditing(false);
+                setSelectedRecord(null);
+                form.resetFields();
+              }}
+            >
+              Cancel
             </Button>
           </Form.Item>
         </Form>

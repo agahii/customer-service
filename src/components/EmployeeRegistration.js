@@ -1,177 +1,328 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { Form, Input, Button, Row, Col, Select } from "antd";
-import PhoneInput from "react-phone-number-input";
-import { isValidPhoneNumber } from "react-phone-number-input";
-import { addEmployeeRegistration } from "../store/reducers/EmployeeRegistration/EmployeeRegistrationAction"; // Import the action
+// components/EmployeeRegistration.jsx
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Table, Button, Modal, Form, Input, message } from "antd";
+import {
+  addEmployeeRegistration,
+  fetchEmployee,
+  updateEmployeeRegistration,
+  deleteEmployeeRegistration,
+} from "../store/reducers/EmployeeRegistration/EmployeeRegistrationAction";
 
 const EmployeeRegistration = () => {
-  const dispatch = useDispatch();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+
   const [form] = Form.useForm();
-  const [phone, setPhone] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  const dispatch = useDispatch();
 
-  const handleFinish = (values) => {
+  const { entities, loading, error, total } = useSelector(
+    (state) => state.employeeRegistration
+  );
+
+  console.log("Redux State - Entities:", entities);
+  console.log("Redux State - Loading:", loading);
+  console.log("Redux State - Error:", error);
+  console.log("Redux State - Total:", total);
+
+  const [pagingInfo, setPagingInfo] = useState({
+    skip: 0,
+    take: 10,
+    filter: {
+      logic: "and",
+      filters: [],
+    },
+    group: [],
+    sort: [],
+  });
+
+  const showAddModal = () => {
+    form.resetFields();
+    setSelectedRecord(null);
+    setIsEditing(false);
+    setIsModalVisible(true);
+  };
+
+  const handleSubmit = (values) => {
     const payload = {
-      accountType:1,
+      accountType: 1,
       employeeName: values.employeeName,
-      emailAddress:"",
-      employeeCode:"00001",
-      "assignAgent": [
-   
-      ]
+      employeeCode: values.employeeCode,
+      employeeAddress: values.employeeAddress,
+      mobileNumber: values.mobileNumber,
+      contactPersonName: values.contactPersonName,
+      emailAddress: values.emailAddress,
+      webAddress: values.webAddress,
+      imageUrl: values.imageUrl,
     };
-    dispatch(addEmployeeRegistration(payload)); // Dispatch the action to save data
-    console.log("Form Data:", payload);
+
+    console.log("Submitting Payload:", payload); // Debugging
+
+    if (isEditing && selectedRecord) {
+      const updatedPayload = { ...payload, id: selectedRecord.id };
+      console.log("Updating Employee with Payload:", updatedPayload); // Debugging
+      dispatch(updateEmployeeRegistration(updatedPayload))
+        .unwrap()
+        .then(() => {
+          message.success("Employee updated successfully.");
+        })
+        .catch((err) => {
+          console.error("Update Error:", err);
+          message.error(`Update failed: ${err}`);
+        });
+    } else {
+      dispatch(addEmployeeRegistration(payload))
+        .unwrap()
+        .then(() => {
+          message.success("Employee added successfully.");
+        })
+        .catch((err) => {
+          console.error("Addition Error:", err);
+          message.error(`Addition failed: ${err}`);
+        });
+    }
+
+    setIsModalVisible(false);
+    form.resetFields();
+    setSelectedRecord(null);
+    setIsEditing(false);
   };
 
-  const validatePhoneNumber = (rule, value) => {
-    if (!value) return Promise.resolve();
-    return isValidPhoneNumber(value)
-      ? Promise.resolve()
-      : Promise.reject("Invalid phone number format");
+  useEffect(() => {
+    const controller = new AbortController();
+    dispatch(fetchEmployee({ pagingInfo, controller }))
+      .unwrap()
+      .then(() => {
+        console.log("Fetch Employees Success");
+      })
+      .catch((err) => {
+        console.error("Fetching Employees Error:", err);
+        message.error(`Fetching employees failed: ${err}`);
+      });
+    return () => controller.abort();
+  }, [dispatch, pagingInfo]);
+
+  useEffect(() => {
+    if (error) {
+      console.error("Redux Error:", error);
+      message.error(`Error: ${error}`);
+    }
+  }, [error]);
+
+  const handleTableChange = (pagination) => {
+    console.log("Table Pagination Changed:", pagination);
+    setPagingInfo((prev) => ({
+      ...prev,
+      skip: (pagination.current - 1) * pagination.pageSize,
+      take: pagination.pageSize,
+    }));
   };
+
+  const handleEdit = (record) => {
+    console.log("Editing Record:", record);
+    setSelectedRecord(record);
+    setIsEditing(true);
+    form.setFieldsValue({
+      employeeName: record.employeeName,
+      employeeCode: record.employeeCode,
+      employeeAddress: record.employeeAddress,
+      mobileNumber: record.mobileNumber,
+      contactPersonName: record.contactPersonName,
+      emailAddress: record.emailAddress,
+      webAddress: record.webAddress,
+      imageUrl: record.imageUrl,
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleDelete = (record) => {
+    console.log("Deleting Record:", record);
+    Modal.confirm({
+      title: "Are you sure you want to delete this employee?",
+      content: `Employee Name: ${record.employeeName}`,
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: () => {
+        dispatch(deleteEmployeeRegistration(record.id))
+          .unwrap()
+          .then(() => {
+            message.success("Employee deleted successfully.");
+          })
+          .catch((err) => {
+            console.error("Deletion Error:", err);
+            message.error(`Deletion failed: ${err}`);
+          });
+      },
+    });
+  };
+
+  const columns = [
+    {
+      title: "Employee Name",
+      dataIndex: "employeeName",
+      key: "employeeName",
+      width: "20%",
+    },
+    {
+      title: "Employee Code",
+      dataIndex: "employeeCode",
+      key: "employeeCode",
+      width: "10%",
+    },
+    {
+      title: "Mobile Number",
+      dataIndex: "mobileNumber",
+      key: "mobileNumber",
+      width: "15%",
+    },
+    {
+      title: "Email Address",
+      dataIndex: "emailAddress",
+      key: "emailAddress",
+      width: "20%",
+    },
+    {
+      title: "Contact Person",
+      dataIndex: "contactPersonName",
+      key: "contactPersonName",
+      width: "15%",
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      width: "20%",
+      render: (text, record) => (
+        <div style={{ display: "flex", gap: "8px" }}>
+          <Button type="primary" onClick={() => handleEdit(record)}>
+            Edit
+          </Button>
+          <Button danger onClick={() => handleDelete(record)}>
+            Delete
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div style={{ padding: "40px" }}>
-      <h1 style={{ textAlign: "center", color: "#333", fontWeight: "bold" }}>Employee Registration</h1>
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleFinish}
-        style={{ maxWidth: "100%", margin: "0 auto", width: "80%" }}
-        initialValues={{
-          employeeName: "",
-          whatsapp: "",
-          email: "",
-          phone: "",
-          position: "",
-          department: "",
-          preferredContact: "",
+      <h1 style={{ textAlign: "center", color: "#333", fontWeight: "bold" }}>
+        Employee Registration
+      </h1>
+
+      <div style={{ textAlign: "right", marginBottom: "20px" }}>
+        <Button type="primary" onClick={showAddModal}>
+          Add New Employee
+        </Button>
+      </div>
+
+      <Table
+        columns={columns}
+        dataSource={entities}
+        rowKey={(record) => record.id} // 'id' is correct as per your API response
+        loading={loading}
+        pagination={{
+          total,
+          pageSize: pagingInfo.take,
+          current: Math.floor(pagingInfo.skip / pagingInfo.take) + 1,
         }}
+        bordered
+        onChange={handleTableChange}
+      />
+
+      <Modal
+        title={isEditing ? "Edit Employee" : "Add New Employee"}
+        visible={isModalVisible}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setIsEditing(false);
+          setSelectedRecord(null);
+        }}
+        footer={null}
       >
-        {/* Employee Name */}
-        <Row gutter={16}>
-          <Col span={24}>
-            <Form.Item
-              label="Employee Name"
-              name="employeeName"
-              rules={[{ required: true, message: "Please enter employee name" }]}
-            >
-              <Input placeholder="Enter employee name" />
-            </Form.Item>
-          </Col>
-        </Row>
+        <Form layout="vertical" form={form} onFinish={handleSubmit}>
+          <Form.Item
+            label="Employee Name"
+            name="employeeName"
+            rules={[{ required: true, message: "Please enter the employee name" }]}
+          >
+            <Input placeholder="Enter employee name" />
+          </Form.Item>
 
-        {/* Phone Number and WhatsApp Number */}
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item
-              label="Phone Number"
-              name="phone"
-              rules={[
-                { required: true, message: "Please enter your phone number" },
-                { validator: validatePhoneNumber },
-              ]}
-            >
-              <PhoneInput
-                international
-                defaultCountry="US"
-                value={phone}
-                onChange={setPhone}
-                placeholder="Enter phone number"
-                className="phone-input-custom"
-              />
-            </Form.Item>
-          </Col>
+          <Form.Item
+            label="Employee Code"
+            name="employeeCode"
+            rules={[{ required: true, message: "Please enter the employee code" }]}
+          >
+            <Input placeholder="Enter employee code" />
+          </Form.Item>
 
-          <Col span={12}>
-            <Form.Item
-              label="WhatsApp Number"
-              name="whatsapp"
-              rules={[
-                { required: true, message: "Please enter your WhatsApp number" },
-                { validator: validatePhoneNumber },
-              ]}
-            >
-              <PhoneInput
-                international
-                defaultCountry="US"
-                value={whatsapp}
-                onChange={setWhatsapp}
-                placeholder="Enter WhatsApp number"
-                className="phone-input-custom"
-              />
-            </Form.Item>
-          </Col>
-        </Row>
+          <Form.Item
+            label="Employee Address"
+            name="employeeAddress"
+            rules={[{ required: true, message: "Please enter the employee address" }]}
+          >
+            <Input placeholder="Enter employee address" />
+          </Form.Item>
 
-        {/* Email Address */}
-        <Row gutter={16}>
-          <Col span={24}>
-            <Form.Item
-              label="Email Address"
-              name="email"
-              rules={[
-                { required: true, message: "Please enter your email address" },
-                { type: "email", message: "Please enter a valid email address" },
-              ]}
-            >
-              <Input placeholder="Enter email address" />
-            </Form.Item>
-          </Col>
-        </Row>
+          <Form.Item
+            label="Mobile Number"
+            name="mobileNumber"
+            rules={[
+              { required: true, message: "Please enter your mobile number" },
+              {
+                pattern: /^\+?[1-9]\d{1,14}$/, // E.164 international format
+                message: "Invalid mobile number format",
+              },
+            ]}
+          >
+            <Input placeholder="Enter mobile number" />
+          </Form.Item>
 
-        {/* Position */}
-        <Row gutter={16}>
-          <Col span={24}>
-            <Form.Item
-              label="Position"
-              name="position"
-              rules={[{ required: true, message: "Please enter position" }]}
-            >
-              <Input placeholder="Enter position" />
-            </Form.Item>
-          </Col>
-        </Row>
+          <Form.Item
+            label="Contact Person Name"
+            name="contactPersonName"
+            rules={[{ required: true, message: "Please enter the contact person name" }]}
+          >
+            <Input placeholder="Enter contact person name" />
+          </Form.Item>
 
-        {/* Department */}
-        <Row gutter={16}>
-          <Col span={24}>
-            <Form.Item
-              label="Department"
-              name="department"
-              rules={[{ required: true, message: "Please enter department" }]}
-            >
-              <Input placeholder="Enter department" />
-            </Form.Item>
-          </Col>
-        </Row>
+          <Form.Item
+            label="Email Address"
+            name="emailAddress"
+            rules={[
+              { required: true, message: "Please enter your email address" },
+              { type: "email", message: "Please enter a valid email address" },
+            ]}
+          >
+            <Input placeholder="Enter email address" />
+          </Form.Item>
 
-        {/* Preferred Contact */}
-        <Row gutter={16}>
-          <Col span={24}>
-            <Form.Item
-              label="Preferred Contact"
-              name="preferredContact"
-              rules={[{ required: true, message: "Please select a preferred contact method" }]}
-            >
-              <Select placeholder="Select preferred contact">
-                <Select.Option value="phone">Phone</Select.Option>
-                <Select.Option value="whatsapp">WhatsApp</Select.Option>
-                <Select.Option value="email">Email</Select.Option>
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
+          <Form.Item
+            label="Web Address"
+            name="webAddress"
+            rules={[{ required: false }]}
+          >
+            <Input placeholder="Enter web address" />
+          </Form.Item>
 
-        {/* Submit Button */}
-        <Form.Item style={{ textAlign: "right" }}>
-          <Button type="primary" htmlType="submit" style={{ width: "150px" }}>
-            Register
-          </Button>
-        </Form.Item>
-      </Form>
+          <Form.Item
+            label="Image URL"
+            name="imageUrl"
+            rules={[{ required: false }]}
+          >
+            <Input placeholder="Enter image URL" />
+          </Form.Item>
+
+          <Form.Item style={{ textAlign: "right" }}>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              {isEditing ? "Update" : "Add"}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

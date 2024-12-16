@@ -1,74 +1,64 @@
+// src/store/reducers/CustomerRegistration/CustomerRegistrationAction.js
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { API } from "../../../utills/services";
 
-// Add Customer
+// Add new Customer
 export const addCustomerRegistration = createAsyncThunk(
-  "customer/add",
+  "customerRegistration/addCustomer",
   async (payload, { rejectWithValue }) => {
     try {
-    
-
       const response = await API.post("Customer/Add", payload);
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.reasonPhrase || "Failed to add customer."
-      );
+      return rejectWithValue(error.response?.data || "Addition failed.");
     }
   }
 );
 
 // Fetch Customers
-export const fetchCustomers = createAsyncThunk(
-  "customer/fetch",
-  async (_, { rejectWithValue }) => {
+export const fetchCustomerRegistration = createAsyncThunk(
+  "customerRegistration/fetchCustomers",
+  async ({ pagingInfo, controller }, { rejectWithValue }) => {
     try {
-      const payload = { skip: 0, take: 10 }; // Default pagination payload
-      const response = await API.post("Customer/Get", payload);
-      return response.data.value; // Ensure 'value' matches API response key
+      const formData = new FormData();
+      formData.append("skip", pagingInfo.skip);
+      formData.append("take", pagingInfo.take);
+
+      const response = await API.post("Customer/Get", formData, {
+        signal: controller.signal,
+      });
+      return {
+        data: response.data.value || [], // assuming API returns 'value'
+        totalRecords: response.data.totalRecords || 0, // adjust based on actual API response
+      };
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.reasonPhrase || "Failed to fetch customers."
-      );
+      return rejectWithValue(error.response?.data || "Fetching customers failed.");
     }
   }
 );
 
 // Update Customer
 export const updateCustomerRegistration = createAsyncThunk(
-  "customer/update",
+  "customerRegistration/updateCustomer",
   async (payload, { rejectWithValue }) => {
     try {
-      const finalPayload = {
-        id: payload.id,
-        customerName: payload.customerName,
-        customerProject: payload.customerProject?.map((project) => ({
-          projectName: project.projectName,
-          fK_Employee_ID: project.agentId,
-        })),
-      };
-
-      const response = await API.put("Customer/Update", finalPayload);
+      const response = await API.put("Customer/Update", payload);
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.reasonPhrase || "Failed to update customer."
-      );
+      return rejectWithValue(error.response?.data || "Update failed.");
     }
   }
 );
 
 // Delete Customer
 export const deleteCustomerRegistration = createAsyncThunk(
-  "customer/delete",
+  "customerRegistration/deleteCustomer",
   async (id, { rejectWithValue }) => {
     try {
       await API.delete("Customer/Delete", { data: { id } });
       return id;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.reasonPhrase || "Failed to delete customer."
-      );
+      return rejectWithValue(error.response?.data || "Deletion failed.");
     }
   }
 );

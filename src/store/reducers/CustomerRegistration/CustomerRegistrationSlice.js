@@ -1,7 +1,8 @@
+// src/store/reducers/CustomerRegistration/CustomerRegistrationSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 import {
   addCustomerRegistration,
-  fetchCustomers,
+  fetchCustomerRegistration,
   updateCustomerRegistration,
   deleteCustomerRegistration,
 } from "./CustomerRegistrationAction";
@@ -9,34 +10,45 @@ import {
 const customerRegistrationSlice = createSlice({
   name: "customerRegistration",
   initialState: {
-    customers: [],
+    entities: [],
     loading: false,
     error: null,
+    total: 0,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCustomers.pending, (state) => {
+      // Fetch Customers
+      .addCase(fetchCustomerRegistration.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchCustomers.fulfilled, (state, { payload }) => {
-        state.customers = payload;
+      .addCase(fetchCustomerRegistration.fulfilled, (state, { payload }) => {
+        state.entities = payload.data;
+        state.total = payload.totalRecords;
         state.loading = false;
       })
-      .addCase(fetchCustomers.rejected, (state, { payload }) => {
+      .addCase(fetchCustomerRegistration.rejected, (state, { payload }) => {
         state.loading = false;
         state.error = payload;
       })
+
+      // Add Customer
       .addCase(addCustomerRegistration.fulfilled, (state, { payload }) => {
-        state.customers.push(payload);
+        state.entities.push(payload);
+        state.total += 1; // Increment total records
       })
+
+      // Update Customer
       .addCase(updateCustomerRegistration.fulfilled, (state, { payload }) => {
-        const index = state.customers.findIndex((item) => item.id === payload.id);
-        if (index !== -1) state.customers[index] = payload;
+        const index = state.entities.findIndex((item) => item.id === payload.id);
+        if (index !== -1) state.entities[index] = payload;
       })
+
+      // Delete Customer
       .addCase(deleteCustomerRegistration.fulfilled, (state, { payload }) => {
-        state.customers = state.customers.filter((item) => item.id !== payload);
+        state.entities = state.entities.filter((item) => item.id !== payload);
+        state.total -= 1; // Decrement total records
       });
   },
 });
