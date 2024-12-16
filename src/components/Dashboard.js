@@ -7,6 +7,7 @@ import Sidebar from "./Sidebar";
 const { Sider, Content } = Layout;
 const { Title, Text } = Typography;
 
+
 const Dashboard = () => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
