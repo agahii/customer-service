@@ -54,7 +54,7 @@ const EmployeeSelect = ({ label, name, employees, required }) => (
               </Select>
             </Form.Item>
             <Button
-              type="primary" // Changed from "link" to "primary"
+              type="primary"
               danger
               onClick={() => remove(fieldName)}
             >
@@ -77,7 +77,7 @@ const CustomerRegistration = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [form] = Form.useForm();
-  const [submitting, setSubmitting] = useState(false); // For handling form submission state
+  const [submitting, setSubmitting] = useState(false);
 
   const dispatch = useDispatch();
   const { entities, loading, total } = useSelector(
@@ -138,15 +138,14 @@ const CustomerRegistration = () => {
       })),
     };
 
-    console.log("Payload to be sent:", payload); // Debugging line
+    console.log("Payload to be sent:", payload);
 
     if (isEditing) {
       payload.id = selectedRecord.id;
       payload.isActive = values.isActive;
-      // Map customerProjectInp to customerProject for update
       payload.customerProject = payload.customerProjectInp.map((project) => ({
         ...project,
-        isActive: true, // or derive from form if available
+        isActive: true,
       }));
       delete payload.customerProjectInp;
       dispatch(updateCustomerRegistration(payload))
@@ -221,18 +220,22 @@ const CustomerRegistration = () => {
     });
   };
 
+  // Removed "Web Address" and "Image URL" columns
   const columns = [
-    { title: "Customer Name", dataIndex: "customerName", key: "customerName" },
-    { title: "Customer Code", dataIndex: "customerCode", key: "customerCode" },
+    { title: "Industry ID", dataIndex: "fK_Industry_ID", key: "fK_Industry_ID", width: 200 },
+    { title: "Customer Name", dataIndex: "customerName", key: "customerName", width: 200 },
+    { title: "Customer Code", dataIndex: "customerCode", key: "customerCode", width: 150 },
+    { title: "Customer Address", dataIndex: "customerAddress", key: "customerAddress", width: 200 },
+    { title: "Mobile Number", dataIndex: "mobileNumber", key: "mobileNumber", width: 150 },
+    { title: "Contact Person Name", dataIndex: "contactPersonName", key: "contactPersonName", width: 200 },
+    { title: "Email Address", dataIndex: "emailAddress", key: "emailAddress", width: 200 },
     {
       title: "Actions",
       key: "actions",
+      width: 150,
       render: (_, record) => (
         <>
-          <Button
-            onClick={() => handleEdit(record)}
-            style={{ marginRight: 8 }}
-          >
+          <Button onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>
             Edit
           </Button>
           <Button danger onClick={() => handleDelete(record.id)}>
@@ -265,6 +268,8 @@ const CustomerRegistration = () => {
           onChange: (page, pageSize) =>
             setPagingInfo({ skip: (page - 1) * pageSize, take: pageSize }),
         }}
+        tableLayout="fixed"
+        scroll={{ x: true }}
       />
 
       <Modal
@@ -277,7 +282,7 @@ const CustomerRegistration = () => {
         }}
         footer={null}
         title={isEditing ? "Edit Customer" : "Add Customer"}
-        width={1000} // Increased width for better readability
+        width={1000}
         destroyOnClose
       >
         <Form
@@ -428,11 +433,9 @@ const CustomerRegistration = () => {
                 <Input />
               </Form.Item>
             </Col>
-            {/* Empty column to maintain the two-column structure */}
             <Col xs={24} sm={12}></Col>
           </Row>
 
-          {/* Conditionally show isActive switch when editing */}
           {isEditing && (
             <Row gutter={16}>
               <Col xs={24} sm={12}>
@@ -475,7 +478,6 @@ const CustomerRegistration = () => {
                       Remove
                     </Button>
 
-                    {/* Project Name in Two Columns */}
                     <Row gutter={16}>
                       <Col xs={24} sm={12}>
                         <Form.Item
@@ -495,7 +497,6 @@ const CustomerRegistration = () => {
                       <Col xs={24} sm={12}></Col>
                     </Row>
 
-                    {/* GCC Agents */}
                     <EmployeeSelect
                       label="GCC Agents"
                       name={[name, "gccAgents"]}
@@ -503,7 +504,6 @@ const CustomerRegistration = () => {
                       required={false}
                     />
 
-                    {/* Customer Agents */}
                     <EmployeeSelect
                       label="Customer Agents"
                       name={[name, "customerAgents"]}
@@ -511,7 +511,6 @@ const CustomerRegistration = () => {
                       required={false}
                     />
 
-                    {/* GCC Supervisors */}
                     <EmployeeSelect
                       label="GCC Supervisors"
                       name={[name, "gccSupervisors"]}
@@ -519,7 +518,6 @@ const CustomerRegistration = () => {
                       required={false}
                     />
 
-                    {/* Customer Supervisors */}
                     <EmployeeSelect
                       label="Customer Supervisors"
                       name={[name, "customerSupervisors"]}
@@ -537,7 +535,6 @@ const CustomerRegistration = () => {
             )}
           </Form.List>
 
-          {/* Submit and Cancel Buttons */}
           <Form.Item>
             <Button
               type="primary"

@@ -1,4 +1,3 @@
-// src/store/reducers/CustomerRegistration/CustomerRegistrationAction.js
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { API } from "../../../utills/services";
 
@@ -28,8 +27,8 @@ export const fetchCustomerRegistration = createAsyncThunk(
         signal: controller.signal,
       });
       return {
-        data: response.data.value || [], // assuming API returns 'value'
-        totalRecords: response.data.totalRecords || 0, // adjust based on actual API response
+        data: response.data.data || [], // Changed from response.data.value to response.data.data
+        totalRecords: response.data.totalRecords || 0,
       };
     } catch (error) {
       return rejectWithValue(error.response?.data || "Fetching customers failed.");

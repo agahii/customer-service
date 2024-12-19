@@ -7,7 +7,7 @@ import Settings from "./components/Settings";
 import TenantRegistration from "./components/TenantRegistration";
 import EmployeeRegistration from "./components/EmployeeRegistration";
 import IndustryRegistration from "./components/IndustryRegistration";
-import CustomerRegistration from "./components/CustomerRegistration"; // Import CustomerRegistration
+import CustomerRegistration from "./components/CustomerRegistration";
 import Login from "./components/Login";
 import AppFooter from "./components/AppFooter";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -34,12 +34,9 @@ const App = () => {
     <ConfigProvider theme={{ token: { colorTextPlaceholder: "#ffffff" } }}>
       <Router>
         <Layout style={{ minHeight: "100vh", backgroundColor: "#f0f0f0" }}>
-          {/* Navbar stays fixed on top */}
           <Navbar onLogout={handleLogout} />
 
-          {/* Main Layout */}
           <Layout style={{ marginTop: 64 }}>
-            {/* Sidebar */}
             <Sider
               collapsible
               collapsed={collapsed}
@@ -57,7 +54,6 @@ const App = () => {
               <Sidebar />
             </Sider>
 
-            {/* Content Area */}
             <Layout
               style={{
                 marginLeft: collapsed ? 80 : 250,
@@ -80,11 +76,10 @@ const App = () => {
                   <Route path="/TenantRegistration" element={<TenantRegistration />} />
                   <Route path="/EmployeeRegistration" element={<EmployeeRegistration />} />
                   <Route path="/IndustryRegistration" element={<IndustryRegistration />} />
-                  <Route path="/CustomerRegistration" element={<CustomerRegistration />} /> {/* New Route */}
+                  <Route path="/CustomerRegistration" element={<CustomerRegistration />} />
                 </Routes>
               </Content>
 
-              {/* Footer */}
               <AppFooter />
             </Layout>
           </Layout>

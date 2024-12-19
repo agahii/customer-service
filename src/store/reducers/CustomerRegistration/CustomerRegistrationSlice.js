@@ -1,4 +1,3 @@
-// src/store/reducers/CustomerRegistration/CustomerRegistrationSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 import {
   addCustomerRegistration,
