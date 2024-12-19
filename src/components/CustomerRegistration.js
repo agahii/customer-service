@@ -53,13 +53,17 @@ const EmployeeSelect = ({ label, name, employees, required }) => (
                 ))}
               </Select>
             </Form.Item>
-            <Button type="link" danger onClick={() => remove(fieldName)}>
+            <Button
+              type="primary" // Changed from "link" to "primary"
+              danger
+              onClick={() => remove(fieldName)}
+            >
               Remove
             </Button>
           </div>
         ))}
         <Form.Item>
-          <Button type="dashed" onClick={() => add()} block>
+          <Button type="primary" onClick={() => add()} block>
             Add {label}
           </Button>
         </Form.Item>
