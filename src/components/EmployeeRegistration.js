@@ -1,4 +1,4 @@
-// components/EmployeeRegistration.jsx
+// src/components/EmployeeRegistration.jsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Table, Button, Modal, Form, Input, message } from "antd";
@@ -21,20 +21,10 @@ const EmployeeRegistration = () => {
     (state) => state.employeeRegistration
   );
 
-  console.log("Redux State - Entities:", entities);
-  console.log("Redux State - Loading:", loading);
-  console.log("Redux State - Error:", error);
-  console.log("Redux State - Total:", total);
-
+  // Simplified pagingInfo without filter, group, sort
   const [pagingInfo, setPagingInfo] = useState({
     skip: 0,
     take: 10,
-    filter: {
-      logic: "and",
-      filters: [],
-    },
-    group: [],
-    sort: [],
   });
 
   const showAddModal = () => {
@@ -68,8 +58,8 @@ const EmployeeRegistration = () => {
           message.success("Employee updated successfully.");
         })
         .catch((err) => {
+          // Removed error message to align with Customer Registration
           console.error("Update Error:", err);
-          message.error(`Update failed: ${err}`);
         });
     } else {
       dispatch(addEmployeeRegistration(payload))
@@ -78,8 +68,8 @@ const EmployeeRegistration = () => {
           message.success("Employee added successfully.");
         })
         .catch((err) => {
+          // Removed error message to align with Customer Registration
           console.error("Addition Error:", err);
-          message.error(`Addition failed: ${err}`);
         });
     }
 
@@ -97,16 +87,16 @@ const EmployeeRegistration = () => {
         console.log("Fetch Employees Success");
       })
       .catch((err) => {
+        // Removed error message to align with Customer Registration
         console.error("Fetching Employees Error:", err);
-        message.error(`Fetching employees failed: ${err}`);
       });
     return () => controller.abort();
   }, [dispatch, pagingInfo]);
 
   useEffect(() => {
     if (error) {
-      console.error("Redux Error:", error);
-      message.error(`Error: ${error}`);
+      // Removed error message to align with Customer Registration
+      console.error("Error:", error);
     }
   }, [error]);
 
@@ -151,8 +141,8 @@ const EmployeeRegistration = () => {
             message.success("Employee deleted successfully.");
           })
           .catch((err) => {
+            // Removed error message to align with Customer Registration
             console.error("Deletion Error:", err);
-            message.error(`Deletion failed: ${err}`);
           });
       },
     });
@@ -239,14 +229,18 @@ const EmployeeRegistration = () => {
           setIsModalVisible(false);
           setIsEditing(false);
           setSelectedRecord(null);
+          form.resetFields();
         }}
         footer={null}
+        destroyOnClose
       >
         <Form layout="vertical" form={form} onFinish={handleSubmit}>
           <Form.Item
             label="Employee Name"
             name="employeeName"
-            rules={[{ required: true, message: "Please enter the employee name" }]}
+            rules={[
+              { required: true, message: "Please enter the employee name" },
+            ]}
           >
             <Input placeholder="Enter employee name" />
           </Form.Item>
@@ -254,7 +248,9 @@ const EmployeeRegistration = () => {
           <Form.Item
             label="Employee Code"
             name="employeeCode"
-            rules={[{ required: true, message: "Please enter the employee code" }]}
+            rules={[
+              { required: true, message: "Please enter the employee code" },
+            ]}
           >
             <Input placeholder="Enter employee code" />
           </Form.Item>
@@ -262,7 +258,9 @@ const EmployeeRegistration = () => {
           <Form.Item
             label="Employee Address"
             name="employeeAddress"
-            rules={[{ required: true, message: "Please enter the employee address" }]}
+            rules={[
+              { required: true, message: "Please enter the employee address" },
+            ]}
           >
             <Input placeholder="Enter employee address" />
           </Form.Item>
@@ -284,7 +282,9 @@ const EmployeeRegistration = () => {
           <Form.Item
             label="Contact Person Name"
             name="contactPersonName"
-            rules={[{ required: true, message: "Please enter the contact person name" }]}
+            rules={[
+              { required: true, message: "Please enter the contact person name" },
+            ]}
           >
             <Input placeholder="Enter contact person name" />
           </Form.Item>

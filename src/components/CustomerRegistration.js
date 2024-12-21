@@ -220,9 +220,8 @@ const CustomerRegistration = () => {
     });
   };
 
-  // Removed "Web Address" and "Image URL" columns
+  // Removed "Industry ID" column
   const columns = [
-    { title: "Industry ID", dataIndex: "fK_Industry_ID", key: "fK_Industry_ID", width: 200 },
     { title: "Customer Name", dataIndex: "customerName", key: "customerName", width: 200 },
     { title: "Customer Code", dataIndex: "customerCode", key: "customerCode", width: 150 },
     { title: "Customer Address", dataIndex: "customerAddress", key: "customerAddress", width: 200 },
@@ -527,7 +526,7 @@ const CustomerRegistration = () => {
                   </div>
                 ))}
                 <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block>
+                  <Button type="primary" onClick={() => add()} block>
                     Add Project
                   </Button>
                 </Form.Item>
@@ -542,7 +541,7 @@ const CustomerRegistration = () => {
               loading={submitting}
               style={{ marginRight: 8 }}
             >
-              {isEditing ? "Update" : "Add"}
+              {isEditing ? "Update" : "Add Customer"}
             </Button>
             <Button
               onClick={() => {
