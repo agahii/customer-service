@@ -1,3 +1,5 @@
+// src/App.js
+
 import React, { useState } from "react";
 import { ConfigProvider, Layout } from "antd";
 import Navbar from "./components/Navbar";
@@ -8,6 +10,7 @@ import TenantRegistration from "./components/TenantRegistration";
 import EmployeeRegistration from "./components/EmployeeRegistration";
 import IndustryRegistration from "./components/IndustryRegistration";
 import CustomerRegistration from "./components/CustomerRegistration";
+import Questionnaire from "./components/Questionnaire"; // Import the Questionnaire component
 import Login from "./components/Login";
 import AppFooter from "./components/AppFooter";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -77,6 +80,7 @@ const App = () => {
                   <Route path="/EmployeeRegistration" element={<EmployeeRegistration />} />
                   <Route path="/IndustryRegistration" element={<IndustryRegistration />} />
                   <Route path="/CustomerRegistration" element={<CustomerRegistration />} />
+                  <Route path="/Questionnaire" element={<Questionnaire />} /> {/* New Route */}
                 </Routes>
               </Content>
 
