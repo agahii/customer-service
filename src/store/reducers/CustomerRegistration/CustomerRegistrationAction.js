@@ -1,5 +1,8 @@
+// src/store/reducers/CustomerRegistration/CustomerRegistrationAction.js
+
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { API } from "../../../utills/services";
+import axios from "axios"; // Ensure axios is imported
 
 // Add new Customer
 export const addCustomerRegistration = createAsyncThunk(
@@ -31,10 +34,14 @@ export const fetchCustomerRegistration = createAsyncThunk(
         totalRecords: response.data.totalRecords || 0,
       };
     } catch (error) {
+      if (axios.isCancel(error)) {
+        // Fetch was aborted; do not treat as an error
+        return rejectWithValue('Fetch aborted');
+      }
       return rejectWithValue(error.response?.data || "Fetching customers failed.");
     }
   }
-);
+); // <-- Correct closing
 
 // Update Customer
 export const updateCustomerRegistration = createAsyncThunk(

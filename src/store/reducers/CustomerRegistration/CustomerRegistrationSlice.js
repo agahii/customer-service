@@ -1,3 +1,5 @@
+// src/store/reducers/CustomerRegistration/CustomerRegistrationSlice.js
+
 import { createSlice } from "@reduxjs/toolkit";
 import {
   addCustomerRegistration,
@@ -29,7 +31,10 @@ const customerRegistrationSlice = createSlice({
       })
       .addCase(fetchCustomerRegistration.rejected, (state, { payload }) => {
         state.loading = false;
-        state.error = payload;
+        if (payload !== 'Fetch aborted') {
+          state.error = payload;
+        }
+        // If payload is 'Fetch aborted', do not set the error
       })
 
       // Add Customer
