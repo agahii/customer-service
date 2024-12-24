@@ -87,7 +87,9 @@ const Questionnaire = () => {
         questionText: q.questionText,
         answerType: q.answerType,
         options:
-          q.answerType === "checkbox" || q.answerType === "radio" || q.answerType === "dropdown"
+          q.answerType === "checkbox" ||
+          q.answerType === "radio" ||
+          q.answerType === "dropdown"
             ? q.options.map((opt) => opt.optionText)
             : null,
       })),
@@ -96,7 +98,7 @@ const Questionnaire = () => {
     console.log("Submitting Questionnaire with payload:", payload);
 
     try {
-      await dispatch(addQuestionnaire(payload)).unwrap(); // Ensure addQuestionnaire handles the payload correctly
+      await dispatch(addQuestionnaire(payload)).unwrap(); 
       message.success("Questionnaire submitted successfully!");
       form.resetFields();
       setQuestions([]);
@@ -108,7 +110,6 @@ const Questionnaire = () => {
 
   // Handle customer selection change
   const handleCustomerChange = (value) => {
-    // Reset project field whenever customer changes
     form.setFieldsValue({ customerProject: undefined });
   };
 
@@ -149,8 +150,11 @@ const Questionnaire = () => {
       return;
     }
 
+    // If checkbox, radio, or dropdown, need at least two options
     if (
-      (answerType === "checkbox" || answerType === "radio" || answerType === "dropdown") &&
+      (answerType === "checkbox" ||
+        answerType === "radio" ||
+        answerType === "dropdown") &&
       options.length < 2
     ) {
       message.error("Please provide at least two options for the selected answer type.");
@@ -162,7 +166,9 @@ const Questionnaire = () => {
       questionText,
       answerType,
       options:
-        answerType === "checkbox" || answerType === "radio" || answerType === "dropdown"
+        answerType === "checkbox" ||
+        answerType === "radio" ||
+        answerType === "dropdown"
           ? options.map((opt) => ({ optionText: opt }))
           : [],
     };
@@ -254,6 +260,9 @@ const Questionnaire = () => {
 
   // Render answer field based on answer type
   const renderAnswerField = (question) => {
+    // 1) We now show "Type" in the Card's title below,
+    // 2) If answerType is "text" (Text Box), DO NOT show the field; return null.
+
     switch (question.answerType) {
       case "checkbox":
         return (
@@ -267,6 +276,7 @@ const Questionnaire = () => {
             </Space>
           </Checkbox.Group>
         );
+
       case "radio":
         return (
           <Radio.Group>
@@ -279,6 +289,7 @@ const Questionnaire = () => {
             </Space>
           </Radio.Group>
         );
+
       case "dropdown":
         return (
           <Select placeholder="Select an option" style={{ width: "100%" }}>
@@ -289,10 +300,14 @@ const Questionnaire = () => {
             ))}
           </Select>
         );
+
       case "text":
-        return <Input placeholder="Enter your answer" />;
+        // "Text Box" -> don't display an actual field
+        return null;
+
       case "date":
         return <DatePicker style={{ width: "100%" }} />;
+
       default:
         return null;
     }
@@ -349,47 +364,35 @@ const Questionnaire = () => {
           </Select>
         </Form.Item>
 
-        {/* 
-          Wrap the Project dropdown in a noStyle Form.Item with shouldUpdate 
-          so it re-renders and becomes enabled as soon as Customer Name changes.
-        */}
-        <Form.Item noStyle shouldUpdate={(prevValues, curValues) =>
-          prevValues.customerName !== curValues.customerName || prevValues.customerProject !== curValues.customerProject
-        }>
-          {({ getFieldValue }) => (
-            <Form.Item
-              name="customerProject"
-              label="Customer Project"
-              rules={[{ required: true, message: "Please select a project" }]}
-            >
-              <Select
-                showSearch
-                placeholder="Select a project"
-                loading={customersLoading}
-                // Enable or disable based on the form value, not just on mount
-                disabled={!getFieldValue("customerName")}
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().includes(input.toLowerCase())
-                }
-                notFoundContent={
-                  getFieldValue("customerName")
-                    ? "No projects found"
-                    : "Please select a customer first"
-                }
-              >
-                {getFieldValue("customerName") &&
-                  Array.isArray(customers) &&
-                  customers
-                    .find((customer) => customer.id === getFieldValue("customerName"))
-                    ?.customerProject.map((project) => (
-                      <Option key={project.id} value={project.id}>
-                        {project.projectName}
-                      </Option>
-                    ))}
-              </Select>
-            </Form.Item>
-          )}
+        {/* Customer Project Dropdown */}
+        <Form.Item
+          name="customerProject"
+          label="Customer Project"
+          rules={[{ required: true, message: "Please select a project" }]}
+        >
+          <Select
+            showSearch
+            placeholder="Select a project"
+            loading={customersLoading} // Projects are part of customer data
+            disabled={!form.getFieldValue("customerName") || customersLoading}
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().includes(input.toLowerCase())
+            }
+            notFoundContent={
+              form.getFieldValue("customerName") ? "No projects found" : "Please select a customer first"
+            }
+          >
+            {form.getFieldValue("customerName") &&
+              Array.isArray(customers) &&
+              customers
+                .find((customer) => customer.id === form.getFieldValue("customerName"))
+                ?.customerProject.map((project) => (
+                  <Option key={project.id} value={project.id}>
+                    {project.projectName}
+                  </Option>
+                ))}
+          </Select>
         </Form.Item>
 
         {/* Add Question Button */}
@@ -408,7 +411,19 @@ const Questionnaire = () => {
                 <Card
                   key={index}
                   style={{ marginBottom: 16 }}
-                  title={`Question ${index + 1}: ${question.questionText}`}
+                  title={
+                    <>
+                      {/* Show question and answer type in the title */}
+                      {`Question ${index + 1}: ${question.questionText}`}
+                      <br />
+                      <small style={{ color: "#888" }}>
+                        Type:{" "}
+                        {question.answerType === "text"
+                          ? "Text Box"
+                          : question.answerType}
+                      </small>
+                    </>
+                  }
                   extra={
                     <Space>
                       <Button
@@ -427,6 +442,7 @@ const Questionnaire = () => {
                     </Space>
                   }
                 >
+                  {/* Conditionally display the answer field (null if text box) */}
                   {renderAnswerField(question)}
                 </Card>
               )}
@@ -494,6 +510,7 @@ const Questionnaire = () => {
               <Option value="checkbox">Checkbox</Option>
               <Option value="radio">Radio Button</Option>
               <Option value="dropdown">Dropdown</Option>
+              {/* We keep "text" but we'll label it "Text Box" */}
               <Option value="text">Text Box</Option>
               <Option value="date">Date Picker</Option>
             </Select>
@@ -539,8 +556,10 @@ const Questionnaire = () => {
             </Form.Item>
           )}
 
-          {/* Conditionally Render Answer Field for Text and Date */}
-          {(currentQuestion.answerType === "text" || currentQuestion.answerType === "date") && (
+          {/* If it's text or date, show an input or datepicker in the Modal (like before).
+              But note that we don't actually display it on the page if it's text. */}
+          {(currentQuestion.answerType === "text" ||
+            currentQuestion.answerType === "date") && (
             <Form.Item
               label={currentQuestion.answerType === "text" ? "Answer" : "Select Date"}
               required
@@ -555,7 +574,9 @@ const Questionnaire = () => {
                 <DatePicker
                   style={{ width: "100%" }}
                   value={currentQuestion.answer ? moment(currentQuestion.answer) : null}
-                  onChange={(date, dateString) => handleCurrentQuestionChange("answer", dateString)}
+                  onChange={(date, dateString) =>
+                    handleCurrentQuestionChange("answer", dateString)
+                  }
                 />
               )}
             </Form.Item>
