@@ -52,14 +52,18 @@ const Questionnaire = () => {
   });
 
   // Access customer data and error from CustomerRegistration slice
-  const { entities: customers, loading: customersLoading, error: customersError } = useSelector(
-    (state) => state.customerRegistration
-  );
+  const {
+    entities: customers,
+    loading: customersLoading,
+    error: customersError,
+  } = useSelector((state) => state.customerRegistration);
 
   // Fetch customers on component mount
   useEffect(() => {
     const controller = new AbortController();
-    dispatch(fetchCustomerRegistration({ pagingInfo: { skip: 0, take: 100 }, controller }));
+    dispatch(
+      fetchCustomerRegistration({ pagingInfo: { skip: 0, take: 100 }, controller })
+    );
     return () => {
       controller.abort();
     };
@@ -83,7 +87,7 @@ const Questionnaire = () => {
         questionText: q.questionText,
         answerType: q.answerType,
         options:
-          q.answerType === "checkbox" || q.answerType === "radio"
+          q.answerType === "checkbox" || q.answerType === "radio" || q.answerType === "dropdown"
             ? q.options.map((opt) => opt.optionText)
             : null,
       })),
@@ -104,6 +108,7 @@ const Questionnaire = () => {
 
   // Handle customer selection change
   const handleCustomerChange = (value) => {
+    // Reset project field whenever customer changes
     form.setFieldsValue({ customerProject: undefined });
   };
 
@@ -144,7 +149,10 @@ const Questionnaire = () => {
       return;
     }
 
-    if ((answerType === "checkbox" || answerType === "radio") && options.length < 2) {
+    if (
+      (answerType === "checkbox" || answerType === "radio" || answerType === "dropdown") &&
+      options.length < 2
+    ) {
       message.error("Please provide at least two options for the selected answer type.");
       return;
     }
@@ -154,7 +162,7 @@ const Questionnaire = () => {
       questionText,
       answerType,
       options:
-        answerType === "checkbox" || answerType === "radio"
+        answerType === "checkbox" || answerType === "radio" || answerType === "dropdown"
           ? options.map((opt) => ({ optionText: opt }))
           : [],
     };
@@ -271,6 +279,16 @@ const Questionnaire = () => {
             </Space>
           </Radio.Group>
         );
+      case "dropdown":
+        return (
+          <Select placeholder="Select an option" style={{ width: "100%" }}>
+            {question.options.map((option, idx) => (
+              <Option key={idx} value={option.optionText}>
+                {option.optionText}
+              </Option>
+            ))}
+          </Select>
+        );
       case "text":
         return <Input placeholder="Enter your answer" />;
       case "date":
@@ -331,35 +349,47 @@ const Questionnaire = () => {
           </Select>
         </Form.Item>
 
-        {/* Customer Project Dropdown */}
-        <Form.Item
-          name="customerProject"
-          label="Customer Project"
-          rules={[{ required: true, message: "Please select a project" }]}
-        >
-          <Select
-            showSearch
-            placeholder="Select a project"
-            loading={customersLoading} // Projects are part of customer data
-            disabled={!form.getFieldValue("customerName") || customersLoading}
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().includes(input.toLowerCase())
-            }
-            notFoundContent={
-              form.getFieldValue("customerName") ? "No projects found" : "Please select a customer first"
-            }
-          >
-            {form.getFieldValue("customerName") &&
-              Array.isArray(customers) &&
-              customers
-                .find((customer) => customer.id === form.getFieldValue("customerName"))
-                ?.customerProject.map((project) => (
-                  <Option key={project.id} value={project.id}>
-                    {project.projectName}
-                  </Option>
-                ))}
-          </Select>
+        {/* 
+          Wrap the Project dropdown in a noStyle Form.Item with shouldUpdate 
+          so it re-renders and becomes enabled as soon as Customer Name changes.
+        */}
+        <Form.Item noStyle shouldUpdate={(prevValues, curValues) =>
+          prevValues.customerName !== curValues.customerName || prevValues.customerProject !== curValues.customerProject
+        }>
+          {({ getFieldValue }) => (
+            <Form.Item
+              name="customerProject"
+              label="Customer Project"
+              rules={[{ required: true, message: "Please select a project" }]}
+            >
+              <Select
+                showSearch
+                placeholder="Select a project"
+                loading={customersLoading}
+                // Enable or disable based on the form value, not just on mount
+                disabled={!getFieldValue("customerName")}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().includes(input.toLowerCase())
+                }
+                notFoundContent={
+                  getFieldValue("customerName")
+                    ? "No projects found"
+                    : "Please select a customer first"
+                }
+              >
+                {getFieldValue("customerName") &&
+                  Array.isArray(customers) &&
+                  customers
+                    .find((customer) => customer.id === getFieldValue("customerName"))
+                    ?.customerProject.map((project) => (
+                      <Option key={project.id} value={project.id}>
+                        {project.projectName}
+                      </Option>
+                    ))}
+              </Select>
+            </Form.Item>
+          )}
         </Form.Item>
 
         {/* Add Question Button */}
@@ -463,13 +493,16 @@ const Questionnaire = () => {
             >
               <Option value="checkbox">Checkbox</Option>
               <Option value="radio">Radio Button</Option>
+              <Option value="dropdown">Dropdown</Option>
               <Option value="text">Text Box</Option>
               <Option value="date">Date Picker</Option>
             </Select>
           </Form.Item>
 
-          {/* Conditionally Render Options for Checkbox and Radio */}
-          {(currentQuestion.answerType === "checkbox" || currentQuestion.answerType === "radio") && (
+          {/* Conditionally Render Options for Checkbox, Radio, or Dropdown */}
+          {(currentQuestion.answerType === "checkbox" ||
+            currentQuestion.answerType === "radio" ||
+            currentQuestion.answerType === "dropdown") && (
             <Form.Item label="Options" required>
               <List
                 dataSource={currentQuestion.options}
