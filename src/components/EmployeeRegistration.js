@@ -1,7 +1,8 @@
 // src/components/EmployeeRegistration.jsx
+
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Table, Button, Modal, Form, Input, message, Row, Col } from "antd"; // Added Row and Col
+import { Table, Button, Modal, Form, Input, message, Row, Col } from "antd";
 import {
   addEmployeeRegistration,
   fetchEmployee,
@@ -58,7 +59,6 @@ const EmployeeRegistration = () => {
           message.success("Employee updated successfully.");
         })
         .catch((err) => {
-          // Removed error message to align with Customer Registration
           console.error("Update Error:", err);
         });
     } else {
@@ -68,7 +68,6 @@ const EmployeeRegistration = () => {
           message.success("Employee added successfully.");
         })
         .catch((err) => {
-          // Removed error message to align with Customer Registration
           console.error("Addition Error:", err);
         });
     }
@@ -87,7 +86,6 @@ const EmployeeRegistration = () => {
         console.log("Fetch Employees Success");
       })
       .catch((err) => {
-        // Removed error message to align with Customer Registration
         console.error("Fetching Employees Error:", err);
       });
     return () => controller.abort();
@@ -95,7 +93,6 @@ const EmployeeRegistration = () => {
 
   useEffect(() => {
     if (error) {
-      // Removed error message to align with Customer Registration
       console.error("Error:", error);
     }
   }, [error]);
@@ -141,7 +138,6 @@ const EmployeeRegistration = () => {
             message.success("Employee deleted successfully.");
           })
           .catch((err) => {
-            // Removed error message to align with Customer Registration
             console.error("Deletion Error:", err);
           });
       },
@@ -197,8 +193,15 @@ const EmployeeRegistration = () => {
   ];
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h1 style={{ textAlign: "center", color: "#333", fontWeight: "bold" }}>
+    <div style={{ padding: "10px 20px" }}> {/* Reduced top and bottom padding from 20px to 10px 20px */}
+      <h1
+        style={{
+          textAlign: "center",
+          color: "#333",
+          fontWeight: "bold",
+          margin: "0 0 20px 0", // Removed top margin, added bottom margin
+        }}
+      >
         Employee Registration
       </h1>
 
@@ -208,11 +211,10 @@ const EmployeeRegistration = () => {
         </Button>
       </div>
 
-      {/* Removed the outer div with fixed height and overflow */}
       <Table
         columns={columns}
         dataSource={entities}
-        rowKey={(record) => record.id} // 'id' is correct as per your API response
+        rowKey={(record) => record.id}
         loading={loading}
         pagination={{
           total,
@@ -221,7 +223,7 @@ const EmployeeRegistration = () => {
         }}
         bordered
         onChange={handleTableChange}
-        scroll={{ y: 500 }} // Fixed Table height with internal scrollbar
+        scroll={{ y: 400 }} 
       />
 
       <Modal
@@ -237,8 +239,8 @@ const EmployeeRegistration = () => {
         destroyOnClose
       >
         <Form layout="vertical" form={form} onFinish={handleSubmit}>
-          <Row gutter={16}> {/* Added Row with gutter for spacing */}
-            <Col span={12}> {/* First Column */}
+          <Row gutter={16}>
+            <Col span={12}>
               <Form.Item
                 label="Employee Name"
                 name="employeeName"
@@ -250,7 +252,7 @@ const EmployeeRegistration = () => {
               </Form.Item>
             </Col>
 
-            <Col span={12}> {/* Second Column */}
+            <Col span={12}>
               <Form.Item
                 label="Employee Code"
                 name="employeeCode"
@@ -299,7 +301,10 @@ const EmployeeRegistration = () => {
                 label="Contact Person Name"
                 name="contactPersonName"
                 rules={[
-                  { required: true, message: "Please enter the contact person name" },
+                  {
+                    required: true,
+                    message: "Please enter the contact person name",
+                  },
                 ]}
               >
                 <Input placeholder="Enter contact person name" />
