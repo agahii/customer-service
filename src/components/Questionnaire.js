@@ -51,6 +51,9 @@ const Questionnaire = () => {
     options: [],
   });
 
+  // New state to track selected customer
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+
   // Access customer data and error from CustomerRegistration slice
   const {
     entities: customers,
@@ -102,6 +105,7 @@ const Questionnaire = () => {
       message.success("Questionnaire submitted successfully!");
       form.resetFields();
       setQuestions([]);
+      setSelectedCustomerId(null); // Reset selected customer
     } catch (error) {
       console.error("Submission Error:", error);
       message.error(`Submission failed: ${error}`);
@@ -110,6 +114,7 @@ const Questionnaire = () => {
 
   // Handle customer selection change
   const handleCustomerChange = (value) => {
+    setSelectedCustomerId(value); // Update selected customer ID
     form.setFieldsValue({ customerProject: undefined });
   };
 
@@ -374,19 +379,19 @@ const Questionnaire = () => {
             showSearch
             placeholder="Select a project"
             loading={customersLoading} // Projects are part of customer data
-            disabled={!form.getFieldValue("customerName") || customersLoading}
+            disabled={!selectedCustomerId || customersLoading}
             optionFilterProp="children"
             filterOption={(input, option) =>
               option.children.toLowerCase().includes(input.toLowerCase())
             }
             notFoundContent={
-              form.getFieldValue("customerName") ? "No projects found" : "Please select a customer first"
+              selectedCustomerId ? "No projects found" : "Please select a customer first"
             }
           >
-            {form.getFieldValue("customerName") &&
+            {selectedCustomerId &&
               Array.isArray(customers) &&
               customers
-                .find((customer) => customer.id === form.getFieldValue("customerName"))
+                .find((customer) => customer.id === selectedCustomerId)
                 ?.customerProject.map((project) => (
                   <Option key={project.id} value={project.id}>
                     {project.projectName}
@@ -420,7 +425,7 @@ const Questionnaire = () => {
                         Type:{" "}
                         {question.answerType === "text"
                           ? "Text Box"
-                          : question.answerType}
+                          : question.answerType.charAt(0).toUpperCase() + question.answerType.slice(1)}
                       </small>
                     </>
                   }
@@ -466,6 +471,7 @@ const Questionnaire = () => {
               onClick={() => {
                 form.resetFields();
                 setQuestions([]);
+                setSelectedCustomerId(null); // Reset selected customer
               }}
             >
               Reset
@@ -556,29 +562,19 @@ const Questionnaire = () => {
             </Form.Item>
           )}
 
-          {/* If it's text or date, show an input or datepicker in the Modal (like before).
-              But note that we don't actually display it on the page if it's text. */}
-          {(currentQuestion.answerType === "text" ||
-            currentQuestion.answerType === "date") && (
+          {/* Conditionally Render Answer Field Only for "Date Picker" */}
+          {currentQuestion.answerType === "date" && (
             <Form.Item
-              label={currentQuestion.answerType === "text" ? "Answer" : "Select Date"}
+              label="Select Date"
               required
             >
-              {currentQuestion.answerType === "text" ? (
-                <Input
-                  placeholder="Enter your answer"
-                  value={currentQuestion.answer}
-                  onChange={(e) => handleCurrentQuestionChange("answer", e.target.value)}
-                />
-              ) : (
-                <DatePicker
-                  style={{ width: "100%" }}
-                  value={currentQuestion.answer ? moment(currentQuestion.answer) : null}
-                  onChange={(date, dateString) =>
-                    handleCurrentQuestionChange("answer", dateString)
-                  }
-                />
-              )}
+              <DatePicker
+                style={{ width: "100%" }}
+                value={currentQuestion.answer ? moment(currentQuestion.answer) : null}
+                onChange={(date, dateString) =>
+                  handleCurrentQuestionChange("answer", dateString)
+                }
+              />
             </Form.Item>
           )}
         </Form>
