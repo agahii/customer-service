@@ -1,7 +1,7 @@
 // src/components/IndustryRegistration.jsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Table, Button, Modal, Form, Input, message } from "antd";
+import { Table, Button, Modal, Form, Input, message, Row, Col } from "antd"; // Imported Row and Col
 import {
   addIndustryRegistration,
   fetchIndustry,
@@ -168,6 +168,7 @@ const IndustryRegistration = () => {
         }}
         bordered
         onChange={handleTableChange}
+        scroll={{ y: 500 }} // Fixed Table height with internal scrollbar
       />
 
       <Modal
@@ -183,15 +184,25 @@ const IndustryRegistration = () => {
         destroyOnClose
       >
         <Form layout="vertical" form={form} onFinish={handleSubmit}>
-          <Form.Item
-            label="Industry Name"
-            name="industryName"
-            rules={[
-              { required: true, message: "Please enter the industry name" },
-            ]}
-          >
-            <Input placeholder="Enter industry name" />
-          </Form.Item>
+          <Row gutter={16}> {/* Added Row with gutter for spacing */}
+            <Col span={12}> {/* First Column */}
+              <Form.Item
+                label="Industry Name"
+                name="industryName"
+                rules={[
+                  { required: true, message: "Please enter the industry name" },
+                ]}
+              >
+                <Input placeholder="Enter industry name" />
+              </Form.Item>
+            </Col>
+
+            {/* Placeholder for potential second column */}
+            <Col span={12}>
+              {/* This column is intentionally left blank. You can add more fields here in the future if needed. */}
+            </Col>
+          </Row>
+
           <Form.Item style={{ textAlign: "right" }}>
             <Button type="primary" htmlType="submit" loading={loading}>
               {isEditing ? "Update" : "Add"}

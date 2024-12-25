@@ -23,9 +23,6 @@ const Sidebar = () => {
       <Menu.Item key="/" icon={<HomeOutlined />}>
         <Link to="/">Home</Link>
       </Menu.Item>
-      <Menu.Item key="/TenantRegistration" icon={<TeamOutlined />}>
-        <Link to="/TenantRegistration">Tenant Registration</Link>
-      </Menu.Item>
       <Menu.Item key="/EmployeeRegistration" icon={<TeamOutlined />}>
         <Link to="/EmployeeRegistration">Employee Registration</Link>
       </Menu.Item>

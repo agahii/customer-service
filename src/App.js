@@ -6,7 +6,6 @@ import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Home from "./components/Home";
 import Settings from "./components/Settings";
-import TenantRegistration from "./components/TenantRegistration";
 import EmployeeRegistration from "./components/EmployeeRegistration";
 import IndustryRegistration from "./components/IndustryRegistration";
 import CustomerRegistration from "./components/CustomerRegistration";
@@ -76,7 +75,6 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/settings" element={<Settings />} />
-                  <Route path="/TenantRegistration" element={<TenantRegistration />} />
                   <Route path="/EmployeeRegistration" element={<EmployeeRegistration />} />
                   <Route path="/IndustryRegistration" element={<IndustryRegistration />} />
                   <Route path="/CustomerRegistration" element={<CustomerRegistration />} />

@@ -1,7 +1,7 @@
 // src/components/EmployeeRegistration.jsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Table, Button, Modal, Form, Input, message } from "antd";
+import { Table, Button, Modal, Form, Input, message, Row, Col } from "antd"; // Added Row and Col
 import {
   addEmployeeRegistration,
   fetchEmployee,
@@ -208,6 +208,7 @@ const EmployeeRegistration = () => {
         </Button>
       </div>
 
+      {/* Removed the outer div with fixed height and overflow */}
       <Table
         columns={columns}
         dataSource={entities}
@@ -220,6 +221,7 @@ const EmployeeRegistration = () => {
         }}
         bordered
         onChange={handleTableChange}
+        scroll={{ y: 500 }} // Fixed Table height with internal scrollbar
       />
 
       <Modal
@@ -235,86 +237,110 @@ const EmployeeRegistration = () => {
         destroyOnClose
       >
         <Form layout="vertical" form={form} onFinish={handleSubmit}>
-          <Form.Item
-            label="Employee Name"
-            name="employeeName"
-            rules={[
-              { required: true, message: "Please enter the employee name" },
-            ]}
-          >
-            <Input placeholder="Enter employee name" />
-          </Form.Item>
+          <Row gutter={16}> {/* Added Row with gutter for spacing */}
+            <Col span={12}> {/* First Column */}
+              <Form.Item
+                label="Employee Name"
+                name="employeeName"
+                rules={[
+                  { required: true, message: "Please enter the employee name" },
+                ]}
+              >
+                <Input placeholder="Enter employee name" />
+              </Form.Item>
+            </Col>
 
-          <Form.Item
-            label="Employee Code"
-            name="employeeCode"
-            rules={[
-              { required: true, message: "Please enter the employee code" },
-            ]}
-          >
-            <Input placeholder="Enter employee code" />
-          </Form.Item>
+            <Col span={12}> {/* Second Column */}
+              <Form.Item
+                label="Employee Code"
+                name="employeeCode"
+                rules={[
+                  { required: true, message: "Please enter the employee code" },
+                ]}
+              >
+                <Input placeholder="Enter employee code" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            label="Employee Address"
-            name="employeeAddress"
-            rules={[
-              { required: true, message: "Please enter the employee address" },
-            ]}
-          >
-            <Input placeholder="Enter employee address" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Employee Address"
+                name="employeeAddress"
+                rules={[
+                  { required: true, message: "Please enter the employee address" },
+                ]}
+              >
+                <Input placeholder="Enter employee address" />
+              </Form.Item>
+            </Col>
 
-          <Form.Item
-            label="Mobile Number"
-            name="mobileNumber"
-            rules={[
-              { required: true, message: "Please enter your mobile number" },
-              {
-                pattern: /^\+?[1-9]\d{1,14}$/, // E.164 international format
-                message: "Invalid mobile number format",
-              },
-            ]}
-          >
-            <Input placeholder="Enter mobile number" />
-          </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Mobile Number"
+                name="mobileNumber"
+                rules={[
+                  { required: true, message: "Please enter your mobile number" },
+                  {
+                    pattern: /^\+?[1-9]\d{1,14}$/, // E.164 international format
+                    message: "Invalid mobile number format",
+                  },
+                ]}
+              >
+                <Input placeholder="Enter mobile number" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            label="Contact Person Name"
-            name="contactPersonName"
-            rules={[
-              { required: true, message: "Please enter the contact person name" },
-            ]}
-          >
-            <Input placeholder="Enter contact person name" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Contact Person Name"
+                name="contactPersonName"
+                rules={[
+                  { required: true, message: "Please enter the contact person name" },
+                ]}
+              >
+                <Input placeholder="Enter contact person name" />
+              </Form.Item>
+            </Col>
 
-          <Form.Item
-            label="Email Address"
-            name="emailAddress"
-            rules={[
-              { required: true, message: "Please enter your email address" },
-              { type: "email", message: "Please enter a valid email address" },
-            ]}
-          >
-            <Input placeholder="Enter email address" />
-          </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Email Address"
+                name="emailAddress"
+                rules={[
+                  { required: true, message: "Please enter your email address" },
+                  { type: "email", message: "Please enter a valid email address" },
+                ]}
+              >
+                <Input placeholder="Enter email address" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            label="Web Address"
-            name="webAddress"
-            rules={[{ required: false }]}
-          >
-            <Input placeholder="Enter web address" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Web Address"
+                name="webAddress"
+                rules={[{ required: false }]}
+              >
+                <Input placeholder="Enter web address" />
+              </Form.Item>
+            </Col>
 
-          <Form.Item
-            label="Image URL"
-            name="imageUrl"
-            rules={[{ required: false }]}
-          >
-            <Input placeholder="Enter image URL" />
-          </Form.Item>
+            <Col span={12}>
+              <Form.Item
+                label="Image URL"
+                name="imageUrl"
+                rules={[{ required: false }]}
+              >
+                <Input placeholder="Enter image URL" />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item style={{ textAlign: "right" }}>
             <Button type="primary" htmlType="submit" loading={loading}>

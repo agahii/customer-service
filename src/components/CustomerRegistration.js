@@ -220,7 +220,13 @@ const CustomerRegistration = () => {
     });
   };
 
-  // Removed "Industry ID" column
+  // Create a mapping from Industry ID to Industry Type for efficient lookup
+  const industryMap = industries.reduce((map, industry) => {
+    map[industry.id] = industry.industryType;
+    return map;
+  }, {});
+
+  // Updated columns to include "Industry Type"
   const columns = [
     { title: "Customer Name", dataIndex: "customerName", key: "customerName", width: 200 },
     { title: "Customer Code", dataIndex: "customerCode", key: "customerCode", width: 150 },
@@ -228,6 +234,13 @@ const CustomerRegistration = () => {
     { title: "Mobile Number", dataIndex: "mobileNumber", key: "mobileNumber", width: 150 },
     { title: "Contact Person Name", dataIndex: "contactPersonName", key: "contactPersonName", width: 200 },
     { title: "Email Address", dataIndex: "emailAddress", key: "emailAddress", width: 200 },
+    {
+      title: "Industry Type",
+      dataIndex: "fK_Industry_ID",
+      key: "fK_Industry_ID",
+      width: 200,
+      render: (text, record) => industryMap[record.fK_Industry_ID] || "N/A",
+    },
     {
       title: "Actions",
       key: "actions",
@@ -268,7 +281,7 @@ const CustomerRegistration = () => {
             setPagingInfo({ skip: (page - 1) * pageSize, take: pageSize }),
         }}
         tableLayout="fixed"
-        scroll={{ x: true }}
+        scroll={{ x: true, y: 500 }} // Fixed Table height with internal scrollbar
       />
 
       <Modal
@@ -493,7 +506,9 @@ const CustomerRegistration = () => {
                           <Input placeholder="Project Name" />
                         </Form.Item>
                       </Col>
-                      <Col xs={24} sm={12}></Col>
+                      <Col xs={24} sm={12}>
+                        {/* Placeholder for potential second column within Project */}
+                      </Col>
                     </Row>
 
                     <EmployeeSelect
