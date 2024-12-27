@@ -1,5 +1,6 @@
 // src/components/CustomerRegistration.js
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Table,
@@ -25,7 +26,7 @@ import { fetchEmployee } from "../store/reducers/EmployeeRegistration/EmployeeRe
 const { Option } = Select;
 
 // Reusable Employee Select Component
-const EmployeeSelect = ({ label, name, employees, required }) => (
+const EmployeeSelect = ({ label, name, employees, fetchEmployees, initialEmployees, required }) => (
   <Form.List name={name}>
     {(fields, { add, remove }) => (
       <div style={{ marginBottom: 16 }}>
@@ -45,7 +46,14 @@ const EmployeeSelect = ({ label, name, employees, required }) => (
                 filterOption={(input, option) =>
                   option.children.toLowerCase().includes(input.toLowerCase())
                 }
+                onDropdownVisibleChange={() => fetchEmployees()}
               >
+                {initialEmployees &&
+                  initialEmployees.map((emp) => (
+                    <Option key={emp.id} value={emp.id}>
+                      {emp.employeeName}
+                    </Option>
+                  ))}
                 {employees.map((emp) => (
                   <Option key={emp.id} value={emp.id}>
                     {emp.employeeName}
@@ -53,11 +61,7 @@ const EmployeeSelect = ({ label, name, employees, required }) => (
                 ))}
               </Select>
             </Form.Item>
-            <Button
-              type="primary"
-              danger
-              onClick={() => remove(fieldName)}
-            >
+            <Button type="primary" danger onClick={() => remove(fieldName)}>
               Remove
             </Button>
           </div>
@@ -83,71 +87,131 @@ const CustomerRegistration = () => {
   const { entities, loading, total } = useSelector(
     (state) => state.customerRegistration
   );
-  const { entities: industries } = useSelector(
-    (state) => state.industryRegistration
-  );
-  const { entities: employees } = useSelector(
-    (state) => state.employeeRegistration
-  );
+  const {
+    entities: industries,
+    loading: industriesLoading,
+    error: industriesError,
+  } = useSelector((state) => state.industryRegistration);
+  const {
+    entities: employees,
+    loading: employeesLoading,
+    error: employeesError,
+  } = useSelector((state) => state.employeeRegistration);
 
   const [pagingInfo, setPagingInfo] = useState({ skip: 0, take: 10 });
 
   useEffect(() => {
     const controller = new AbortController();
     dispatch(fetchCustomerRegistration({ pagingInfo, controller }));
-    dispatch(
-      fetchIndustry({
-        pagingInfo: { skip: 0, take: 100 },
-        controller: new AbortController(),
-      })
-    );
-    dispatch(
-      fetchEmployee({
-        pagingInfo: { skip: 0, take: 100 },
-        controller: new AbortController(),
-      })
-    );
 
     return () => {
       controller.abort();
     };
   }, [dispatch, pagingInfo]);
 
+  // Function to open the Add Customer modal
+  const openAddModal = () => {
+    setIsEditing(false);
+    setSelectedRecord(null);
+    setIsModalVisible(true);
+    form.resetFields();
+  };
+
+  // Function to fetch employees when dropdown is opened
+  const fetchEmployeesOnDemand = useCallback(() => {
+    if (employees.length === 0 && !employeesLoading) {
+      dispatch(
+        fetchEmployee({
+          pagingInfo: { skip: 0, take: 100 },
+          controller: new AbortController(),
+        })
+      ).catch((error) => {
+        console.error("Error fetching employees:", error);
+        message.error(`Failed to load employees: ${error}`);
+      });
+    }
+  }, [dispatch, employees.length, employeesLoading]);
+
+  // Function to open the Edit Customer modal
+  const handleEdit = (record) => {
+    setSelectedRecord(record);
+    setIsEditing(true);
+
+    // Extract initial employees from the record's projects
+    const initialProjectEmployees = record.customerProject?.map((project) => ({
+      gccAgents: project.gccAgent?.map((agent) => agent.employee) || [],
+      customerAgents: project.customerAgent?.map((agent) => agent.employee) || [],
+      gccSupervisors: project.gccSupervisor?.map((sup) => sup.employee) || [],
+      customerSupervisors: project.customerSupervisor?.map((sup) => sup.employee) || [],
+    }));
+
+    form.setFieldsValue({
+      ...record,
+      customerProjectInp: record.customerProject?.map((project) => ({
+        projectName: project.projectName,
+        gccAgents: project.gccAgent?.map((agent) => ({
+          fK_Employee_ID: agent.fK_Employee_ID,
+        })) || [],
+        customerAgents: project.customerAgent?.map((agent) => ({
+          fK_Employee_ID: agent.fK_Employee_ID,
+        })) || [],
+        gccSupervisors: project.gccSupervisor?.map((sup) => ({
+          fK_Employee_ID: sup.fK_Employee_ID,
+        })) || [],
+        customerSupervisors: project.customerSupervisor?.map((sup) => ({
+          fK_Employee_ID: sup.fK_Employee_ID,
+        })) || [],
+      })),
+      isActive: record.isActive,
+    });
+
+    setIsModalVisible(true);
+  };
+
+  const handleDelete = (id) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this customer?",
+      onOk: () => {
+        dispatch(deleteCustomerRegistration(id))
+          .unwrap()
+          .then(() => {
+            message.success("Customer deleted successfully");
+          })
+          .catch((error) => {
+            message.error(`Deletion failed: ${error}`);
+          });
+      },
+    });
+  };
+
   const handleSubmit = async (values) => {
     setSubmitting(true);
     const payload = {
       ...values,
-      customerProjectInp: values.customerProjectInp?.map((project) => ({
+      customerProject: values.customerProjectInp?.map((project) => ({
         projectName: project.projectName,
-        gccAgentInp:
+        gccAgent:
           project.gccAgents?.map((agent) => ({
             fK_Employee_ID: agent.fK_Employee_ID,
           })) || [],
-        customerAgentInp:
+        customerAgent:
           project.customerAgents?.map((agent) => ({
             fK_Employee_ID: agent.fK_Employee_ID,
           })) || [],
-        gccSupervisorInp:
+        gccSupervisor:
           project.gccSupervisors?.map((sup) => ({
             fK_Employee_ID: sup.fK_Employee_ID,
           })) || [],
-        customerSupervisorInp:
+        customerSupervisor:
           project.customerSupervisors?.map((sup) => ({
             fK_Employee_ID: sup.fK_Employee_ID,
           })) || [],
       })),
     };
 
-    console.log("Payload to be sent:", payload);
-
     if (isEditing) {
       payload.id = selectedRecord.id;
       payload.isActive = values.isActive;
-      payload.customerProject = payload.customerProjectInp.map((project) => ({
-        ...project,
-        isActive: true,
-      }));
-      delete payload.customerProjectInp;
       dispatch(updateCustomerRegistration(payload))
         .unwrap()
         .then(() => {
@@ -179,67 +243,49 @@ const CustomerRegistration = () => {
     setSelectedRecord(null);
   };
 
-  const handleEdit = (record) => {
-    setSelectedRecord(record);
-    setIsEditing(true);
-    form.setFieldsValue({
-      ...record,
-      customerProjectInp: record.customerProject?.map((project) => ({
-        projectName: project.projectName,
-        gccAgents: project.gccAgent?.map((agent) => ({
-          fK_Employee_ID: agent.fK_Employee_ID,
-        })),
-        customerAgents: project.customerAgent?.map((agent) => ({
-          fK_Employee_ID: agent.fK_Employee_ID,
-        })),
-        gccSupervisors: project.gccSupervisor?.map((sup) => ({
-          fK_Employee_ID: sup.fK_Employee_ID,
-        })),
-        customerSupervisors: project.customerSupervisor?.map((sup) => ({
-          fK_Employee_ID: sup.fK_Employee_ID,
-        })),
-      })),
-      isActive: record.isActive,
-    });
-    setIsModalVisible(true);
-  };
-
-  const handleDelete = (id) => {
-    Modal.confirm({
-      title: "Are you sure you want to delete this customer?",
-      onOk: () => {
-        dispatch(deleteCustomerRegistration(id))
-          .unwrap()
-          .then(() => {
-            message.success("Customer deleted successfully");
-          })
-          .catch((error) => {
-            message.error(`Deletion failed: ${error}`);
-          });
-      },
-    });
-  };
-
-  // Create a mapping from Industry ID to Industry Type for efficient lookup
-  const industryMap = industries.reduce((map, industry) => {
-    map[industry.id] = industry.industryType;
-    return map;
-  }, {});
-
-  // Updated columns to include "Industry Type"
+  // Updated columns to display "industry.industryType" from the API response
   const columns = [
-    { title: "Customer Name", dataIndex: "customerName", key: "customerName", width: 200 },
-    { title: "Customer Code", dataIndex: "customerCode", key: "customerCode", width: 150 },
-    { title: "Customer Address", dataIndex: "customerAddress", key: "customerAddress", width: 200 },
-    { title: "Mobile Number", dataIndex: "mobileNumber", key: "mobileNumber", width: 150 },
-    { title: "Contact Person Name", dataIndex: "contactPersonName", key: "contactPersonName", width: 200 },
-    { title: "Email Address", dataIndex: "emailAddress", key: "emailAddress", width: 200 },
+    {
+      title: "Customer Name",
+      dataIndex: "customerName",
+      key: "customerName",
+      width: 200,
+    },
+    {
+      title: "Customer Code",
+      dataIndex: "customerCode",
+      key: "customerCode",
+      width: 150,
+    },
+    {
+      title: "Customer Address",
+      dataIndex: "customerAddress",
+      key: "customerAddress",
+      width: 200,
+    },
+    {
+      title: "Mobile Number",
+      dataIndex: "mobileNumber",
+      key: "mobileNumber",
+      width: 150,
+    },
+    {
+      title: "Contact Person Name",
+      dataIndex: "contactPersonName",
+      key: "contactPersonName",
+      width: 200,
+    },
+    {
+      title: "Email Address",
+      dataIndex: "emailAddress",
+      key: "emailAddress",
+      width: 200,
+    },
     {
       title: "Industry Type",
-      dataIndex: "fK_Industry_ID",
-      key: "fK_Industry_ID",
+      key: "industryType",
       width: 200,
-      render: (text, record) => industryMap[record.fK_Industry_ID] || "N/A",
+      render: (_, record) => record.industry?.industryType || "N/A",
     },
     {
       title: "Actions",
@@ -260,11 +306,7 @@ const CustomerRegistration = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <Button
-        type="primary"
-        onClick={() => setIsModalVisible(true)}
-        style={{ marginBottom: 16 }}
-      >
+      <Button type="primary" onClick={openAddModal} style={{ marginBottom: 16 }}>
         Add Customer
       </Button>
 
@@ -281,7 +323,7 @@ const CustomerRegistration = () => {
             setPagingInfo({ skip: (page - 1) * pageSize, take: pageSize }),
         }}
         tableLayout="fixed"
-        scroll={{ x: true, y: 500 }} // Fixed Table height with internal scrollbar
+        scroll={{ x: true, y: 500 }}
       />
 
       <Modal
@@ -303,15 +345,12 @@ const CustomerRegistration = () => {
           onFinish={handleSubmit}
           scrollToFirstError
         >
-          {/* Customer Details in Two Columns */}
           <Row gutter={16}>
             <Col xs={24} sm={12}>
               <Form.Item
                 name="customerName"
                 label="Customer Name"
-                rules={[
-                  { required: true, message: "Please enter the customer name" },
-                ]}
+                rules={[{ required: true, message: "Please enter the customer name" }]}
               >
                 <Input />
               </Form.Item>
@@ -320,9 +359,7 @@ const CustomerRegistration = () => {
               <Form.Item
                 name="customerCode"
                 label="Customer Code"
-                rules={[
-                  { required: true, message: "Please enter the customer code" },
-                ]}
+                rules={[{ required: true, message: "Please enter the customer code" }]}
               >
                 <Input />
               </Form.Item>
@@ -334,9 +371,7 @@ const CustomerRegistration = () => {
               <Form.Item
                 name="fK_Industry_ID"
                 label="Industry"
-                rules={[
-                  { required: true, message: "Please select an industry" },
-                ]}
+                rules={[{ required: true, message: "Please select an industry" }]}
               >
                 <Select
                   placeholder="Select Industry"
@@ -345,7 +380,26 @@ const CustomerRegistration = () => {
                   filterOption={(input, option) =>
                     option.children.toLowerCase().includes(input.toLowerCase())
                   }
+                  onDropdownVisibleChange={(open) => {
+                    if (open) {
+                      dispatch(
+                        fetchIndustry({
+                          pagingInfo: { skip: 0, take: 100 },
+                          controller: new AbortController(),
+                        })
+                      ).catch((error) => {
+                        console.error("Error fetching industries:", error);
+                        message.error(`Failed to load industries: ${error}`);
+                      });
+                    }
+                  }}
+                  loading={industriesLoading}
                 >
+                  {isEditing && selectedRecord && selectedRecord.industry && (
+                    <Option key={selectedRecord.industry.id} value={selectedRecord.industry.id}>
+                      {selectedRecord.industry.industryType}
+                    </Option>
+                  )}
                   {industries.map((ind) => (
                     <Option key={ind.id} value={ind.id}>
                       {ind.industryType}
@@ -359,10 +413,7 @@ const CustomerRegistration = () => {
                 name="customerAddress"
                 label="Customer Address"
                 rules={[
-                  {
-                    required: true,
-                    message: "Please enter the customer address",
-                  },
+                  { required: true, message: "Please enter the customer address" },
                 ]}
               >
                 <Input.TextArea rows={2} />
@@ -377,10 +428,7 @@ const CustomerRegistration = () => {
                 label="Mobile Number"
                 rules={[
                   { required: true, message: "Please enter the mobile number" },
-                  {
-                    pattern: /^\d+$/,
-                    message: "Mobile number must be numeric",
-                  },
+                  { pattern: /^\d+$/, message: "Mobile number must be numeric" },
                 ]}
               >
                 <Input />
@@ -391,10 +439,7 @@ const CustomerRegistration = () => {
                 name="contactPersonName"
                 label="Contact Person Name"
                 rules={[
-                  {
-                    required: true,
-                    message: "Please enter the contact person name",
-                  },
+                  { required: true, message: "Please enter the contact person name" },
                 ]}
               >
                 <Input />
@@ -409,10 +454,7 @@ const CustomerRegistration = () => {
                 label="Email Address"
                 rules={[
                   { required: true, message: "Please enter the email address" },
-                  {
-                    type: "email",
-                    message: "Please enter a valid email address",
-                  },
+                  { type: "email", message: "Please enter a valid email address" },
                 ]}
               >
                 <Input />
@@ -464,82 +506,103 @@ const CustomerRegistration = () => {
             </Row>
           )}
 
-          {/* Projects Section */}
           <Form.List name="customerProjectInp">
             {(fields, { add, remove }) => (
               <div>
                 <label style={{ fontWeight: "bold" }}>Projects</label>
-                {fields.map(({ key, name, ...restField }) => (
-                  <div
-                    key={key}
-                    style={{
-                      border: "1px solid #d9d9d9",
-                      padding: 16,
-                      marginBottom: 16,
-                      borderRadius: 4,
-                      position: "relative",
-                      background: "#fafafa",
-                    }}
-                  >
-                    <Button
-                      type="link"
-                      danger
-                      onClick={() => remove(name)}
-                      style={{ position: "absolute", top: 0, right: 0 }}
+                {fields.map(({ key, name, ...restField }) => {
+                  const project = selectedRecord?.customerProject?.[name];
+                  return (
+                    <div
+                      key={key}
+                      style={{
+                        border: "1px solid #d9d9d9",
+                        padding: 16,
+                        marginBottom: 16,
+                        borderRadius: 4,
+                        position: "relative",
+                        background: "#fafafa",
+                      }}
                     >
-                      Remove
-                    </Button>
+                      <Button
+                        type="link"
+                        danger
+                        onClick={() => remove(name)}
+                        style={{ position: "absolute", top: 0, right: 0 }}
+                      >
+                        Remove
+                      </Button>
 
-                    <Row gutter={16}>
-                      <Col xs={24} sm={12}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "projectName"]}
-                          label="Project Name"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Please enter the project name",
-                            },
-                          ]}
-                        >
-                          <Input placeholder="Project Name" />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} sm={12}>
-                        {/* Placeholder for potential second column within Project */}
-                      </Col>
-                    </Row>
+                      <Row gutter={16}>
+                        <Col xs={24} sm={12}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "projectName"]}
+                            label="Project Name"
+                            rules={[
+                              { required: true, message: "Please enter the project name" },
+                            ]}
+                          >
+                            <Input placeholder="Project Name" />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}></Col>
+                      </Row>
 
-                    <EmployeeSelect
-                      label="GCC Agents"
-                      name={[name, "gccAgents"]}
-                      employees={employees}
-                      required={false}
-                    />
+                      <EmployeeSelect
+                        label="GCC Agents"
+                        name={[name, "gccAgents"]}
+                        employees={employees}
+                        fetchEmployees={fetchEmployeesOnDemand}
+                        initialEmployees={
+                          isEditing
+                            ? project?.gccAgent?.map((agent) => agent.employee)
+                            : []
+                        }
+                        required={false}
+                      />
 
-                    <EmployeeSelect
-                      label="Customer Agents"
-                      name={[name, "customerAgents"]}
-                      employees={employees}
-                      required={false}
-                    />
+                      <EmployeeSelect
+                        label="Customer Agents"
+                        name={[name, "customerAgents"]}
+                        employees={employees}
+                        fetchEmployees={fetchEmployeesOnDemand}
+                        initialEmployees={
+                          isEditing
+                            ? project?.customerAgent?.map((agent) => agent.employee)
+                            : []
+                        }
+                        required={false}
+                      />
 
-                    <EmployeeSelect
-                      label="GCC Supervisors"
-                      name={[name, "gccSupervisors"]}
-                      employees={employees}
-                      required={false}
-                    />
+                      <EmployeeSelect
+                        label="GCC Supervisors"
+                        name={[name, "gccSupervisors"]}
+                        employees={employees}
+                        fetchEmployees={fetchEmployeesOnDemand}
+                        initialEmployees={
+                          isEditing
+                            ? project?.gccSupervisor?.map((sup) => sup.employee)
+                            : []
+                        }
+                        required={false}
+                      />
 
-                    <EmployeeSelect
-                      label="Customer Supervisors"
-                      name={[name, "customerSupervisors"]}
-                      employees={employees}
-                      required={false}
-                    />
-                  </div>
-                ))}
+                      <EmployeeSelect
+                        label="Customer Supervisors"
+                        name={[name, "customerSupervisors"]}
+                        employees={employees}
+                        fetchEmployees={fetchEmployeesOnDemand}
+                        initialEmployees={
+                          isEditing
+                            ? project?.customerSupervisor?.map((sup) => sup.employee)
+                            : []
+                        }
+                        required={false}
+                      />
+                    </div>
+                  );
+                })}
                 <Form.Item>
                   <Button type="primary" onClick={() => add()} block>
                     Add Project
@@ -554,6 +617,7 @@ const CustomerRegistration = () => {
               type="primary"
               htmlType="submit"
               loading={submitting}
+              disabled={industriesLoading || employeesLoading}
               style={{ marginRight: 8 }}
             >
               {isEditing ? "Update" : "Add Customer"}
