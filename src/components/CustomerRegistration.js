@@ -137,14 +137,6 @@ const CustomerRegistration = () => {
     setSelectedRecord(record);
     setIsEditing(true);
 
-    // Extract initial employees from the record's projects
-    const initialProjectEmployees = record.customerProject?.map((project) => ({
-      gccAgents: project.gccAgent?.map((agent) => agent.employee) || [],
-      customerAgents: project.customerAgent?.map((agent) => agent.employee) || [],
-      gccSupervisors: project.gccSupervisor?.map((sup) => sup.employee) || [],
-      customerSupervisors: project.customerSupervisor?.map((sup) => sup.employee) || [],
-    }));
-
     form.setFieldsValue({
       ...record,
       customerProjectInp: record.customerProject?.map((project) => ({
@@ -184,34 +176,74 @@ const CustomerRegistration = () => {
     });
   };
 
+  // ***** ONLY handleSubmit CHANGED TO MATCH PAYLOAD ***** //
   const handleSubmit = async (values) => {
     setSubmitting(true);
+
+    // Prepare the payload to match the EXACT shape for PUT /api/Customer/Update
+    // using the code snippet you provided
     const payload = {
-      ...values,
-      customerProject: values.customerProjectInp?.map((project) => ({
-        projectName: project.projectName,
-        gccAgent:
-          project.gccAgents?.map((agent) => ({
-            fK_Employee_ID: agent.fK_Employee_ID,
-          })) || [],
-        customerAgent:
-          project.customerAgents?.map((agent) => ({
-            fK_Employee_ID: agent.fK_Employee_ID,
-          })) || [],
-        gccSupervisor:
-          project.gccSupervisors?.map((sup) => ({
-            fK_Employee_ID: sup.fK_Employee_ID,
-          })) || [],
-        customerSupervisor:
-          project.customerSupervisors?.map((sup) => ({
-            fK_Employee_ID: sup.fK_Employee_ID,
-          })) || [],
-      })),
+      id: isEditing ? selectedRecord.id : undefined,           // The top-level "id"
+      fK_Industry_ID: values.fK_Industry_ID,
+      customerName: values.customerName,
+      customerCode: values.customerCode,
+      customerAddress: values.customerAddress,
+      mobileNumber: values.mobileNumber,
+      contactPersonName: values.contactPersonName,
+      emailAddress: values.emailAddress,
+      webAddress: values.webAddress,
+      imageUrl: values.imageUrl,
+      isActive: isEditing ? values.isActive : true,
+      customerProject: values.customerProjectInp?.map((project, index) => {
+        // If editing, we retrieve the existing ID from the selected record's projects
+        const existingProject = isEditing
+          ? selectedRecord.customerProject?.[index]
+          : null;
+
+        return {
+          id: existingProject ? existingProject.id : "string", // "id": "string" if new
+          projectName: project.projectName || "string",
+          fK_Customer_ID: existingProject
+            ? existingProject.fK_Customer_ID
+            : "string",
+          isActive: true,
+          gccAgent: project.gccAgents?.map((agent, i) => {
+            const existingAgent = existingProject?.gccAgent?.[i];
+            return {
+              id: existingAgent ? existingAgent.id : "string",
+              fK_CustomerProject_ID: existingProject ? existingProject.id : "string",
+              fK_Employee_ID: agent.fK_Employee_ID || "string",
+            };
+          }) || [],
+          customerAgent: project.customerAgents?.map((agent, i) => {
+            const existingAgent = existingProject?.customerAgent?.[i];
+            return {
+              id: existingAgent ? existingAgent.id : "string",
+              fK_CustomerProject_ID: existingProject ? existingProject.id : "string",
+              fK_Employee_ID: agent.fK_Employee_ID || "string",
+            };
+          }) || [],
+          gccSupervisor: project.gccSupervisors?.map((sup, i) => {
+            const existingSup = existingProject?.gccSupervisor?.[i];
+            return {
+              id: existingSup ? existingSup.id : "string",
+              fK_CustomerProject_ID: existingProject ? existingProject.id : "string",
+              fK_Employee_ID: sup.fK_Employee_ID || "string",
+            };
+          }) || [],
+          customerSupervisor: project.customerSupervisors?.map((sup, i) => {
+            const existingSup = existingProject?.customerSupervisor?.[i];
+            return {
+              id: existingSup ? existingSup.id : "string",
+              fK_CustomerProject_ID: existingProject ? existingProject.id : "string",
+              fK_Employee_ID: sup.fK_Employee_ID || "string",
+            };
+          }) || [],
+        };
+      }),
     };
 
     if (isEditing) {
-      payload.id = selectedRecord.id;
-      payload.isActive = values.isActive;
       dispatch(updateCustomerRegistration(payload))
         .unwrap()
         .then(() => {
@@ -242,8 +274,9 @@ const CustomerRegistration = () => {
     setIsEditing(false);
     setSelectedRecord(null);
   };
+  // ***** END handleSubmit ***** //
 
-  // Updated columns to display "industry.industryType" from the API response
+  // Columns definition
   const columns = [
     {
       title: "Customer Name",
@@ -350,7 +383,9 @@ const CustomerRegistration = () => {
               <Form.Item
                 name="customerName"
                 label="Customer Name"
-                rules={[{ required: true, message: "Please enter the customer name" }]}
+                rules={[
+                  { required: true, message: "Please enter the customer name" },
+                ]}
               >
                 <Input />
               </Form.Item>
@@ -359,7 +394,9 @@ const CustomerRegistration = () => {
               <Form.Item
                 name="customerCode"
                 label="Customer Code"
-                rules={[{ required: true, message: "Please enter the customer code" }]}
+                rules={[
+                  { required: true, message: "Please enter the customer code" },
+                ]}
               >
                 <Input />
               </Form.Item>
@@ -428,7 +465,10 @@ const CustomerRegistration = () => {
                 label="Mobile Number"
                 rules={[
                   { required: true, message: "Please enter the mobile number" },
-                  { pattern: /^\d+$/, message: "Mobile number must be numeric" },
+                  {
+                    pattern: /^\d+$/,
+                    message: "Mobile number must be numeric",
+                  },
                 ]}
               >
                 <Input />
@@ -454,7 +494,10 @@ const CustomerRegistration = () => {
                 label="Email Address"
                 rules={[
                   { required: true, message: "Please enter the email address" },
-                  { type: "email", message: "Please enter a valid email address" },
+                  {
+                    type: "email",
+                    message: "Please enter a valid email address",
+                  },
                 ]}
               >
                 <Input />
@@ -510,99 +553,76 @@ const CustomerRegistration = () => {
             {(fields, { add, remove }) => (
               <div>
                 <label style={{ fontWeight: "bold" }}>Projects</label>
-                {fields.map(({ key, name, ...restField }) => {
-                  const project = selectedRecord?.customerProject?.[name];
-                  return (
-                    <div
-                      key={key}
-                      style={{
-                        border: "1px solid #d9d9d9",
-                        padding: 16,
-                        marginBottom: 16,
-                        borderRadius: 4,
-                        position: "relative",
-                        background: "#fafafa",
-                      }}
+                {fields.map(({ key, name, ...restField }) => (
+                  <div
+                    key={key}
+                    style={{
+                      border: "1px solid #d9d9d9",
+                      padding: 16,
+                      marginBottom: 16,
+                      borderRadius: 4,
+                      position: "relative",
+                      background: "#fafafa",
+                    }}
+                  >
+                    <Button
+                      type="link"
+                      danger
+                      onClick={() => remove(name)}
+                      style={{ position: "absolute", top: 0, right: 0 }}
                     >
-                      <Button
-                        type="link"
-                        danger
-                        onClick={() => remove(name)}
-                        style={{ position: "absolute", top: 0, right: 0 }}
-                      >
-                        Remove
-                      </Button>
+                      Remove
+                    </Button>
 
-                      <Row gutter={16}>
-                        <Col xs={24} sm={12}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "projectName"]}
-                            label="Project Name"
-                            rules={[
-                              { required: true, message: "Please enter the project name" },
-                            ]}
-                          >
-                            <Input placeholder="Project Name" />
-                          </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}></Col>
-                      </Row>
+                    <Row gutter={16}>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "projectName"]}
+                          label="Project Name"
+                          rules={[
+                            { required: true, message: "Please enter the project name" },
+                          ]}
+                        >
+                          <Input placeholder="Project Name" />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} sm={12}></Col>
+                    </Row>
 
-                      <EmployeeSelect
-                        label="GCC Agents"
-                        name={[name, "gccAgents"]}
-                        employees={employees}
-                        fetchEmployees={fetchEmployeesOnDemand}
-                        initialEmployees={
-                          isEditing
-                            ? project?.gccAgent?.map((agent) => agent.employee)
-                            : []
-                        }
-                        required={false}
-                      />
+                    <EmployeeSelect
+                      label="GCC Agents"
+                      name={[name, "gccAgents"]}
+                      employees={employees}
+                      fetchEmployees={fetchEmployeesOnDemand}
+                      required={false}
+                    />
 
-                      <EmployeeSelect
-                        label="Customer Agents"
-                        name={[name, "customerAgents"]}
-                        employees={employees}
-                        fetchEmployees={fetchEmployeesOnDemand}
-                        initialEmployees={
-                          isEditing
-                            ? project?.customerAgent?.map((agent) => agent.employee)
-                            : []
-                        }
-                        required={false}
-                      />
+                    <EmployeeSelect
+                      label="Customer Agents"
+                      name={[name, "customerAgents"]}
+                      employees={employees}
+                      fetchEmployees={fetchEmployeesOnDemand}
+                      required={false}
+                    />
 
-                      <EmployeeSelect
-                        label="GCC Supervisors"
-                        name={[name, "gccSupervisors"]}
-                        employees={employees}
-                        fetchEmployees={fetchEmployeesOnDemand}
-                        initialEmployees={
-                          isEditing
-                            ? project?.gccSupervisor?.map((sup) => sup.employee)
-                            : []
-                        }
-                        required={false}
-                      />
+                    <EmployeeSelect
+                      label="GCC Supervisors"
+                      name={[name, "gccSupervisors"]}
+                      employees={employees}
+                      fetchEmployees={fetchEmployeesOnDemand}
+                      required={false}
+                    />
 
-                      <EmployeeSelect
-                        label="Customer Supervisors"
-                        name={[name, "customerSupervisors"]}
-                        employees={employees}
-                        fetchEmployees={fetchEmployeesOnDemand}
-                        initialEmployees={
-                          isEditing
-                            ? project?.customerSupervisor?.map((sup) => sup.employee)
-                            : []
-                        }
-                        required={false}
-                      />
-                    </div>
-                  );
-                })}
+                    <EmployeeSelect
+                      label="Customer Supervisors"
+                      name={[name, "customerSupervisors"]}
+                      employees={employees}
+                      fetchEmployees={fetchEmployeesOnDemand}
+                      required={false}
+                    />
+                  </div>
+                ))}
                 <Form.Item>
                   <Button type="primary" onClick={() => add()} block>
                     Add Project
