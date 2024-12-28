@@ -26,7 +26,14 @@ import { fetchEmployee } from "../store/reducers/EmployeeRegistration/EmployeeRe
 const { Option } = Select;
 
 // Reusable Employee Select Component
-const EmployeeSelect = ({ label, name, employees, fetchEmployees, initialEmployees, required }) => (
+const EmployeeSelect = ({
+  label,
+  name,
+  employees,
+  fetchEmployees,
+  initialEmployees,
+  required,
+}) => (
   <Form.List name={name}>
     {(fields, { add, remove }) => (
       <div style={{ marginBottom: 16 }}>
@@ -46,14 +53,18 @@ const EmployeeSelect = ({ label, name, employees, fetchEmployees, initialEmploye
                 filterOption={(input, option) =>
                   option.children.toLowerCase().includes(input.toLowerCase())
                 }
-                onDropdownVisibleChange={() => fetchEmployees()}
+                onDropdownVisibleChange={(open) => {
+                  if (open) fetchEmployees();
+                }}
               >
+                {/* Render initialEmployees first to display names for existing selections */}
                 {initialEmployees &&
                   initialEmployees.map((emp) => (
                     <Option key={emp.id} value={emp.id}>
                       {emp.employeeName}
                     </Option>
                   ))}
+                {/* Then render all loaded employees */}
                 {employees.map((emp) => (
                   <Option key={emp.id} value={emp.id}>
                     {emp.employeeName}
@@ -103,7 +114,6 @@ const CustomerRegistration = () => {
   useEffect(() => {
     const controller = new AbortController();
     dispatch(fetchCustomerRegistration({ pagingInfo, controller }));
-
     return () => {
       controller.abort();
     };
@@ -181,9 +191,8 @@ const CustomerRegistration = () => {
     setSubmitting(true);
 
     // Prepare the payload to match the EXACT shape for PUT /api/Customer/Update
-    // using the code snippet you provided
     const payload = {
-      id: isEditing ? selectedRecord.id : undefined,           // The top-level "id"
+      id: isEditing ? selectedRecord.id : undefined, // The top-level "id"
       fK_Industry_ID: values.fK_Industry_ID,
       customerName: values.customerName,
       customerCode: values.customerCode,
@@ -211,7 +220,9 @@ const CustomerRegistration = () => {
             const existingAgent = existingProject?.gccAgent?.[i];
             return {
               id: existingAgent ? existingAgent.id : "string",
-              fK_CustomerProject_ID: existingProject ? existingProject.id : "string",
+              fK_CustomerProject_ID: existingProject
+                ? existingProject.id
+                : "string",
               fK_Employee_ID: agent.fK_Employee_ID || "string",
             };
           }) || [],
@@ -219,7 +230,9 @@ const CustomerRegistration = () => {
             const existingAgent = existingProject?.customerAgent?.[i];
             return {
               id: existingAgent ? existingAgent.id : "string",
-              fK_CustomerProject_ID: existingProject ? existingProject.id : "string",
+              fK_CustomerProject_ID: existingProject
+                ? existingProject.id
+                : "string",
               fK_Employee_ID: agent.fK_Employee_ID || "string",
             };
           }) || [],
@@ -227,7 +240,9 @@ const CustomerRegistration = () => {
             const existingSup = existingProject?.gccSupervisor?.[i];
             return {
               id: existingSup ? existingSup.id : "string",
-              fK_CustomerProject_ID: existingProject ? existingProject.id : "string",
+              fK_CustomerProject_ID: existingProject
+                ? existingProject.id
+                : "string",
               fK_Employee_ID: sup.fK_Employee_ID || "string",
             };
           }) || [],
@@ -235,7 +250,9 @@ const CustomerRegistration = () => {
             const existingSup = existingProject?.customerSupervisor?.[i];
             return {
               id: existingSup ? existingSup.id : "string",
-              fK_CustomerProject_ID: existingProject ? existingProject.id : "string",
+              fK_CustomerProject_ID: existingProject
+                ? existingProject.id
+                : "string",
               fK_Employee_ID: sup.fK_Employee_ID || "string",
             };
           }) || [],
@@ -433,7 +450,10 @@ const CustomerRegistration = () => {
                   loading={industriesLoading}
                 >
                   {isEditing && selectedRecord && selectedRecord.industry && (
-                    <Option key={selectedRecord.industry.id} value={selectedRecord.industry.id}>
+                    <Option
+                      key={selectedRecord.industry.id}
+                      value={selectedRecord.industry.id}
+                    >
                       {selectedRecord.industry.industryType}
                     </Option>
                   )}
@@ -553,76 +573,104 @@ const CustomerRegistration = () => {
             {(fields, { add, remove }) => (
               <div>
                 <label style={{ fontWeight: "bold" }}>Projects</label>
-                {fields.map(({ key, name, ...restField }) => (
-                  <div
-                    key={key}
-                    style={{
-                      border: "1px solid #d9d9d9",
-                      padding: 16,
-                      marginBottom: 16,
-                      borderRadius: 4,
-                      position: "relative",
-                      background: "#fafafa",
-                    }}
-                  >
-                    <Button
-                      type="link"
-                      danger
-                      onClick={() => remove(name)}
-                      style={{ position: "absolute", top: 0, right: 0 }}
+                {fields.map(({ key, name, ...restField }) => {
+                  // Use the existing project data from 'selectedRecord' to show the employees' names
+                  const project = selectedRecord?.customerProject?.[name];
+                  return (
+                    <div
+                      key={key}
+                      style={{
+                        border: "1px solid #d9d9d9",
+                        padding: 16,
+                        marginBottom: 16,
+                        borderRadius: 4,
+                        position: "relative",
+                        background: "#fafafa",
+                      }}
                     >
-                      Remove
-                    </Button>
+                      <Button
+                        type="link"
+                        danger
+                        onClick={() => remove(name)}
+                        style={{ position: "absolute", top: 0, right: 0 }}
+                      >
+                        Remove
+                      </Button>
 
-                    <Row gutter={16}>
-                      <Col xs={24} sm={12}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "projectName"]}
-                          label="Project Name"
-                          rules={[
-                            { required: true, message: "Please enter the project name" },
-                          ]}
-                        >
-                          <Input placeholder="Project Name" />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} sm={12}></Col>
-                    </Row>
+                      <Row gutter={16}>
+                        <Col xs={24} sm={12}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "projectName"]}
+                            label="Project Name"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter the project name",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Project Name" />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}></Col>
+                      </Row>
 
-                    <EmployeeSelect
-                      label="GCC Agents"
-                      name={[name, "gccAgents"]}
-                      employees={employees}
-                      fetchEmployees={fetchEmployeesOnDemand}
-                      required={false}
-                    />
+                      <EmployeeSelect
+                        label="GCC Agents"
+                        name={[name, "gccAgents"]}
+                        employees={employees}
+                        fetchEmployees={fetchEmployeesOnDemand}
+                        // Pass initialEmployees with employee objects to display names
+                        initialEmployees={
+                          isEditing && project
+                            ? project.gccAgent?.map((agent) => agent.employee)
+                            : []
+                        }
+                        required={false}
+                      />
 
-                    <EmployeeSelect
-                      label="Customer Agents"
-                      name={[name, "customerAgents"]}
-                      employees={employees}
-                      fetchEmployees={fetchEmployeesOnDemand}
-                      required={false}
-                    />
+                      <EmployeeSelect
+                        label="Customer Agents"
+                        name={[name, "customerAgents"]}
+                        employees={employees}
+                        fetchEmployees={fetchEmployeesOnDemand}
+                        initialEmployees={
+                          isEditing && project
+                            ? project.customerAgent?.map((agent) => agent.employee)
+                            : []
+                        }
+                        required={false}
+                      />
 
-                    <EmployeeSelect
-                      label="GCC Supervisors"
-                      name={[name, "gccSupervisors"]}
-                      employees={employees}
-                      fetchEmployees={fetchEmployeesOnDemand}
-                      required={false}
-                    />
+                      <EmployeeSelect
+                        label="GCC Supervisors"
+                        name={[name, "gccSupervisors"]}
+                        employees={employees}
+                        fetchEmployees={fetchEmployeesOnDemand}
+                        initialEmployees={
+                          isEditing && project
+                            ? project.gccSupervisor?.map((sup) => sup.employee)
+                            : []
+                        }
+                        required={false}
+                      />
 
-                    <EmployeeSelect
-                      label="Customer Supervisors"
-                      name={[name, "customerSupervisors"]}
-                      employees={employees}
-                      fetchEmployees={fetchEmployeesOnDemand}
-                      required={false}
-                    />
-                  </div>
-                ))}
+                      <EmployeeSelect
+                        label="Customer Supervisors"
+                        name={[name, "customerSupervisors"]}
+                        employees={employees}
+                        fetchEmployees={fetchEmployeesOnDemand}
+                        initialEmployees={
+                          isEditing && project
+                            ? project.customerSupervisor?.map((sup) => sup.employee)
+                            : []
+                        }
+                        required={false}
+                      />
+                    </div>
+                  );
+                })}
                 <Form.Item>
                   <Button type="primary" onClick={() => add()} block>
                     Add Project
