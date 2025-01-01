@@ -15,15 +15,13 @@ export const API = axios.create({
   },
 });
 
-// Request Interceptor
+// Add a request interceptor to include the auth token if available
 API.interceptors.request.use(
   (config) => {
-    // Add authorization headers or other custom headers if needed
-    // Example:
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {

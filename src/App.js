@@ -1,6 +1,6 @@
 // src/App.js
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ConfigProvider, Layout } from "antd";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
@@ -11,17 +11,30 @@ import IndustryRegistration from "./components/IndustryRegistration";
 import CustomerRegistration from "./components/CustomerRegistration";
 import Questionnaire from "./components/Questionnaire"; // Import the Questionnaire component
 import Login from "./components/Login";
+import Signup from "./components/Signup"; // Import the Signup component
 import AppFooter from "./components/AppFooter";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { API } from "./utills/services";
 
 const { Sider, Content } = Layout;
 
 const App = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check for token in localStorage
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      setIsLoggedIn(true);
+      API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+  }, []);
 
   const handleLogout = () => {
+    localStorage.removeItem("authToken");
     setIsLoggedIn(false);
+    delete API.defaults.headers.common["Authorization"];
   };
 
   const handleLogin = () => {
@@ -29,7 +42,17 @@ const App = () => {
   };
 
   if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
+    return (
+      <ConfigProvider theme={{ token: { colorTextPlaceholder: "#ffffff" } }}>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </Router>
+      </ConfigProvider>
+    );
   }
 
   return (
@@ -78,7 +101,9 @@ const App = () => {
                   <Route path="/EmployeeRegistration" element={<EmployeeRegistration />} />
                   <Route path="/IndustryRegistration" element={<IndustryRegistration />} />
                   <Route path="/CustomerRegistration" element={<CustomerRegistration />} />
-                  <Route path="/Questionnaire" element={<Questionnaire />} /> {/* New Route */}
+                  <Route path="/Questionnaire" element={<Questionnaire />} />
+                  {/* Add more protected routes here */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Content>
 

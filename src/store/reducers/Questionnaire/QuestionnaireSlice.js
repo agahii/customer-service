@@ -1,38 +1,49 @@
 // src/store/reducers/Questionnaire/QuestionnaireSlice.js
 
 import { createSlice } from "@reduxjs/toolkit";
-import { addQuestionnaire } from "./QuestionnaireAction"; // Ensure correct path
+import { addQuestion, getQuestions } from "./QuestionnaireAction";
 
-const questionnaireSlice = createSlice({
+const initialState = {
+  questions: [],
+  loading: false,
+  error: null,
+};
+
+const QuestionnaireSlice = createSlice({
   name: "questionnaire",
-  initialState: {
-    entities: [], // Stores submitted questionnaires
-    loading: false,
-    error: null,
-    total: 0,
-  },
+  initialState,
   reducers: {
-    // Add any synchronous reducers if needed
+    // Define your synchronous reducers here if needed
   },
   extraReducers: (builder) => {
     builder
-      // Handle Add Questionnaire Pending State
-      .addCase(addQuestionnaire.pending, (state) => {
+      // Add Question Cases
+      .addCase(addQuestion.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      // Handle Add Questionnaire Fulfilled State
-      .addCase(addQuestionnaire.fulfilled, (state, { payload }) => {
-        state.entities.push(payload);
-        state.total += 1;
+      .addCase(addQuestion.fulfilled, (state, action) => {
         state.loading = false;
+        state.questions.push(action.payload);
       })
-      // Handle Add Questionnaire Rejected State
-      .addCase(addQuestionnaire.rejected, (state, { payload }) => {
+      .addCase(addQuestion.rejected, (state, action) => {
         state.loading = false;
-        state.error = payload;
+        state.error = action.payload;
+      })
+      // Get Questions Cases
+      .addCase(getQuestions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getQuestions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.questions = action.payload;
+      })
+      .addCase(getQuestions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export default questionnaireSlice.reducer;
+export default QuestionnaireSlice.reducer;
