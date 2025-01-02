@@ -3,12 +3,12 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { API } from "../../../utills/services"; // Ensure this path is correct
 
-// Add a new Question
+// Add a Single Question (Optional: Keep if needed elsewhere)
 export const addQuestion = createAsyncThunk(
   "questionnaire/addQuestion",
   async (payload, { rejectWithValue }) => {
     try {
-      const response = await API.post("Question/Add", payload); // Removed '/api' prefix
+      const response = await API.post("Question/Add", payload); // Ensure endpoint is correct
       if (response.data.status === 0) { // Treat status 0 as success
         return response.data.content; // Adjust based on actual successful response content
       } else {
@@ -21,12 +21,30 @@ export const addQuestion = createAsyncThunk(
   }
 );
 
-// Fetch Questions
+// Add Multiple Questions (New Action)
+export const addQuestions = createAsyncThunk(
+  "questionnaire/addQuestions",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await API.post("Question/Add", payload); // Ensure endpoint is correct
+      if (response.data.status === 0) { // Treat status 0 as success
+        return response.data.content; // Adjust based on actual successful response content
+      } else {
+        return rejectWithValue(response.data.reasonPhrase || "Adding questions failed.");
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.reasonPhrase || "Adding questions failed.";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Fetch Questions (Existing)
 export const getQuestions = createAsyncThunk(
   "questionnaire/getQuestions",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await API.post("Question/Get", {}); // Removed '/api' prefix
+      const response = await API.post("Question/Get", {}); // Ensure endpoint is correct
       if (response.data.hasValue) {
         return response.data.value; // Array of questions
       } else {
@@ -39,12 +57,12 @@ export const getQuestions = createAsyncThunk(
   }
 );
 
-// Update Question
+// Update Question (Existing)
 export const updateQuestion = createAsyncThunk(
   "questionnaire/updateQuestion",
   async (payload, { rejectWithValue }) => {
     try {
-      const response = await API.put("Question/Update", payload); // Removed '/api' prefix
+      const response = await API.put("Question/Update", payload); // Ensure endpoint is correct
       if (response.data.status === 0) { // Treat status 0 as success
         return response.data.content; // Adjust based on actual successful response content
       } else {
@@ -57,12 +75,12 @@ export const updateQuestion = createAsyncThunk(
   }
 );
 
-// Delete Question
+// Delete Question (Existing)
 export const deleteQuestion = createAsyncThunk(
   "questionnaire/deleteQuestion",
   async (payload, { rejectWithValue }) => {
     try {
-      const response = await API.delete("Question/Delete", { data: payload }); // Removed '/api' prefix and adjusted for DELETE
+      const response = await API.delete("Question/Delete", { data: payload }); // Ensure endpoint is correct
       if (response.data.status === 0) { // Treat status 0 as success
         return payload.id; // Return the ID of the deleted question
       } else {
