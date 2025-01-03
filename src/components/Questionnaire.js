@@ -56,6 +56,7 @@ const Questionnaire = () => {
     options: [],
     imageUrl: null, // For image type
     answer: null, // For numeric or datepicker default
+    isMandatory: false, // Added to include isMandatory in currentQuestion
   });
 
   // State for selected customer
@@ -118,7 +119,7 @@ const Questionnaire = () => {
 
   // -------------- FORM SUBMISSION --------------
   const onFinish = async (values) => {
-    const { customerName, customerProject } = values;
+    const { customerProject } = values; // We only truly need the project to submit
 
     // Check if questions are present
     if (questions.length === 0) {
@@ -126,23 +127,49 @@ const Questionnaire = () => {
       return;
     }
 
-    // Prepare individual payloads for each question
-    const payloads = questions.map((q, idx) => ({
-      questionText: q.questionText,
-      fK_QuestionType_ID: q.questionTypeId,
-      fK_CustomerProject_ID: customerProject, // Assuming all questions belong to the same project
-      isMandatory: q.isMandatory || false, // Default to false if not set
-      order: idx + 1, // Maintain order
-    }));
+    // ***** NEW PAYLOAD (Adjusting for your new API) *****
+    // The endpoint expects a single POST with:
+    // {
+    //   "fK_CustomerProject_ID": "string",
+    //   "questionDetailInp": [
+    //     {
+    //       "questionText": "string",
+    //       "fK_QuestionType_ID": "string",
+    //       "isMandatory": true,
+    //       "order": 0,
+    //       "isActive": true,
+    //       "optionInp": [
+    //         {
+    //           "optionText": "string"
+    //         }
+    //       ]
+    //     }
+    //   ]
+    // }
+    // We'll build one combined payload to match this structure:
 
-    console.log("Submitting Questionnaire with payloads:", payloads);
+    const finalPayload = {
+      fK_CustomerProject_ID: customerProject,
+      questionDetailInp: questions.map((q, idx) => ({
+        questionText: q.questionText,
+        fK_QuestionType_ID: q.questionTypeId,
+        isMandatory: q.isMandatory || false,
+        order: idx + 1,
+        isActive: true, // can set to true by default
+        optionInp:
+          q.options && q.options.length > 0
+            ? q.options.map((opt) => ({
+                optionText: opt,
+              }))
+            : [],
+      })),
+    };
+
+    console.log("Submitting Questionnaire with payload:", finalPayload);
 
     try {
-      // Dispatch addQuestion for each payload
-      const addPromises = payloads.map((payload) => dispatch(addQuestion(payload)).unwrap());
-
-      // Wait for all submissions to complete
-      await Promise.all(addPromises);
+      // Dispatch addQuestion with the new combined payload
+      await dispatch(addQuestion(finalPayload)).unwrap();
 
       message.success("Questionnaire submitted successfully!");
       form.resetFields();
@@ -169,9 +196,10 @@ const Questionnaire = () => {
         questionText: question.questionText,
         questionTypeId: question.questionTypeId, // store the ID
         questionTypeName: question.questionTypeName, // store the name
-        options: question.options.map((o) => o.optionText) || [],
+        options: question.options.map((o) => o) || [],
         imageUrl: question.imageUrl || null,
         answer: question.defaultAnswer || null,
+        isMandatory: question.isMandatory || false,
       });
     } else {
       // Adding new question
@@ -183,13 +211,22 @@ const Questionnaire = () => {
         options: [],
         imageUrl: null,
         answer: null,
+        isMandatory: false,
       });
     }
     setIsModalVisible(true);
   };
 
   const handleOk = () => {
-    const { questionText, questionTypeId, questionTypeName, options, imageUrl, answer } = currentQuestion;
+    const {
+      questionText,
+      questionTypeId,
+      questionTypeName,
+      options,
+      imageUrl,
+      answer,
+      isMandatory,
+    } = currentQuestion;
 
     // Validation
     if (!questionText.trim()) {
@@ -217,15 +254,16 @@ const Questionnaire = () => {
       questionText,
       questionTypeId,
       questionTypeName,
-      isMandatory: currentQuestion.isMandatory || false, // Ensure isMandatory is set
+      isMandatory,
       options:
         questionTypeName === "checkbox" ||
         questionTypeName === "radio" ||
         questionTypeName === "dropdown"
-          ? options.map((opt) => opt) // Array of strings
+          ? options.map((opt) => opt)
           : [],
       imageUrl: questionTypeName === "image" ? imageUrl : null,
-      defaultAnswer: questionTypeName === "datepicker" || questionTypeName === "numeric" ? answer : null,
+      defaultAnswer:
+        questionTypeName === "datepicker" || questionTypeName === "numeric" ? answer : null,
     };
 
     if (editingQuestion !== null) {
@@ -249,6 +287,7 @@ const Questionnaire = () => {
       options: [],
       imageUrl: null,
       answer: null,
+      isMandatory: false,
     });
     setEditingQuestion(null);
   };
@@ -262,6 +301,7 @@ const Questionnaire = () => {
       options: [],
       imageUrl: null,
       answer: null,
+      isMandatory: false,
     });
     setEditingQuestion(null);
   };
@@ -279,7 +319,7 @@ const Questionnaire = () => {
         questionTypeName: typeName, // store the name
       }));
     } else {
-      // For questionText or answer (date usage), etc.
+      // For questionText, answer, isMandatory, etc.
       setCurrentQuestion((prev) => ({
         ...prev,
         [field]: value,
@@ -374,24 +414,22 @@ const Questionnaire = () => {
         return <DatePicker style={{ width: "100%" }} />;
 
       case "image":
-        return (
-          question.imageUrl ? (
-            <img
-              src={question.imageUrl}
-              alt="Uploaded"
-              style={{ maxWidth: "100%", height: "auto" }}
-            />
-          ) : (
-            <p>No image uploaded.</p>
-          )
+        return question.imageUrl ? (
+          <img
+            src={question.imageUrl}
+            alt="Uploaded"
+            style={{ maxWidth: "100%", height: "auto" }}
+          />
+        ) : (
+          <p>No image uploaded.</p>
         );
 
       case "numeric":
         return <Input type="number" placeholder="Enter a number" />;
 
       case "text":
-        // "Text Box" -> Display a simple input field
-        return <Input placeholder="Enter your answer" />;
+        // **Changed**: Do not render any answer field for "text" type
+        return null;
 
       default:
         return null; // Unrecognized type
