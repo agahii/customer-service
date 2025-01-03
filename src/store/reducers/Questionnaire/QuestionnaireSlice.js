@@ -1,5 +1,3 @@
-// src/store/reducers/Questionnaire/QuestionnaireSlice.js
-
 import { createSlice } from "@reduxjs/toolkit";
 import {
   addQuestion,
@@ -7,10 +5,12 @@ import {
   getQuestions,
   updateQuestion,
   deleteQuestion,
+  getQuestionById, // Imported the new getQuestionById action
 } from "./QuestionnaireAction";
 
 const initialState = {
   questions: [],
+  currentQuestion: null, // Added to store a single fetched question
   loading: false,
   error: null,
 };
@@ -99,6 +99,23 @@ const QuestionnaireSlice = createSlice({
         state.questions = state.questions.filter((q) => q.id !== action.payload);
       })
       .addCase(deleteQuestion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // **New: Handle getQuestionById Actions**
+      .addCase(getQuestionById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getQuestionById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentQuestion = action.payload; // Store the fetched question
+        
+        // **MINIMAL CHANGE**: Populate questions[] from the "questionDetail" array in the response
+        state.questions = action.payload?.questionDetail || [];
+      })
+      .addCase(getQuestionById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

@@ -1,5 +1,3 @@
-// src/components/Questionnaire.js
-
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -27,8 +25,8 @@ import {
 import moment from "moment";
 
 import { fetchCustomerRegistration } from "../store/reducers/CustomerRegistration/CustomerRegistrationAction";
-import { addQuestion } from "../store/reducers/Questionnaire/QuestionnaireAction"; // Updated import
-import { fetchQuestionTypes } from "../store/reducers/QuestionType/QuestionTypeAction"; // To fetch question types
+import { addQuestion, getQuestionById } from "../store/reducers/Questionnaire/QuestionnaireAction";
+import { fetchQuestionTypes } from "../store/reducers/QuestionType/QuestionTypeAction";
 
 const { Option } = Select;
 const { Title } = Typography;
@@ -37,49 +35,50 @@ const Questionnaire = () => {
   const dispatch = useDispatch();
   const [form] = Form.useForm();
 
-  // State for list of questions
+  // LOCAL state for newly added/edited questions
   const [questions, setQuestions] = useState([]);
 
-  // State for Modal visibility
+  // Show/Hide Modal
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  // State for editing question
-  const [editingQuestion, setEditingQuestion] = useState(null); // null means adding new
+  // Editing existing question index or null if adding new
+  const [editingQuestion, setEditingQuestion] = useState(null);
 
-  // State for new/edit question fields
+  // Holds question details for modal
   const [currentQuestion, setCurrentQuestion] = useState({
     questionText: "",
-    // We'll store the ID of the question type selected
     questionTypeId: "",
-    // We'll store the actual "typeName" once we map it
     questionTypeName: "",
     options: [],
-    imageUrl: null, // For image type
-    answer: null, // For numeric or datepicker default
-    isMandatory: false, // Added to include isMandatory in currentQuestion
+    imageUrl: null,
+    answer: null,
+    isMandatory: false,
   });
 
-  // State for selected customer
+  // Selected customer
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
 
-  // Access customer data
+  // Redux store: customers
   const {
     entities: customers,
     loading: customersLoading,
     error: customersError,
   } = useSelector((state) => state.customerRegistration);
 
-  // Access question type data
+  // Redux store: question types
   const {
-    entities: questionTypes, // Array of { id, typeName, isActive }
+    entities: questionTypes,
     loading: questionTypesLoading,
     error: questionTypesError,
   } = useSelector((state) => state.questionType);
 
-  // Ref to prevent multiple dispatches in development with Strict Mode
+  // Redux store: the **fetched** questions
+  const { questions: fetchedQuestions } = useSelector((state) => state.questionnaire);
+
+  // Avoid multiple dispatch in Strict Mode
   const hasFetchedQuestionTypes = useRef(false);
 
-  // ------ FETCH CUSTOMERS ON MOUNT ------
+  // ---------- Fetch customers on mount ----------
   useEffect(() => {
     const controller = new AbortController();
     dispatch(
@@ -93,7 +92,7 @@ const Questionnaire = () => {
     };
   }, [dispatch]);
 
-  // ------ FETCH QUESTION TYPES ON MOUNT ------
+  // ---------- Fetch question types on mount ----------
   useEffect(() => {
     if (!hasFetchedQuestionTypes.current) {
       if (questionTypes.length === 0 && !questionTypesLoading) {
@@ -103,50 +102,26 @@ const Questionnaire = () => {
     }
   }, [dispatch, questionTypes.length, questionTypesLoading]);
 
-  // Handle errors fetching customers
+  // ---------- Show errors if any ----------
   useEffect(() => {
     if (customersError && !customersLoading) {
       message.error(`Failed to load customers: ${customersError}`);
     }
   }, [customersError, customersLoading]);
 
-  // Handle errors fetching question types
   useEffect(() => {
     if (questionTypesError && !questionTypesLoading) {
       message.error(`Failed to load question types: ${questionTypesError}`);
     }
   }, [questionTypesError, questionTypesLoading]);
 
-  // -------------- FORM SUBMISSION --------------
+  // ---------- SUBMIT FORM ----------
   const onFinish = async (values) => {
-    const { customerProject } = values; // We only truly need the project to submit
-
-    // Check if questions are present
+    const { customerProject } = values;
     if (questions.length === 0) {
       message.error("Please add at least one question before submitting.");
       return;
     }
-
-    // ***** NEW PAYLOAD (Adjusting for your new API) *****
-    // The endpoint expects a single POST with:
-    // {
-    //   "fK_CustomerProject_ID": "string",
-    //   "questionDetailInp": [
-    //     {
-    //       "questionText": "string",
-    //       "fK_QuestionType_ID": "string",
-    //       "isMandatory": true,
-    //       "order": 0,
-    //       "isActive": true,
-    //       "optionInp": [
-    //         {
-    //           "optionText": "string"
-    //         }
-    //       ]
-    //     }
-    //   ]
-    // }
-    // We'll build one combined payload to match this structure:
 
     const finalPayload = {
       fK_CustomerProject_ID: customerProject,
@@ -155,22 +130,16 @@ const Questionnaire = () => {
         fK_QuestionType_ID: q.questionTypeId,
         isMandatory: q.isMandatory || false,
         order: idx + 1,
-        isActive: true, // can set to true by default
+        isActive: true,
         optionInp:
           q.options && q.options.length > 0
-            ? q.options.map((opt) => ({
-                optionText: opt,
-              }))
+            ? q.options.map((opt) => ({ optionText: opt }))
             : [],
       })),
     };
 
-    console.log("Submitting Questionnaire with payload:", finalPayload);
-
     try {
-      // Dispatch addQuestion with the new combined payload
       await dispatch(addQuestion(finalPayload)).unwrap();
-
       message.success("Questionnaire submitted successfully!");
       form.resetFields();
       setQuestions([]);
@@ -181,28 +150,60 @@ const Questionnaire = () => {
     }
   };
 
-  // -------------- CUSTOMER CHANGES --------------
+  // ---------- CUSTOMER SELECTION ----------
   const handleCustomerChange = (value) => {
     setSelectedCustomerId(value);
     form.setFieldsValue({ customerProject: undefined });
   };
 
-  // -------------- MODAL HANDLING --------------
+  // ---------- PROJECT SELECTION -> Fetch saved questions ----------
+  const handleProjectChange = (projectId) => {
+    form.setFieldsValue({ customerProject: projectId });
+    dispatch(getQuestionById(projectId)); // fetch from server
+  };
+
+  // ---------- Sync Redux store -> local questions ----------
+  useEffect(() => {
+    // If the server returned questionDetail with nested "option" objects,
+    // we transform them into the shape your UI expects:
+    if (fetchedQuestions && fetchedQuestions.length > 0) {
+      const transformed = fetchedQuestions.map((srvQ) => ({
+        // Use the same structure your UI logic uses:
+        questionText: srvQ.questionText,
+        questionTypeId: srvQ.fK_QuestionType_ID, 
+        questionTypeName: srvQ.questionType?.typeName || "",
+        isMandatory: srvQ.isMandatory || false,
+
+        // Convert each option object to a string
+        options: Array.isArray(srvQ.option)
+          ? srvQ.option.map((opt) => opt.optionText)
+          : [],
+        
+        // If you need defaultAnswer/imageUrl from the server, handle them similarly
+        defaultAnswer: null,
+        imageUrl: null,
+      }));
+      setQuestions(transformed);
+    } else {
+      // If no data was returned, reset the local questions
+      setQuestions([]);
+    }
+  }, [fetchedQuestions]);
+
+  // ---------- MODAL HANDLERS ----------
   const showModal = (question = null, index = null) => {
     if (question !== null && index !== null) {
-      // Editing existing question
       setEditingQuestion(index);
       setCurrentQuestion({
         questionText: question.questionText,
-        questionTypeId: question.questionTypeId, // store the ID
-        questionTypeName: question.questionTypeName, // store the name
-        options: question.options.map((o) => o) || [],
+        questionTypeId: question.questionTypeId,
+        questionTypeName: question.questionTypeName,
+        options: [...(question.options || [])],
         imageUrl: question.imageUrl || null,
         answer: question.defaultAnswer || null,
         isMandatory: question.isMandatory || false,
       });
     } else {
-      // Adding new question
       setEditingQuestion(null);
       setCurrentQuestion({
         questionText: "",
@@ -228,7 +229,6 @@ const Questionnaire = () => {
       isMandatory,
     } = currentQuestion;
 
-    // Validation
     if (!questionText.trim()) {
       message.error("Question text is required.");
       return;
@@ -237,8 +237,6 @@ const Questionnaire = () => {
       message.error("Question Type is required.");
       return;
     }
-
-    // If questionTypeName is one of checkbox/radio/dropdown, need >= 2 options
     if (
       (questionTypeName === "checkbox" ||
         questionTypeName === "radio" ||
@@ -249,7 +247,6 @@ const Questionnaire = () => {
       return;
     }
 
-    // Build the question object
     const questionToAdd = {
       questionText,
       questionTypeId,
@@ -259,26 +256,25 @@ const Questionnaire = () => {
         questionTypeName === "checkbox" ||
         questionTypeName === "radio" ||
         questionTypeName === "dropdown"
-          ? options.map((opt) => opt)
+          ? options
           : [],
       imageUrl: questionTypeName === "image" ? imageUrl : null,
       defaultAnswer:
-        questionTypeName === "datepicker" || questionTypeName === "numeric" ? answer : null,
+        questionTypeName === "datepicker" || questionTypeName === "numeric"
+          ? answer
+          : null,
     };
 
     if (editingQuestion !== null) {
-      // Edit existing question
       const updatedQuestions = [...questions];
       updatedQuestions[editingQuestion] = questionToAdd;
       setQuestions(updatedQuestions);
       message.success("Question edited successfully!");
     } else {
-      // Add new question
       setQuestions([...questions, questionToAdd]);
       message.success("Question added successfully!");
     }
 
-    // Reset modal
     setIsModalVisible(false);
     setCurrentQuestion({
       questionText: "",
@@ -306,20 +302,18 @@ const Questionnaire = () => {
     setEditingQuestion(null);
   };
 
-  // -------------- CURRENT QUESTION CHANGES --------------
+  // ---------- FIELD CHANGE HANDLERS ----------
   const handleCurrentQuestionChange = (field, value) => {
     if (field === "questionTypeId") {
-      // We need to find the matching typeName from our questionTypes array
       const matchedType = questionTypes.find((qt) => qt.id === value);
       const typeName = matchedType ? matchedType.typeName : "";
 
       setCurrentQuestion((prev) => ({
         ...prev,
         questionTypeId: value,
-        questionTypeName: typeName, // store the name
+        questionTypeName: typeName,
       }));
     } else {
-      // For questionText, answer, isMandatory, etc.
       setCurrentQuestion((prev) => ({
         ...prev,
         [field]: value,
@@ -327,7 +321,7 @@ const Questionnaire = () => {
     }
   };
 
-  // -------------- OPTION HANDLERS --------------
+  // ---------- OPTIONS ----------
   const addOption = () => {
     setCurrentQuestion((prev) => ({
       ...prev,
@@ -368,9 +362,9 @@ const Questionnaire = () => {
     });
   };
 
-  // -------------- RENDER ANSWER FIELD --------------
+  // ---------- RENDER ANSWER FIELD ----------
   const renderAnswerField = (question) => {
-    const tName = question.questionTypeName.toLowerCase(); // Normalize to lowercase
+    const tName = question.questionTypeName.toLowerCase();
 
     switch (tName) {
       case "checkbox":
@@ -385,7 +379,6 @@ const Questionnaire = () => {
             </Space>
           </Checkbox.Group>
         );
-
       case "radio":
         return (
           <Radio.Group>
@@ -398,7 +391,6 @@ const Questionnaire = () => {
             </Space>
           </Radio.Group>
         );
-
       case "dropdown":
         return (
           <Select placeholder="Select an option" style={{ width: "100%" }}>
@@ -409,10 +401,8 @@ const Questionnaire = () => {
             ))}
           </Select>
         );
-
       case "datepicker":
         return <DatePicker style={{ width: "100%" }} />;
-
       case "image":
         return question.imageUrl ? (
           <img
@@ -423,27 +413,21 @@ const Questionnaire = () => {
         ) : (
           <p>No image uploaded.</p>
         );
-
       case "numeric":
         return <Input type="number" placeholder="Enter a number" />;
-
       case "text":
-        // **Changed**: Do not render any answer field for "text" type
         return null;
-
       default:
-        return null; // Unrecognized type
+        return null;
     }
   };
 
-  // -------------- COMPONENT RENDERING --------------
   return (
     <div style={{ padding: 24 }}>
       <Title level={2} style={{ textAlign: "center", marginBottom: 24 }}>
         Create and Answer Questionnaire
       </Title>
 
-      {/* Show any error alert if there's an error and no customers loaded */}
       {customersError && !customersLoading && (!customers || customers.length === 0) && (
         <Alert
           message="Error"
@@ -454,7 +438,6 @@ const Questionnaire = () => {
         />
       )}
 
-      {/* If there's an error fetching question types */}
       {questionTypesError && !questionTypesLoading && (!questionTypes || questionTypes.length === 0) && (
         <Alert
           message="Error"
@@ -469,9 +452,7 @@ const Questionnaire = () => {
         form={form}
         layout="vertical"
         onFinish={onFinish}
-        initialValues={{
-          questions: [],
-        }}
+        initialValues={{ questions: [] }}
       >
         {/* Customer Name Dropdown */}
         <Form.Item
@@ -517,6 +498,7 @@ const Questionnaire = () => {
             notFoundContent={
               selectedCustomerId ? "No projects found" : "Please select a customer first"
             }
+            onChange={handleProjectChange} // fetch saved questions
           >
             {selectedCustomerId &&
               Array.isArray(customers) &&
@@ -532,7 +514,12 @@ const Questionnaire = () => {
 
         {/* Add Question Button */}
         <Form.Item>
-          <Button type="dashed" onClick={() => showModal()} block icon={<PlusOutlined />}>
+          <Button
+            type="dashed"
+            onClick={() => showModal()}
+            block
+            icon={<PlusOutlined />}
+          >
             Add Question
           </Button>
         </Form.Item>
@@ -582,7 +569,7 @@ const Questionnaire = () => {
           )}
         </div>
 
-        {/* Submit and Reset Buttons */}
+        {/* Submit and Reset */}
         <Form.Item>
           <Space>
             <Button
@@ -605,7 +592,7 @@ const Questionnaire = () => {
         </Form.Item>
       </Form>
 
-      {/* Modal for Adding/Editing New Question */}
+      {/* Modal for Adding/Editing */}
       <Modal
         title={editingQuestion !== null ? "Edit Question" : "Add New Question"}
         visible={isModalVisible}
@@ -641,7 +628,6 @@ const Questionnaire = () => {
             </Select>
           </Form.Item>
 
-          {/* Conditionally Render Options for "checkbox", "radio", or "dropdown" */}
           {(currentQuestion.questionTypeName === "checkbox" ||
             currentQuestion.questionTypeName === "radio" ||
             currentQuestion.questionTypeName === "dropdown") && (
@@ -676,7 +662,6 @@ const Questionnaire = () => {
             </Form.Item>
           )}
 
-          {/* Conditionally Render Answer Field for "datepicker" */}
           {currentQuestion.questionTypeName === "datepicker" && (
             <Form.Item label="Default Date (optional)">
               <DatePicker
@@ -691,7 +676,6 @@ const Questionnaire = () => {
             </Form.Item>
           )}
 
-          {/* Conditionally Render Answer Field for "image" */}
           {currentQuestion.questionTypeName === "image" && (
             <Form.Item label="Upload Image">
               <Input
@@ -700,8 +684,6 @@ const Questionnaire = () => {
                 onChange={(e) => {
                   const file = e.target.files[0];
                   if (file) {
-                    // Implement your image upload logic here
-                    // For example, convert to base64 or upload to a server
                     const reader = new FileReader();
                     reader.onloadend = () => {
                       setCurrentQuestion((prev) => ({
@@ -723,7 +705,6 @@ const Questionnaire = () => {
             </Form.Item>
           )}
 
-          {/* Conditionally Render Answer Field for "numeric" */}
           {currentQuestion.questionTypeName === "numeric" && (
             <Form.Item label="Numeric Answer (optional)">
               <Input
