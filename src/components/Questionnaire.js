@@ -73,7 +73,7 @@ const Questionnaire = () => {
   } = useSelector((state) => state.questionType);
 
   // Redux store: the **fetched** questions
-  const { questions: fetchedQuestions } = useSelector((state) => state.questionnaire);
+  const {  fetchedQuestions } = useSelector((state) => state.questionnaire);
 
   // Avoid multiple dispatch in Strict Mode
   const hasFetchedQuestionTypes = useRef(false);
@@ -164,9 +164,11 @@ const Questionnaire = () => {
 
   // ---------- Sync Redux store -> local questions ----------
   useEffect(() => {
+   console.log(fetchedQuestions);
     // If the server returned questionDetail with nested "option" objects,
     // we transform them into the shape your UI expects:
     if (fetchedQuestions && fetchedQuestions.length > 0) {
+      debugger;
       const transformed = fetchedQuestions.map((srvQ) => ({
         // Use the same structure your UI logic uses:
         questionText: srvQ.questionText,
@@ -425,7 +427,7 @@ const Questionnaire = () => {
   return (
     <div style={{ padding: 24 }}>
       <Title level={2} style={{ textAlign: "center", marginBottom: 24 }}>
-        Create and Answer Questionnaire
+        Create Questionnaire
       </Title>
 
       {customersError && !customersLoading && (!customers || customers.length === 0) && (
