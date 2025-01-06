@@ -97,6 +97,7 @@ export const deleteQuestion = createAsyncThunk(
   }
 );
 
+
 // **New Action: Fetch a Single Question by ID** (Minimal change: now GET instead of POST)
 export const getQuestionById = createAsyncThunk(
   "questionnaire/getQuestionById",
@@ -104,9 +105,9 @@ export const getQuestionById = createAsyncThunk(
     try {
       // Changed from API.post(...) to API.get(...) to match the GET /api/Question/GetById endpoint
       const response = await API.get(`Question/GetById?id=${id}`); 
-      
-      if (response.data.hasValue) {
-        return response.data.value; // Return the single question object (which includes questionDetail[])
+
+      if (response?.data.data.questionDetail !== 0) {
+        return response.data.data.questionDetail; // Return the single question object (which includes questionDetail[])
       } else {
         return rejectWithValue("Question not found.");
       }

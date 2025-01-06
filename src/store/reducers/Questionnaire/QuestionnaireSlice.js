@@ -11,6 +11,7 @@ import {
 const initialState = {
   questions: [],
   currentQuestion: null, // Added to store a single fetched question
+  fetchedQuestions : [], // Added to store the fetched questions
   loading: false,
   error: null,
 };
@@ -110,10 +111,9 @@ const QuestionnaireSlice = createSlice({
       })
       .addCase(getQuestionById.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentQuestion = action.payload; // Store the fetched question
-        
-        // **MINIMAL CHANGE**: Populate questions[] from the "questionDetail" array in the response
-        state.questions = action.payload?.questionDetail || [];
+        state.fetchedQuestions = action.payload; // Store the fetched questions
+        // state.currentQuestion = action.payload.data; // Store the fetched question's data
+        // state.questions = action.payload.data.questionDetail || []; // Populate questions[] from the response
       })
       .addCase(getQuestionById.rejected, (state, action) => {
         state.loading = false;
