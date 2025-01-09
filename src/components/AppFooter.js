@@ -27,6 +27,5 @@ const styles = {
   },
 };
 
-
 export default AppFooter;
 
