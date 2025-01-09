@@ -5,7 +5,8 @@ import customerRegistrationReducer from "./reducers/CustomerRegistration/Custome
 import industryRegistrationReducer from "./reducers/IndustryRegistration/IndustryRegistrationSlice";
 import employeeRegistrationReducer from "./reducers/EmployeeRegistration/EmployeeRegistrationSlice";
 import questionnaireReducer from "./reducers/Questionnaire/QuestionnaireSlice";
-import questionTypeReducer from "./reducers/QuestionType/QuestionTypeSlice"; // Import the QuestionType reducer
+import questionTypeReducer from "./reducers/QuestionType/QuestionTypeSlice";
+import homeReducer from "./reducers/Home/HomeSlice"; // Import the Home reducer
 
 const store = configureStore({
   reducer: {
@@ -13,7 +14,8 @@ const store = configureStore({
     customerRegistration: customerRegistrationReducer,
     employeeRegistration: employeeRegistrationReducer,
     questionnaire: questionnaireReducer,
-    questionType: questionTypeReducer, // Add QuestionType to the store
+    questionType: questionTypeReducer,
+    home: homeReducer, // Add Home to the store
   },
   devTools: process.env.NODE_ENV !== "production",
 });

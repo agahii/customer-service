@@ -168,7 +168,7 @@ const Questionnaire = () => {
     // If the server returned questionDetail with nested "option" objects,
     // we transform them into the shape your UI expects:
     if (fetchedQuestions && fetchedQuestions.length > 0) {
-      debugger;
+      ;
       const transformed = fetchedQuestions.map((srvQ) => ({
         // Use the same structure your UI logic uses:
         questionText: srvQ.questionText,
