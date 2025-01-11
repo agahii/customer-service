@@ -1,254 +1,308 @@
-// src/components/Home.js
-
-import React, { useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
-  Row,
+  Carousel,
   Card,
   Spin,
   message,
   Typography,
-  Divider,
-  Space,
-  Alert,
+  Input,
+  Radio,
+  Checkbox,
+  Select,
+  DatePicker,
+  Button,
+  Form,
 } from "antd";
-import {
-  fetchIndustries,
-  fetchCustomerProjects,
-  fetchQuestionnaireByProjectId,
-} from "../store/reducers/Home/HomeAction";
-import {
-  setSelectedIndustry,
-  setSelectedProject,
-  clearSelections,
-} from "../store/reducers/Home/HomeSlice";
-import { HomeOutlined, ProjectOutlined } from "@ant-design/icons";
+import moment from "moment";
 
-const { Title, Text } = Typography;
+// We still use Redux for fetching customers
+import { fetchCustomerRegistration } from "../store/reducers/CustomerRegistration/CustomerRegistrationAction";
+
+// But for project questions, we'll call the API directly instead of using the questionnaire slice
+import { API } from "../utills/services"; // Make sure the path and name are correct
+
+const { Title } = Typography;
+const { Option } = Select;
+
+const pastelColorsCustomers = ["#fde2e4", "#f9d5e5", "#cfe9f3", "#c9e4de", "#e2f0cb", "#fef9c3"];
+const pastelColorsProjects = ["#e2f4d3", "#cffafe", "#fef7c3", "#ffd8be", "#e0aaff", "#bbf7d0"];
 
 const Home = () => {
   const dispatch = useDispatch();
-  const hasFetched = useRef(false);
 
+  // ----- Local states -----
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  // Local questionnaire data (NOT from Redux)
+  const [localQuestions, setLocalQuestions] = useState([]);
+  const [questionnaireLoading, setQuestionnaireLoading] = useState(false);
+
+  // For storing user answers in Home
+  const [answers, setAnswers] = useState({});
+
+  // Redux: Customer Registration
   const {
-    industries,
-    customerProjects,
-    loadingIndustries,
-    loadingCustomerProjects,
-    loadingQuestionnaire,
-    errorIndustries,
-    errorCustomerProjects,
-    errorQuestionnaire,
-    selectedIndustry,
-    selectedProject,
-    fetchedQuestionnaire,
-  } = useSelector((state) => state.home);
+    entities: customers,
+    loading: customersLoading,
+    error: customersError,
+  } = useSelector((state) => state.customerRegistration);
 
-  // Fetch industries & projects once
+  // ----- Fetch customers on mount -----
   useEffect(() => {
-    if (!hasFetched.current) {
-      dispatch(fetchIndustries());
-      dispatch(fetchCustomerProjects());
-      hasFetched.current = true;
-    }
+    const controller = new AbortController();
+    dispatch(
+      fetchCustomerRegistration({
+        pagingInfo: { skip: 0, take: 100 },
+        controller,
+      })
+    );
+
+    return () => {
+      controller.abort();
+    };
   }, [dispatch]);
 
-  // Show any fetch errors
+  // ----- Show error if any -----
   useEffect(() => {
-    if (errorIndustries) message.error(`Failed to load industries: ${errorIndustries}`);
-    if (errorCustomerProjects) message.error(`Failed to load customer projects: ${errorCustomerProjects}`);
-    if (errorQuestionnaire) message.error(`Failed to load questionnaire: ${errorQuestionnaire}`);
-  }, [errorIndustries, errorCustomerProjects, errorQuestionnaire]);
+    if (customersError && !customersLoading) {
+      message.error(`Failed to load customers: ${customersError}`);
+    }
+  }, [customersError, customersLoading]);
 
-  // Pastel color palette for tiles
-  const tileColors = [
-    "#AEDFF7", "#F7E6AE", "#AEF7A4", "#F7AEDF",
-    "#A4F7F0", "#F7A4D6", "#F7A4A1", "#A1F7B5",
-  ];
-  const getColor = (index) => tileColors[index % tileColors.length];
+  // ----- Reset localQuestions & answers when a new project is clicked -----
+  const handleProjectClick = async (project) => {
+    setSelectedProject(project);
+    setLocalQuestions([]);
+    setAnswers({});
 
-  // On industry click -> set as selected, clear project
-  const handleIndustryClick = (industry) => {
-    dispatch(setSelectedIndustry(industry));
-    dispatch(setSelectedProject(null));
+    // Do a local fetch from the same endpoint your getQuestionById thunk uses
+    try {
+      setQuestionnaireLoading(true);
+      // e.g. GET /Question/GetById?id=PROJECT_ID
+      const response = await API.get(`Question/GetById?id=${project.id}`);
+      const questions = response?.data?.data?.questionDetail || [];
+      setLocalQuestions(questions);
+    } catch (error) {
+      console.error("Error fetching local project questionnaire", error);
+      message.error("Failed to load local questionnaire");
+    } finally {
+      setQuestionnaireLoading(false);
+    }
   };
 
-  // On project click -> set as selected, fetch its questionnaire, clear industry
-  const handleProjectClick = (project) => {
-    dispatch(setSelectedProject(project));
-    dispatch(fetchQuestionnaireByProjectId(project.id));
-    dispatch(setSelectedIndustry(null));
+  // ----- Handlers -----
+  const handleCustomerClick = (customer) => {
+    setSelectedCustomer(customer);
+    setSelectedProject(null);
+    setLocalQuestions([]);
+    setAnswers({});
   };
 
-  // Flatten out all projects from each customer
-  const allProjects = customerProjects.flatMap((cust) => cust.projects || []);
+  const handleAnswerChange = (index, value) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [index]: value,
+    }));
+  };
 
-  // Renders each question according to its type
-  const renderAnswerField = (question) => {
-    const tName = question.questionTypeName?.toLowerCase() || "";
+  const renderAnswerField = (question, index) => {
+    const tName = question.questionType?.typeName?.toLowerCase() || "";
+    const value = answers[index];
+
     switch (tName) {
-      case "checkbox":
+      case "text":
         return (
-          <Space direction="vertical">
-            {question.options?.map((opt, idx) => (
-              <Text key={idx}>
-                <input type="checkbox" /> {opt}
-              </Text>
-            ))}
-          </Space>
+          <Input
+            placeholder="Enter text"
+            value={value || ""}
+            onChange={(e) => handleAnswerChange(index, e.target.value)}
+          />
+        );
+      case "numeric":
+        return (
+          <Input
+            type="number"
+            placeholder="Enter a number"
+            value={value || ""}
+            onChange={(e) => handleAnswerChange(index, e.target.value)}
+          />
         );
       case "radio":
         return (
-          <Space direction="vertical">
-            {question.options?.map((opt, idx) => (
-              <Text key={idx}>
-                <input type="radio" name={`question_${question.id}`} /> {opt}
-              </Text>
+          <Radio.Group
+            value={value || ""}
+            onChange={(e) => handleAnswerChange(index, e.target.value)}
+          >
+            {question.option?.map((opt, i) => (
+              <Radio key={i} value={opt.optionText}>
+                {opt.optionText}
+              </Radio>
             ))}
-          </Space>
+          </Radio.Group>
+        );
+      case "checkbox":
+        // value can be an array
+        return (
+          <Checkbox.Group
+            value={Array.isArray(value) ? value : []}
+            onChange={(checkedValues) => handleAnswerChange(index, checkedValues)}
+          >
+            {question.option?.map((opt, i) => (
+              <Checkbox key={i} value={opt.optionText}>
+                {opt.optionText}
+              </Checkbox>
+            ))}
+          </Checkbox.Group>
         );
       case "dropdown":
         return (
-          <select style={{ width: "100%" }}>
-            <option value="">Select an option</option>
-            {question.options?.map((opt, idx) => (
-              <option key={idx} value={opt}>{opt}</option>
+          <Select
+            placeholder="Select an option"
+            style={{ width: 200 }}
+            value={value || undefined}
+            onChange={(val) => handleAnswerChange(index, val)}
+          >
+            {question.option?.map((opt, i) => (
+              <Option key={i} value={opt.optionText}>
+                {opt.optionText}
+              </Option>
             ))}
-          </select>
+          </Select>
         );
       case "datepicker":
-        return <input type="date" style={{ width: "100%" }} />;
+        return (
+          <DatePicker
+            style={{ width: 200 }}
+            value={value ? moment(value) : null}
+            onChange={(date, dateString) => handleAnswerChange(index, dateString)}
+          />
+        );
       case "image":
-        return question.imageUrl ? (
-          <img src={question.imageUrl} alt="Uploaded" style={{ maxWidth: "100%", height: "auto" }} />
-        ) : <Text>No image uploaded.</Text>;
-      case "numeric":
-        return <input type="number" style={{ width: "100%" }} />;
-      case "text":
-        return <input type="text" style={{ width: "100%" }} />;
+        if (question.imageUrl) {
+          return (
+            <img
+              src={question.imageUrl}
+              alt="Question"
+              style={{ maxWidth: "100%", marginTop: 8 }}
+            />
+          );
+        }
+        return <p>No image provided.</p>;
       default:
-        return null;
+        return <p style={{ color: "#999" }}>No specific input for this type.</p>;
     }
   };
 
-  // Renders the questionnaire below the second slide
-  const renderQuestionnaire = () => {
-    if (loadingQuestionnaire) return <Spin tip="Loading questionnaire..." />;
-    if (errorQuestionnaire) {
-      return (
-        <Alert
-          message="Error"
-          description={errorQuestionnaire}
-          type="error"
-          showIcon
-        />
-      );
-    }
-    if (!fetchedQuestionnaire?.length) {
-      return <Text>No questionnaire available for this project.</Text>;
-    }
-    return (
-      <div style={{ marginTop: 24 }}>
-        <Divider orientation="left">Project Questionnaire</Divider>
-        <Row gutter={[16, 16]}>
-          {fetchedQuestionnaire.map((question, idx) => (
-            <Card
-              key={idx}
-              title={`Q${idx + 1}: ${question.questionText}`}
-              bordered={false}
-              style={{ backgroundColor: "#f9f9f9", width: "100%" }}
-            >
-              {renderAnswerField(question)}
-            </Card>
-          ))}
-        </Row>
-      </div>
-    );
+  const handleSubmit = () => {
+    console.log("Answers in Home (local):", answers);
+    message.success("Questionnaire submitted!");
+    // If you want to send these answers to your backend, do so here
+    // e.g. API.post("/Questionnaire/submit", { projectId: selectedProject.id, answers })
   };
 
+  // ----- Render -----
   return (
     <div style={{ padding: 24 }}>
-      <Title level={2} style={{ textAlign: "center", marginBottom: 24 }}>
-        Home
-      </Title>
+      <Typography.Title level={2} style={{ textAlign: "center", marginBottom: 24 }}>
+        Home (Local Questionnaire)
+      </Typography.Title>
 
-      {/* 1. Industries Slide */}
-      <Divider orientation="left">Industries</Divider>
-      {loadingIndustries ? (
-        <Spin tip="Loading industries..." />
-      ) : (
-        <div style={{ display: "flex", overflowX: "auto", padding: "16px 0" }}>
-          {industries.map((ind, idx) => (
-            <Card
-              key={ind.id}
-              hoverable
-              onClick={() => handleIndustryClick(ind)}
-              style={{
-                backgroundColor: getColor(idx),
-                minWidth: 200,
-                marginRight: 16,
-                cursor: "pointer",
-                flex: "0 0 auto",
-              }}
-            >
-              <Space direction="vertical" align="center">
-                <HomeOutlined style={{ fontSize: 32, color: "#333" }} />
-                <Title level={4} style={{ textAlign: "center" }}>
-                  {ind.industryType}
-                </Title>
-              </Space>
-            </Card>
-          ))}
-        </div>
+      {/* Customers carousel */}
+      <section>
+        <Typography.Title level={4}>Customers</Typography.Title>
+        {customersLoading ? (
+          <Spin />
+        ) : customers && customers.length > 0 ? (
+          <Carousel dots={false} slidesToShow={4} swipeToSlide draggable>
+            {customers.map((customer, index) => {
+              const tileColor = pastelColorsCustomers[index % pastelColorsCustomers.length];
+              return (
+                <div key={customer.id} style={{ padding: "0 8px" }}>
+                  <Card
+                    hoverable
+                    onClick={() => handleCustomerClick(customer)}
+                    style={{
+                      backgroundColor: tileColor,
+                      textAlign: "center",
+                      margin: "8px",
+                      padding: "16px",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <h4>{customer.customerName}</h4>
+                  </Card>
+                </div>
+              );
+            })}
+          </Carousel>
+        ) : (
+          <p>No customers available.</p>
+        )}
+      </section>
+
+      {/* Projects carousel */}
+      {selectedCustomer && (
+        <section style={{ marginTop: 48 }}>
+          <Typography.Title level={4}>
+            Projects for {selectedCustomer.customerName}
+          </Typography.Title>
+          {selectedCustomer.customerProject?.length > 0 ? (
+            <Carousel dots={false} slidesToShow={4} swipeToSlide draggable>
+              {selectedCustomer.customerProject.map((project, index) => {
+                const tileColor = pastelColorsProjects[index % pastelColorsProjects.length];
+                return (
+                  <div key={project.id} style={{ padding: "0 8px" }}>
+                    <Card
+                      hoverable
+                      onClick={() => handleProjectClick(project)}
+                      style={{
+                        backgroundColor: tileColor,
+                        textAlign: "center",
+                        margin: "8px",
+                        padding: "16px",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <h4>{project.projectName}</h4>
+                    </Card>
+                  </div>
+                );
+              })}
+            </Carousel>
+          ) : (
+            <p>No projects found for this customer.</p>
+          )}
+        </section>
       )}
 
-      {/* 2. Customer Projects Slide */}
-      <Divider orientation="left">Customer Projects</Divider>
-      {loadingCustomerProjects ? (
-        <Spin tip="Loading customer projects..." />
-      ) : (
-        <div style={{ display: "flex", overflowX: "auto", padding: "16px 0" }}>
-          {allProjects.map((proj, idx) => (
-            <Card
-              key={proj.id}
-              hoverable
-              onClick={() => handleProjectClick(proj)}
-              style={{
-                backgroundColor: getColor(idx),
-                minWidth: 200,
-                marginRight: 16,
-                cursor: "pointer",
-                flex: "0 0 auto",
-              }}
-            >
-              <Space direction="vertical" align="center">
-                <ProjectOutlined style={{ fontSize: 32, color: "#333" }} />
-                <Title level={4} style={{ textAlign: "center" }}>
-                  {proj.projectName}
-                </Title>
-              </Space>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Optional: Display details of the currently selected Industry */}
-      {selectedIndustry && (
-        <div style={{ marginTop: 24 }}>
-          <Divider orientation="left">Industry Details</Divider>
-          <Card>
-            <Title level={4}>{selectedIndustry.industryType}</Title>
-            <Text>{selectedIndustry.description || "No description available."}</Text>
-          </Card>
-        </div>
-      )}
-
-      {/* Render Questionnaire for the selected Project */}
+      {/* Local Questionnaire */}
       {selectedProject && (
-        <div style={{ marginTop: 24 }}>
-          <Divider orientation="left">Project Questionnaire</Divider>
-          {renderQuestionnaire()}
-        </div>
+        <section style={{ marginTop: 48, maxWidth: 600 }}>
+          <Typography.Title level={4}>
+            Questionnaire for {selectedProject.projectName}
+          </Typography.Title>
+          {questionnaireLoading ? (
+            <Spin />
+          ) : localQuestions && localQuestions.length > 0 ? (
+            <Form layout="vertical">
+              {localQuestions.map((q, idx) => (
+                <Form.Item key={idx} label={`Q${idx + 1}: ${q.questionText}`}>
+                  {renderAnswerField(q, idx)}
+                </Form.Item>
+              ))}
+
+              <Form.Item>
+                <Button type="primary" onClick={handleSubmit}>
+                  Submit
+                </Button>
+              </Form.Item>
+            </Form>
+          ) : (
+            <p>No questionnaire data for this project.</p>
+          )}
+        </section>
       )}
     </div>
   );

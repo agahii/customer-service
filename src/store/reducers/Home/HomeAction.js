@@ -1,63 +1,41 @@
 // src/store/reducers/Home/HomeAction.js
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { API } from "../../../utills/services"; // Adjust the path if necessary
+import { API } from "../../../utills/services"; // Verify this path points to your services file
 
-// Fetch Industries
-export const fetchIndustries = createAsyncThunk(
-  "home/fetchIndustries",
+// Fetch customers (assumed API endpoint)
+export const fetchCustomers = createAsyncThunk(
+  "home/fetchCustomers",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await API.post("Industry/Get"); // Adjust the endpoint as per your API
-
-      if (response.data.responseCode === 1000 && Array.isArray(response.data.data)) {
-        return response.data.data;
+      const response = await API.get("Customer/GetAll"); // Adjust endpoint if needed
+      if (response.data && Array.isArray(response.data.customers)) {
+        return response.data.customers;
       } else {
-        return rejectWithValue(response.data.message || "Failed to fetch industries.");
+        return rejectWithValue("No customers found.");
       }
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "An error occurred while fetching industries."
+        error.response?.data?.message || "Fetching customers failed."
       );
     }
   }
 );
 
-// Fetch Customer Projects
+// Fetch customer projects given a customer id
 export const fetchCustomerProjects = createAsyncThunk(
   "home/fetchCustomerProjects",
-  async (_, { rejectWithValue }) => {
+  async (customerId, { rejectWithValue }) => {
     try {
-      const response = await API.post("CustomerProject/Get"); // Adjust the endpoint as per your API
-
-      if (response.data.responseCode === 1000 && Array.isArray(response.data.data)) {
-        return response.data.data;
+      const response = await API.get(`Customer/GetProjects?customerId=${customerId}`); // Adjust endpoint as needed
+      if (response.data && Array.isArray(response.data.projects)) {
+        return response.data.projects;
       } else {
-        return rejectWithValue(response.data.message || "Failed to fetch customer projects.");
+        return rejectWithValue("No projects found for this customer.");
       }
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "An error occurred while fetching customer projects."
-      );
-    }
-  }
-);
-
-// Fetch Questionnaire by Project ID
-export const fetchQuestionnaireByProjectId = createAsyncThunk(
-  "home/fetchQuestionnaireByProjectId",
-  async (projectId, { rejectWithValue }) => {
-    try {
-      const response = await API.get(`Questionnaire/GetByProjectId?id=${projectId}`); // Adjust the endpoint as per your API
-
-      if (response.data.responseCode === 1000 && Array.isArray(response.data.data)) {
-        return response.data.data;
-      } else {
-        return rejectWithValue(response.data.message || "Failed to fetch questionnaire.");
-      }
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "An error occurred while fetching the questionnaire."
+        error.response?.data?.message || "Fetching customer projects failed."
       );
     }
   }
