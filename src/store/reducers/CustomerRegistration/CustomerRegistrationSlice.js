@@ -7,6 +7,7 @@ import {
   updateCustomerRegistration,
   deleteCustomerRegistration,
   uploadCustomerLogo,
+  uploadProjectLogo,
 } from "./CustomerRegistrationAction";
 
 const customerRegistrationSlice = createSlice({
@@ -71,7 +72,28 @@ const customerRegistrationSlice = createSlice({
       .addCase(uploadCustomerLogo.rejected, (state, { payload }) => {
         state.loading = false;
         state.error = payload;
-      });
+      })
+      
+      .addCase(uploadProjectLogo.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(uploadProjectLogo.fulfilled, (state, { payload }) => {
+        state.loading = false;
+        state.entities.forEach((customer) => {
+          customer.customerProject.forEach((project) => {
+            if (project.id === payload.id) {
+              project.imageUrl = payload.logoUrl; // Update the project logo URL
+            }
+          });
+        });
+      })
+      .addCase(uploadProjectLogo.rejected, (state, { payload }) => {
+        state.loading = false;
+        state.error = payload;
+      })
+      
+      ;
       
   },
 });

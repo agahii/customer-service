@@ -21,6 +21,7 @@ import {
   updateCustomerRegistration,
   deleteCustomerRegistration,
   uploadCustomerLogo,
+  uploadProjectLogo,
 } from "../store/reducers/CustomerRegistration/CustomerRegistrationAction";
 import { fetchIndustry } from "../store/reducers/IndustryRegistration/IndustryRegistrationAction";
 import { fetchEmployee } from "../store/reducers/EmployeeRegistration/EmployeeRegistrationAction";
@@ -160,6 +161,7 @@ const CustomerRegistration = () => {
       ...record,
       customerProjectInp: record.customerProject?.map((project) => ({
         projectName: project.projectName,
+        imageUrl: project.imageUrl,
         gccAgents: project.gccAgent?.map((agent) => ({
           fK_Employee_ID: agent.fK_Employee_ID,
         })) || [],
@@ -431,8 +433,29 @@ const CustomerRegistration = () => {
     }
   };
   
-  const baseDomainForImages = BASE_DOMAIN.replace("/api", "/Images");
-console.log("url", baseDomainForImages)
+  
+  const handleProjectLogoUpload = async (id, file) => {
+    if (file) {
+      try {
+        await dispatch(uploadProjectLogo({ id, file })).unwrap();
+  
+        // Update the form dynamically after the logo is uploaded
+        // const updatedProjects = form.getFieldValue("customerProjectInp").map((project) => {
+        //   if (project.id === projectId) {
+        //     return { ...project, imageUrl: `${BASE_DOMAIN}/Images/${file.name}` };
+        //   }
+        //   return project;
+        // });
+  
+        // form.setFieldsValue({ customerProjectInp: updatedProjects });
+  
+        message.success("Project logo uploaded successfully!");
+      } catch (error) {
+        message.error(`Project logo upload failed: ${error}`);
+      }
+    }
+  };
+  
 
 
 
@@ -695,7 +718,68 @@ console.log("url", baseDomainForImages)
                             <Input placeholder="Project Name" />
                           </Form.Item>
                         </Col>
+
+                        <Col xs={24} sm={12}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px", // Space between thumbnail and button
+                }}
+              >
+                {form.getFieldValue(["customerProjectInp", name, "imageUrl"]) ? (
+                  <img
+                    src={`${BASE_DOMAIN.replace(
+                      "/api",
+                      "/Images"
+                    )}${form.getFieldValue(["customerProjectInp", name, "imageUrl"])}`}
+                    alt="Project Logo"
+                    style={{
+                      width: 50,
+                      height: 50,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "2px solid #ddd",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 50,
+                      height: 50,
+                      borderRadius: "50%",
+                      backgroundColor: "#f0f0f0",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      fontSize: "12px",
+                      color: "#999",
+                      border: "2px solid #ddd",
+                    }}
+                  >
+                    No Logo
+                  </div>
+                )}
+                <Upload
+                  beforeUpload={(file) => {
+                    handleProjectLogoUpload(
+                      selectedRecord.id,
+                      form.getFieldValue(["customerProjectInp", name, "projectName"]),
+                      file
+                    );
+                    return false; // Prevent auto-upload by Ant Design
+                  }}
+                  showUploadList={false}
+                >
+                  <Button icon={<UploadOutlined />}>Upload Logo</Button>
+                </Upload>
+              </div>
+            </Col>
+
                         <Col xs={24} sm={12}></Col>
+
+
+                        
                       </Row>
 
                       <EmployeeSelect

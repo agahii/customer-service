@@ -86,3 +86,21 @@ export const uploadCustomerLogo = createAsyncThunk(
     }
   }
 );
+export const uploadProjectLogo = createAsyncThunk(
+  "customerRegistration/uploadProjectLogo",
+  async ({ id, file }, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append("ID", id);
+      formData.append("files", file);
+
+      const response = await API.post("Customer/AddCustomerProjectImageAsync", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      return { id, logoUrl: response.data.logoUrl };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Project logo upload failed.");
+    }
+  }
+);
