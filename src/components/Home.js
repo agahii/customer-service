@@ -276,19 +276,55 @@ const Home = () => {
                 const tileColor = pastelColorsProjects[index % pastelColorsProjects.length];
                 return (
                   <div key={project.id} style={{ padding: "0 8px" }}>
-                    <Card
-                      hoverable
-                      onClick={() => handleProjectClick(project)}
-                      style={{
-                        backgroundColor: tileColor,
-                        textAlign: "center",
-                        margin: "8px",
-                        padding: "16px",
-                        borderRadius: "8px",
-                      }}
-                    >
-                      <h4>{project.projectName}</h4>
-                    </Card>
+                     <Card
+                hoverable
+                onClick={() => handleProjectClick(project)}
+                style={{
+                  backgroundColor: tileColor,
+                  textAlign: "center",
+                  margin: "8px",
+                  padding: "16px",
+                  borderRadius: "8px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: "200px",
+                }}
+              >
+                {/* Project Logo */}
+                {project.imageUrl ? (
+                  <img
+                    src={`${BASE_DOMAIN.replace("/api", "/Images")}${project.imageUrl}`}
+                    alt={`${project.projectName} Logo`}
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "contain",
+                      marginBottom: "8px",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      backgroundColor: "#f0f0f0",
+                      borderRadius: "8px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      color: "#999",
+                      fontSize: "12px",
+                    }}
+                  >
+                    No Logo
+                  </div>
+                )}
+
+                {/* Project Name */}
+                <h4 style={{ margin: 0 }}>{project.projectName}</h4>
+              </Card>
                   </div>
                 );
               })}
