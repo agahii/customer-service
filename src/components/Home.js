@@ -221,30 +221,39 @@ const Home = () => {
               const tileColor = pastelColorsCustomers[index % pastelColorsCustomers.length];
               return (
                 <div key={customer.id} style={{ padding: "0 8px" }}>
-                  <Card
-                    hoverable
-                    onClick={() => handleCustomerClick(customer)}
-                    style={{
-                      backgroundColor: tileColor,
-                      textAlign: "center",
-                      margin: "8px",
-                      padding: "16px",
-                      borderRadius: "8px",
-                    }}
-                  >
+                 <Card
+  hoverable
+  onClick={() => handleCustomerClick(customer)}
+  style={{
+    backgroundColor: tileColor,
+    textAlign: "center",
+    margin: "8px",
+    padding: "16px",
+    borderRadius: "8px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center", // Center-align logo and text
+    justifyContent: "center", // Center content vertically
+  }}
+>
+  {/* Logo */}
+  {customer.imageUrl && (
+    <img
+      src={BASE_DOMAIN.replace("/api", "/Images") + customer.imageUrl}
+      alt={`${customer.customerName} Logo`}
+      style={{
+        width: "100px",
+        height: "100px",
+        objectFit: "contain",
+        marginBottom: "8px", // Add spacing between logo and name
+      }}
+    />
+  )}
 
- 
-            {customer.imageUrl && (
-            <img
-             src={BASE_DOMAIN.replace("/api", "/Images") + customer.imageUrl}
-              alt={`${customer.customerName} Logo`}
-              style={{ width: "100px", height: "100px", objectFit: "contain", marginBottom: "8px" }}
-            />
-          )}
+  {/* Customer Name */}
+  <h4 style={{ margin: 0 }}>{customer.customerName}</h4>
+</Card>
 
-
-                    <h4>{customer.customerName}</h4>
-                  </Card>
                 </div>
               );
             })}
