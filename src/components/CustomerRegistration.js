@@ -654,22 +654,7 @@ const CustomerRegistration = () => {
             </Col>
           </Row>
 
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="imageUrl"
-                label="Image URL"
-                rules={[
-                  { required: false },
-                  { type: "url", message: "Please enter a valid URL" },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}></Col>
-          </Row>
-
+        
           {isEditing && (
             <Row gutter={16}>
               <Col xs={24} sm={12}>
