@@ -412,6 +412,7 @@ const CustomerRegistration = () => {
       render: (_, record) => (
         <div style={{ display: "flex", gap: "8px" }}>
           <Button
+          type="primary"
             onClick={() => handleEdit(record)}
             style={{
               width: 80, // Set the same width for both buttons
