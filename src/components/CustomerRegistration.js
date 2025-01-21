@@ -764,7 +764,6 @@ const CustomerRegistration = () => {
                   beforeUpload={(file) => {
                     handleProjectLogoUpload(
                       selectedRecord.id,
-                      form.getFieldValue(["customerProjectInp", name, "projectName"]),
                       file
                     );
                     return false; // Prevent auto-upload by Ant Design
