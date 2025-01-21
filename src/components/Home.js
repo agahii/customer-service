@@ -207,7 +207,7 @@ const Home = () => {
   return (
     <div style={{ padding: 24 }}>
       <Typography.Title level={2} style={{ textAlign: "center", marginBottom: 24 }}>
-        Home (Local Questionnaire)
+        Home (Questionnaire)
       </Typography.Title>
 
       {/* Customers carousel */}
