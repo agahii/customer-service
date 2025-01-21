@@ -1,5 +1,6 @@
 // src/components/CustomerRegistration.js
-
+import { Upload } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -19,11 +20,19 @@ import {
   fetchCustomerRegistration,
   updateCustomerRegistration,
   deleteCustomerRegistration,
+  uploadCustomerLogo,
 } from "../store/reducers/CustomerRegistration/CustomerRegistrationAction";
 import { fetchIndustry } from "../store/reducers/IndustryRegistration/IndustryRegistrationAction";
 import { fetchEmployee } from "../store/reducers/EmployeeRegistration/EmployeeRegistrationAction";
 
 const { Option } = Select;
+
+
+
+
+
+
+
 
 // Reusable Employee Select Component
 const EmployeeSelect = ({
@@ -295,6 +304,36 @@ const CustomerRegistration = () => {
 
   // Columns definition
   const columns = [
+
+
+    {
+      title: "Logo",
+      key: "logo",
+      render: (_, record) => (
+        <>
+          {record.logoUrl ? (
+            <img
+              src={record.logoUrl}
+              alt="Customer Logo"
+              style={{ width: 50, height: 50 }}
+            />
+          ) : (
+            <span> No Logo Found  </span>
+          )}
+          <Upload
+            beforeUpload={(file) => {
+              handleLogoUpload(record.id, file);
+              return false; // Prevent auto-upload by Ant Design
+            }}
+            showUploadList={false}
+          >
+            <Button icon={<UploadOutlined />}>Upload Logo</Button>
+          </Upload>
+        </>
+      ),
+    },
+
+
     {
       title: "Customer Name",
       dataIndex: "customerName",
@@ -353,6 +392,22 @@ const CustomerRegistration = () => {
       ),
     },
   ];
+
+  const handleLogoUpload = async (id, file) => {
+    if (file) {
+      try {
+        await dispatch(uploadCustomerLogo({ id, file })).unwrap();
+        message.success("Logo uploaded successfully!");
+      } catch (error) {
+        message.error(`Logo upload failed: ${error}`);
+      }
+    }
+  };
+  
+
+
+
+
 
   return (
     <div style={{ padding: 24 }}>
