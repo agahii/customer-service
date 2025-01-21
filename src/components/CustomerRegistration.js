@@ -760,18 +760,16 @@ const CustomerRegistration = () => {
                     No Logo
                   </div>
                 )}
-                <Upload
-                  beforeUpload={(file) => {
-                    handleProjectLogoUpload(
-                      selectedRecord.id,
-                      file
-                    );
-                    return false; // Prevent auto-upload by Ant Design
-                  }}
-                  showUploadList={false}
-                >
-                  <Button icon={<UploadOutlined />}>Upload Logo</Button>
-                </Upload>
+                          <Upload
+              beforeUpload={(file) => {
+                const projectId = form.getFieldValue(["customerProject", name, "id"]);
+                handleProjectLogoUpload(projectId, file);
+                return false; // Prevent auto-upload by Ant Design
+              }}
+              showUploadList={false}
+            >
+              <Button icon={<UploadOutlined />}>Upload Logo</Button>
+            </Upload>
               </div>
             </Col>
 
