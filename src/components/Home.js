@@ -216,7 +216,7 @@ const Home = () => {
         {customersLoading ? (
           <Spin />
         ) : customers && customers.length > 0 ? (
-          <Carousel dots={false} slidesToShow={4} swipeToSlide draggable>
+          <Carousel dots={false} slidesToShow={8} swipeToSlide draggable>
             {customers.map((customer, index) => {
               const tileColor = pastelColorsCustomers[index % pastelColorsCustomers.length];
               return (
@@ -227,14 +227,15 @@ const Home = () => {
   style={{
     backgroundColor: tileColor,
     textAlign: "center",
-    margin: "8px",
+    margin: "4px", 
     padding: "16px",
     borderRadius: "8px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center", // Center-align logo and text
     justifyContent: "center", // Center content vertically
-    minHeight: "200px",
+    minHeight: "210px", // Reduced height
+    width: "200px", // Reduced width
   }}
 >
   {/* Logo */}
@@ -271,7 +272,7 @@ const Home = () => {
             Projects for {selectedCustomer.customerName}
           </Typography.Title>
           {selectedCustomer.customerProject?.length > 0 ? (
-            <Carousel dots={false} slidesToShow={4} swipeToSlide draggable>
+            <Carousel dots={false} slidesToShow={8} swipeToSlide draggable>
               {selectedCustomer.customerProject.map((project, index) => {
                 const tileColor = pastelColorsProjects[index % pastelColorsProjects.length];
                 return (
@@ -289,7 +290,8 @@ const Home = () => {
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  minHeight: "200px",
+                  minHeight: "210px", // Reduced height
+    width: "200px", // Reduced width
                 }}
               >
                 {/* Project Logo */}
