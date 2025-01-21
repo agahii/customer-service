@@ -24,7 +24,7 @@ import {
 } from "../store/reducers/CustomerRegistration/CustomerRegistrationAction";
 import { fetchIndustry } from "../store/reducers/IndustryRegistration/IndustryRegistrationAction";
 import { fetchEmployee } from "../store/reducers/EmployeeRegistration/EmployeeRegistrationAction";
-
+import { BASE_DOMAIN } from "../utills/services";
 const { Option } = Select;
 
 
@@ -304,16 +304,16 @@ const CustomerRegistration = () => {
 
   // Columns definition
   const columns = [
-
+  
 
     {
       title: "Logo",
       key: "logo",
       render: (_, record) => (
         <>
-          {record.logoUrl ? (
+          {record.imageUrl ? (
             <img
-              src={record.logoUrl}
+              src={BASE_DOMAIN.replace("/api", "/Images") + record.imageUrl}
               alt="Customer Logo"
               style={{ width: 50, height: 50 }}
             />
@@ -404,8 +404,8 @@ const CustomerRegistration = () => {
     }
   };
   
-
-
+  const baseDomainForImages = BASE_DOMAIN.replace("/api", "/Images");
+console.log("url", baseDomainForImages)
 
 
 
