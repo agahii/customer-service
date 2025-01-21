@@ -82,7 +82,7 @@ const Home = () => {
     try {
       setQuestionnaireLoading(true);
       // e.g. GET /Question/GetById?id=PROJECT_ID
-      const response = await API.get(`Question/GetById?id=${project.id}`);
+      const response = await API.get(`Question/GetByProjectId?id=${project.id}`);
       const questions = response?.data?.data?.questionDetail || [];
       setLocalQuestions(questions);
     } catch (error) {
