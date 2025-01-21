@@ -95,6 +95,7 @@ const Home = () => {
 
   // ----- Handlers -----
   const handleCustomerClick = (customer) => {
+    
     setSelectedCustomer(customer);
     setSelectedProject(null);
     setLocalQuestions([]);
@@ -267,34 +268,33 @@ const Home = () => {
 
       {/* Projects carousel */}
       {selectedCustomer && (
-        <section style={{ marginTop: 48 }}>
-          <Typography.Title level={4}>
-            Projects for {selectedCustomer.customerName}
-          </Typography.Title>
-          {selectedCustomer.customerProject?.length > 0 ? (
-            <Carousel dots={false} slidesToShow={8} swipeToSlide draggable>
-              {selectedCustomer.customerProject.map((project, index) => {
-                const tileColor = pastelColorsProjects[index % pastelColorsProjects.length];
-                return (
-                  <div key={project.id} style={{ padding: "0 8px" }}>
-                     <Card
+  <section style={{ marginTop: 48 }}>
+    <Typography.Title level={4}>
+      Projects for {selectedCustomer.customerName}
+    </Typography.Title>
+    {selectedCustomer.customerProject?.length > 0 ? (
+      <Carousel dots={false} slidesToShow={4} swipeToSlide draggable>
+        {selectedCustomer.customerProject.map((project, index) => {
+          const tileColor = pastelColorsProjects[index % pastelColorsProjects.length];
+          return (
+            <div key={project.id} style={{ padding: "0 4px" }}>
+              <Card
                 hoverable
                 onClick={() => handleProjectClick(project)}
                 style={{
                   backgroundColor: tileColor,
                   textAlign: "center",
-                  margin: "8px",
+                  margin: "4px 0",
                   padding: "16px",
                   borderRadius: "8px",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  minHeight: "210px", // Reduced height
-    width: "200px", // Reduced width
+                  minHeight: "160px",
+                  width: "200px",
                 }}
               >
-                {/* Project Logo */}
                 {project.imageUrl ? (
                   <img
                     src={`${BASE_DOMAIN.replace("/api", "/Images")}${project.imageUrl}`}
@@ -323,19 +323,18 @@ const Home = () => {
                     No Logo
                   </div>
                 )}
-
-                {/* Project Name */}
                 <h4 style={{ margin: 0 }}>{project.projectName}</h4>
               </Card>
-                  </div>
-                );
-              })}
-            </Carousel>
-          ) : (
-            <p>No projects found for this customer.</p>
-          )}
-        </section>
-      )}
+            </div>
+          );
+        })}
+      </Carousel>
+    ) : (
+      <p>No projects found for this customer.</p>
+    )}
+  </section>
+)}
+
 
       {/* Local Questionnaire */}
       {selectedProject && (
