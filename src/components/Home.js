@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { BASE_DOMAIN } from "../utills/services";
 import {
   Carousel,
   Card,
@@ -231,6 +232,17 @@ const Home = () => {
                       borderRadius: "8px",
                     }}
                   >
+
+ 
+            {customer.imageUrl && (
+            <img
+             src={BASE_DOMAIN.replace("/api", "/Images") + customer.imageUrl}
+              alt={`${customer.customerName} Logo`}
+              style={{ width: "100px", height: "100px", objectFit: "contain", marginBottom: "8px" }}
+            />
+          )}
+
+
                     <h4>{customer.customerName}</h4>
                   </Card>
                 </div>
