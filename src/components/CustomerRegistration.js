@@ -315,7 +315,13 @@ const CustomerRegistration = () => {
             <img
               src={BASE_DOMAIN.replace("/api", "/Images") + record.imageUrl}
               alt="Customer Logo"
-              style={{ width: 50, height: 50 }}
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: "50%", // Makes the image circular
+                objectFit: "cover", // Ensures the image fits well within the round shape
+                border: "2px solid #ddd", // Optional: Adds a border for aesthetics
+              }}
             />
           ) : (
             <span> No Logo Found  </span>
