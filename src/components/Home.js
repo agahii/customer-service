@@ -277,14 +277,14 @@ const Home = () => {
         {selectedCustomer.customerProject.map((project, index) => {
           const tileColor = pastelColorsProjects[index % pastelColorsProjects.length];
           return (
-            <div key={project.id} style={{ padding: "0 4px" }}>
+            <div key={project.id} style={{ padding: "0 8px" }}>
               <Card
                 hoverable
                 onClick={() => handleProjectClick(project)}
                 style={{
                   backgroundColor: tileColor,
                   textAlign: "center",
-                  margin: "4px 0",
+                  margin: "4px",
                   padding: "16px",
                   borderRadius: "8px",
                   display: "flex",
