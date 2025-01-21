@@ -310,21 +310,42 @@ const CustomerRegistration = () => {
       title: "Logo",
       key: "logo",
       render: (_, record) => (
-        <>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center", // Vertically center-align
+            gap: "12px", // Add space between thumbnail and button
+          }}
+        >
           {record.imageUrl ? (
             <img
-              src={BASE_DOMAIN.replace("/api", "/Images") + record.imageUrl}
+              src={`${BASE_DOMAIN.replace("/api", "/Images")}${record.imageUrl}`}
               alt="Customer Logo"
               style={{
                 width: 50,
                 height: 50,
-                borderRadius: "50%", // Makes the image circular
-                objectFit: "cover", // Ensures the image fits well within the round shape
-                border: "2px solid #ddd", // Optional: Adds a border for aesthetics
+                borderRadius: "50%", // Makes the image round
+                objectFit: "cover", // Ensures proper fit within the round shape
+                border: "2px solid #ddd", // Optional: Adds a border for styling
               }}
             />
           ) : (
-            <span> No Logo Found  </span>
+            <div
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: "50%",
+                backgroundColor: "#f0f0f0",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontSize: "12px",
+                color: "#999",
+                border: "2px solid #ddd",
+              }}
+            >
+              No Logo
+            </div>
           )}
           <Upload
             beforeUpload={(file) => {
@@ -335,10 +356,10 @@ const CustomerRegistration = () => {
           >
             <Button icon={<UploadOutlined />}>Upload Logo</Button>
           </Upload>
-        </>
+        </div>
       ),
     },
-
+    
 
     {
       title: "Customer Name",
