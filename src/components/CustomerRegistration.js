@@ -408,18 +408,30 @@ const CustomerRegistration = () => {
     {
       title: "Actions",
       key: "actions",
-      width: 150,
+      width: 150, // Adjust width as per your grid design
       render: (_, record) => (
-        <>
-          <Button onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <Button
+            onClick={() => handleEdit(record)}
+            style={{
+              width: 80, // Set the same width for both buttons
+            }}
+          >
             Edit
           </Button>
-          <Button danger onClick={() => handleDelete(record.id)}>
+          <Button
+            danger
+            onClick={() => handleDelete(record.id)}
+            style={{
+              width: 80, // Match the width with the Edit button
+            }}
+          >
             Delete
           </Button>
-        </>
+        </div>
       ),
     },
+    
   ];
 
   const handleLogoUpload = async (id, file) => {
