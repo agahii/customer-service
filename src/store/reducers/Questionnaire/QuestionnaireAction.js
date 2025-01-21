@@ -104,7 +104,7 @@ export const getQuestionById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       // Changed from API.post(...) to API.get(...) to match the GET /api/Question/GetById endpoint
-      const response = await API.get(`Question/GetById?id=${id}`); 
+      const response = await API.get(`Question/GetByProjectId?id=${id}`); 
 
       if (response?.data.data.questionDetail !== 0) {
         return response.data.data.questionDetail; // Return the single question object (which includes questionDetail[])
