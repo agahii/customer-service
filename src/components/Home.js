@@ -234,6 +234,7 @@ const Home = () => {
     flexDirection: "column",
     alignItems: "center", // Center-align logo and text
     justifyContent: "center", // Center content vertically
+    minHeight: "200px",
   }}
 >
   {/* Logo */}
