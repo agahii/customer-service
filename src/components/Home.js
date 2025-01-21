@@ -95,7 +95,6 @@ const Home = () => {
 
   // ----- Handlers -----
   const handleCustomerClick = (customer) => {
-    
     setSelectedCustomer(customer);
     setSelectedProject(null);
     setLocalQuestions([]);
@@ -235,7 +234,8 @@ const Home = () => {
     flexDirection: "column",
     alignItems: "center", // Center-align logo and text
     justifyContent: "center", // Center content vertically
-    minHeight: "210px", // Reduced height
+    minHeight: "210px",
+    maxHeight : "210px",// Reduced height
     width: "200px", // Reduced width
   }}
 >
@@ -292,6 +292,7 @@ const Home = () => {
                   alignItems: "center",
                   justifyContent: "center",
                   minHeight: "160px",
+                  maxHeight: "160px", // Set maximum height
                   width: "200px",
                 }}
               >
