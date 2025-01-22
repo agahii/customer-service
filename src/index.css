@@ -6,6 +6,14 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.ant-carousel .slick-dots li button {
+  background-color: rgba(0, 0, 0, 0.5); /* Change to a darker color for visibility */
+  border-radius: 50%; /* Optional: Make dots circular */
+}
+
+.ant-carousel .slick-dots li.slick-active button {
+  background-color: #000; /* Make the active dot more prominent */
+}
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',

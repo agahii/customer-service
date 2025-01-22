@@ -216,7 +216,16 @@ const Home = () => {
         {customersLoading ? (
           <Spin />
         ) : customers && customers.length > 0 ? (
-          <Carousel dots={false} slidesToShow={8} swipeToSlide draggable>
+          <Carousel 
+          dots={true} 
+          slidesToShow={8} 
+          swipeToSlide 
+          draggable
+          style={{
+            height: "250px", // Set the desired height
+          }}
+          
+          >
             {customers.map((customer, index) => {
               const tileColor = pastelColorsCustomers[index % pastelColorsCustomers.length];
               return (
@@ -255,8 +264,7 @@ const Home = () => {
 
   {/* Customer Name */}
   <h4 style={{ margin: 0 }}>{customer.customerName}</h4>
-</Card>
-
+                </Card>
                 </div>
               );
             })}
@@ -273,63 +281,75 @@ const Home = () => {
       Projects for {selectedCustomer.customerName}
     </Typography.Title>
     {selectedCustomer.customerProject?.length > 0 ? (
-      <Carousel dots={false} slidesToShow={4} swipeToSlide draggable>
-        {selectedCustomer.customerProject.map((project, index) => {
-          const tileColor = pastelColorsProjects[index % pastelColorsProjects.length];
-          return (
-            <div key={project.id} style={{ padding: "0 8px" }}>
-              <Card
-                hoverable
-                onClick={() => handleProjectClick(project)}
-                style={{
-                  backgroundColor: tileColor,
-                  textAlign: "center",
-                  margin: "4px",
-                  padding: "16px",
-                  borderRadius: "8px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: "160px",
-                  maxHeight: "160px", // Set maximum height
-                  width: "200px",
-                }}
-              >
-                {project.imageUrl ? (
-                  <img
-                    src={`${BASE_DOMAIN.replace("/api", "/Images")}${project.imageUrl}`}
-                    alt={`${project.projectName} Logo`}
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      objectFit: "contain",
-                      marginBottom: "8px",
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      backgroundColor: "#f0f0f0",
-                      borderRadius: "8px",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      color: "#999",
-                      fontSize: "12px",
-                    }}
-                  >
-                    No Logo
-                  </div>
-                )}
-                <h4 style={{ margin: 0 }}>{project.projectName}</h4>
-              </Card>
-            </div>
-          );
-        })}
-      </Carousel>
+     <Carousel 
+     dots={true} 
+     slidesToShow={4} 
+     swipeToSlide 
+     draggable 
+     style={{ margin: "0 -4px" }} // Reduce margin for Carousel
+   >
+     {selectedCustomer.customerProject.map((project, index) => {
+       const tileColor = pastelColorsProjects[index % pastelColorsProjects.length];
+       return (
+         <div
+           key={project.id}
+           style={{
+             padding: "0 4px", // Reduce horizontal padding between cards
+           }}
+         >
+           <Card
+             hoverable
+             onClick={() => handleProjectClick(project)}
+             style={{
+               backgroundColor: tileColor,
+               textAlign: "center",
+               margin: "4px 0", // Reduce vertical margin
+               padding: "16px",
+               borderRadius: "8px",
+               display: "flex",
+               flexDirection: "column",
+               alignItems: "center",
+               justifyContent: "center",
+               minHeight: "160px",
+               maxHeight: "160px",
+               width: "200px",
+             }}
+           >
+             {project.imageUrl ? (
+               <img
+                 src={`${BASE_DOMAIN.replace("/api", "/Images")}${project.imageUrl}`}
+                 alt={`${project.projectName} Logo`}
+                 style={{
+                   width: "100px",
+                   height: "100px",
+                   objectFit: "contain",
+                   marginBottom: "8px",
+                 }}
+               />
+             ) : (
+               <div
+                 style={{
+                   width: "100px",
+                   height: "100px",
+                   backgroundColor: "#f0f0f0",
+                   borderRadius: "8px",
+                   display: "flex",
+                   justifyContent: "center",
+                   alignItems: "center",
+                   color: "#999",
+                   fontSize: "12px",
+                 }}
+               >
+                 No Logo
+               </div>
+             )}
+             <h4 style={{ margin: 0 }}>{project.projectName}</h4>
+           </Card>
+         </div>
+       );
+     })}
+   </Carousel>
+   
     ) : (
       <p>No projects found for this customer.</p>
     )}
