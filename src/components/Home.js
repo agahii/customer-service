@@ -19,7 +19,7 @@ import moment from "moment";
 
 // We still use Redux for fetching customers
 import { fetchCustomerRegistration } from "../store/reducers/CustomerRegistration/CustomerRegistrationAction";
-
+import { submitQuestionnaire } from "../store/reducers/Home/HomeAction";
 // But for project questions, we'll call the API directly instead of using the questionnaire slice
 import { API } from "../utills/services"; // Make sure the path and name are correct
 
@@ -35,7 +35,7 @@ const Home = () => {
   // ----- Local states -----
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
-
+  const [questions, setQuestions] = useState([]);
   // Local questionnaire data (NOT from Redux)
   const [localQuestions, setLocalQuestions] = useState([]);
   const [questionnaireLoading, setQuestionnaireLoading] = useState(false);
@@ -197,12 +197,26 @@ const Home = () => {
   };
 
   const handleSubmit = () => {
-    console.log("Answers in Home (local):", answers);
-    message.success("Questionnaire submitted!");
-    // If you want to send these answers to your backend, do so here
-    // e.g. API.post("/Questionnaire/submit", { projectId: selectedProject.id, answers })
+    if (!selectedProject) {
+      message.error("Please select a project.");
+      return;
+    }
+
+    const payload = {
+      fK_CustomerProject_ID: selectedProject.id,
+      answerDetailInp: questions.map((q) => ({
+        questionText: q.questionText,
+        answerText: q.answer || "",
+        answerImageInp: q.answerImages || [],
+      })),
+    };
+
+    dispatch(submitQuestionnaire(payload));
   };
 
+
+
+  
   // ----- Render -----
   return (
     <div style={{ padding: 24 }}>

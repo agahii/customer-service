@@ -2,7 +2,7 @@
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { API } from "../../../utills/services";
-
+import {  submitQuestionnaire } from "./HomeAction";
 // A new thunk for home-specific getQuestionById
 export const getQuestionByIdForHome = createAsyncThunk(
   "home/getQuestionByIdForHome",
@@ -40,7 +40,24 @@ const homeSlice = createSlice({
       .addCase(getQuestionByIdForHome.rejected, (state, action) => {
         state.loadingQuestions = false;
         state.errorQuestions = action.payload;
+      })
+
+
+
+      .addCase(submitQuestionnaire.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(submitQuestionnaire.fulfilled, (state) => {
+        state.loading = false;
+        
+      })
+      .addCase(submitQuestionnaire.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        
       });
+
   },
 });
 

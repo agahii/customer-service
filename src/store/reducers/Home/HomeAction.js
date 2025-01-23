@@ -22,6 +22,33 @@ export const fetchCustomers = createAsyncThunk(
   }
 );
 
+
+
+export const submitQuestionnaire = createAsyncThunk(
+  "questionnaire/submitQuestionnaire",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await API.post("Answer/Add", payload); // Ensure the endpoint is correct
+      if (response.data.status === 0) {
+        return response.data; // Adjust based on API response
+      } else {
+        return rejectWithValue(response.data.reasonPhrase || "Submission failed.");
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.reasonPhrase || "Submission failed.";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+
+
+
+
+
+
+
+
 // Fetch customer projects given a customer id
 export const fetchCustomerProjects = createAsyncThunk(
   "home/fetchCustomerProjects",
