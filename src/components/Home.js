@@ -17,40 +17,46 @@ import {
 } from "antd";
 import moment from "moment";
 
-// We still use Redux for fetching customers
 import { fetchCustomerRegistration } from "../store/reducers/CustomerRegistration/CustomerRegistrationAction";
 import { submitQuestionnaire } from "../store/reducers/Home/HomeAction";
-// But for project questions, we'll call the API directly instead of using the questionnaire slice
-import { API } from "../utills/services"; // Make sure the path and name are correct
+import { API } from "../utills/services";
 
 const { Title } = Typography;
 const { Option } = Select;
 
-const pastelColorsCustomers = ["#fde2e4", "#f9d5e5", "#cfe9f3", "#c9e4de", "#e2f0cb", "#fef9c3"];
-const pastelColorsProjects = ["#e2f4d3", "#cffafe", "#fef7c3", "#ffd8be", "#e0aaff", "#bbf7d0"];
+const pastelColorsCustomers = [
+  "#fde2e4",
+  "#f9d5e5",
+  "#cfe9f3",
+  "#c9e4de",
+  "#e2f0cb",
+  "#fef9c3",
+];
+const pastelColorsProjects = [
+  "#e2f4d3",
+  "#cffafe",
+  "#fef7c3",
+  "#ffd8be",
+  "#e0aaff",
+  "#bbf7d0",
+];
 
 const Home = () => {
   const dispatch = useDispatch();
 
-  // ----- Local states -----
+  // Local States
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [questions, setQuestions] = useState([]);
-  // Local questionnaire data (NOT from Redux)
   const [localQuestions, setLocalQuestions] = useState([]);
   const [questionnaireLoading, setQuestionnaireLoading] = useState(false);
-
-  // For storing user answers in Home
   const [answers, setAnswers] = useState({});
 
-  // Redux: Customer Registration
   const {
     entities: customers,
     loading: customersLoading,
     error: customersError,
   } = useSelector((state) => state.customerRegistration);
 
-  // ----- Fetch customers on mount -----
   useEffect(() => {
     const controller = new AbortController();
     dispatch(
@@ -65,35 +71,12 @@ const Home = () => {
     };
   }, [dispatch]);
 
-  // ----- Show error if any -----
   useEffect(() => {
     if (customersError && !customersLoading) {
       message.error(`Failed to load customers: ${customersError}`);
     }
   }, [customersError, customersLoading]);
 
-  // ----- Reset localQuestions & answers when a new project is clicked -----
-  const handleProjectClick = async (project) => {
-    setSelectedProject(project);
-    setLocalQuestions([]);
-    setAnswers({});
-
-    // Do a local fetch from the same endpoint your getQuestionById thunk uses
-    try {
-      setQuestionnaireLoading(true);
-      // e.g. GET /Question/GetById?id=PROJECT_ID
-      const response = await API.get(`Question/GetByProjectId?id=${project.id}`);
-      const questions = response?.data?.data?.questionDetail || [];
-      setLocalQuestions(questions);
-    } catch (error) {
-      console.error("Error fetching local project questionnaire", error);
-      message.error("Failed to load local questionnaire");
-    } finally {
-      setQuestionnaireLoading(false);
-    }
-  };
-
-  // ----- Handlers -----
   const handleCustomerClick = (customer) => {
     setSelectedCustomer(customer);
     setSelectedProject(null);
@@ -101,24 +84,42 @@ const Home = () => {
     setAnswers({});
   };
 
-  const handleAnswerChange = (index, value) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [index]: value,
-    }));
+  const handleProjectClick = async (project) => {
+    setSelectedProject(project);
+    setLocalQuestions([]);
+    setAnswers({});
+
+    try {
+      setQuestionnaireLoading(true);
+      const response = await API.get(
+        `Question/GetByProjectId?id=${project.id}`
+      );
+      const questions = response?.data?.data?.questionDetail || [];
+      setLocalQuestions(questions);
+    } catch (error) {
+      console.error("Error fetching project questionnaire:", error);
+      message.error("Failed to load questionnaire for this project.");
+    } finally {
+      setQuestionnaireLoading(false);
+    }
   };
 
   const renderAnswerField = (question, index) => {
-    const tName = question.questionType?.typeName?.toLowerCase() || "";
-    const value = answers[index];
+    const tName = question?.questionType?.typeName?.toLowerCase() || "";
+    const value = answers[index] || "";
+
+    const handleAnswerChange = (value) => {
+      const updatedAnswers = { ...answers, [index]: value };
+      setAnswers(updatedAnswers);
+    };
 
     switch (tName) {
       case "text":
         return (
           <Input
             placeholder="Enter text"
-            value={value || ""}
-            onChange={(e) => handleAnswerChange(index, e.target.value)}
+            value={value}
+            onChange={(e) => handleAnswerChange(e.target.value)}
           />
         );
       case "numeric":
@@ -126,15 +127,15 @@ const Home = () => {
           <Input
             type="number"
             placeholder="Enter a number"
-            value={value || ""}
-            onChange={(e) => handleAnswerChange(index, e.target.value)}
+            value={value}
+            onChange={(e) => handleAnswerChange(e.target.value)}
           />
         );
       case "radio":
         return (
           <Radio.Group
-            value={value || ""}
-            onChange={(e) => handleAnswerChange(index, e.target.value)}
+            value={value}
+            onChange={(e) => handleAnswerChange(e.target.value)}
           >
             {question.option?.map((opt, i) => (
               <Radio key={i} value={opt.optionText}>
@@ -144,11 +145,10 @@ const Home = () => {
           </Radio.Group>
         );
       case "checkbox":
-        // value can be an array
         return (
           <Checkbox.Group
             value={Array.isArray(value) ? value : []}
-            onChange={(checkedValues) => handleAnswerChange(index, checkedValues)}
+            onChange={(checkedValues) => handleAnswerChange(checkedValues)}
           >
             {question.option?.map((opt, i) => (
               <Checkbox key={i} value={opt.optionText}>
@@ -163,7 +163,7 @@ const Home = () => {
             placeholder="Select an option"
             style={{ width: 200 }}
             value={value || undefined}
-            onChange={(val) => handleAnswerChange(index, val)}
+            onChange={(val) => handleAnswerChange(val)}
           >
             {question.option?.map((opt, i) => (
               <Option key={i} value={opt.optionText}>
@@ -177,22 +177,23 @@ const Home = () => {
           <DatePicker
             style={{ width: 200 }}
             value={value ? moment(value) : null}
-            onChange={(date, dateString) => handleAnswerChange(index, dateString)}
+            onChange={(date, dateString) => handleAnswerChange(dateString)}
           />
         );
       case "image":
-        if (question.imageUrl) {
-          return (
-            <img
-              src={question.imageUrl}
-              alt="Question"
-              style={{ maxWidth: "100%", marginTop: 8 }}
-            />
-          );
-        }
-        return <p>No image provided.</p>;
+        return question.imageUrl ? (
+          <img
+            src={question.imageUrl}
+            alt="Question"
+            style={{ maxWidth: "100%", marginTop: 8 }}
+          />
+        ) : (
+          <p>No image provided.</p>
+        );
       default:
-        return <p style={{ color: "#999" }}>No specific input for this type.</p>;
+        return (
+          <p style={{ color: "#999" }}>No input available for this type.</p>
+        );
     }
   };
 
@@ -204,9 +205,9 @@ const Home = () => {
 
     const payload = {
       fK_CustomerProject_ID: selectedProject.id,
-      answerDetailInp: questions.map((q) => ({
+      answerDetailInp: localQuestions.map((q, idx) => ({
         questionText: q.questionText,
-        answerText: q.answer || "",
+        answerText: answers[idx] || "",
         answerImageInp: q.answerImages || [],
       })),
     };
@@ -214,187 +215,167 @@ const Home = () => {
     dispatch(submitQuestionnaire(payload));
   };
 
-
-
-  
-  // ----- Render -----
   return (
     <div style={{ padding: 24 }}>
-      <Typography.Title level={2} style={{ textAlign: "center", marginBottom: 24 }}>
-        Home (Questionnaire)
-      </Typography.Title>
+      <Title level={2} style={{ textAlign: "center", marginBottom: 24 }}>
+        Customer & Project Questionnaire
+      </Title>
 
-      {/* Customers carousel */}
+      {/* Customer Carousel */}
       <section>
-        <Typography.Title level={4}>Customers</Typography.Title>
+        <Title level={4}>Customers</Title>
         {customersLoading ? (
           <Spin />
-        ) : customers && customers.length > 0 ? (
-          <Carousel 
-          dots={true} 
-          slidesToShow={8} 
-          swipeToSlide 
-          draggable
-          style={{
-            height: "250px", // Set the desired height
-          }}
-          
-          >
-            {customers.map((customer, index) => {
-              const tileColor = pastelColorsCustomers[index % pastelColorsCustomers.length];
-              return (
-                <div key={customer.id} style={{ padding: "0 8px" }}>
-                 <Card
-  hoverable
-  onClick={() => handleCustomerClick(customer)}
-  style={{
-    backgroundColor: tileColor,
-    textAlign: "center",
-    margin: "4px", 
-    padding: "16px",
-    borderRadius: "8px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center", // Center-align logo and text
-    justifyContent: "center", // Center content vertically
-    minHeight: "210px",
-    maxHeight : "210px",// Reduced height
-    width: "200px", // Reduced width
-  }}
->
-  {/* Logo */}
-  {customer.imageUrl && (
-    <img
-      src={BASE_DOMAIN.replace("/api", "/Images") + customer.imageUrl}
-      alt={`${customer.customerName} Logo`}
-      style={{
-        width: "100px",
-        height: "100px",
-        objectFit: "contain",
-        marginBottom: "8px", // Add spacing between logo and name
-      }}
-    />
-  )}
-
-  {/* Customer Name */}
-  <h4 style={{ margin: 0 }}>{customer.customerName}</h4>
-                </Card>
-                </div>
-              );
-            })}
-          </Carousel>
         ) : (
-          <p>No customers available.</p>
+          <Carousel dots slidesToShow={4} swipeToSlide draggable>
+            {customers.map((customer, index) => (
+              <div key={customer.id} style={{ padding: "0 8px" }}>
+                <Card
+                  hoverable
+                  onClick={() => handleCustomerClick(customer)}
+                  style={{
+                    backgroundColor:
+                      pastelColorsCustomers[
+                        index % pastelColorsCustomers.length
+                      ],
+                    textAlign: "center",
+                    margin: "4px",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center", // Align logo and text horizontally
+                    justifyContent: "space-between",
+                    flexDirection: "row",
+                    width: "150px", // Reduced width
+                  }}
+                >
+                  {customer.imageUrl ? (
+                    <img
+                      src={`${BASE_DOMAIN.replace("/api", "/Images")}${
+                        customer.imageUrl
+                      }`}
+                      alt={`${customer.customerName} Logo`}
+                      style={{
+                        width: "40px", // Adjusted size for smaller logo
+                        height: "40px",
+                        objectFit: "contain",
+                        borderRadius: "50%",
+                        marginRight: "8px",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        backgroundColor: "#f0f0f0",
+                        borderRadius: "50%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        marginRight: "8px",
+                      }}
+                    >
+                      No Logo
+                    </div>
+                  )}
+                  <h4 style={{ margin: 0, fontSize: "12px" }}>
+                    {customer.customerName}
+                  </h4>{" "}
+                  {/* Adjusted text size */}
+                </Card>
+              </div>
+            ))}
+          </Carousel>
         )}
       </section>
 
-      {/* Projects carousel */}
+      {/* Project Carousel */}
       {selectedCustomer && (
-  <section style={{ marginTop: 48 }}>
-    <Typography.Title level={4}>
-      Projects for {selectedCustomer.customerName}
-    </Typography.Title>
-    {selectedCustomer.customerProject?.length > 0 ? (
-     <Carousel 
-     dots={true} 
-     slidesToShow={4} 
-     swipeToSlide 
-     draggable 
-     style={{ margin: "0 -4px" }} // Reduce margin for Carousel
-   >
-     {selectedCustomer.customerProject.map((project, index) => {
-       const tileColor = pastelColorsProjects[index % pastelColorsProjects.length];
-       return (
-         <div
-           key={project.id}
-           style={{
-             padding: "0 4px", // Reduce horizontal padding between cards
-           }}
-         >
-           <Card
-             hoverable
-             onClick={() => handleProjectClick(project)}
-             style={{
-               backgroundColor: tileColor,
-               textAlign: "center",
-               margin: "4px 0", // Reduce vertical margin
-               padding: "16px",
-               borderRadius: "8px",
-               display: "flex",
-               flexDirection: "column",
-               alignItems: "center",
-               justifyContent: "center",
-               minHeight: "160px",
-               maxHeight: "160px",
-               width: "200px",
-             }}
-           >
-             {project.imageUrl ? (
-               <img
-                 src={`${BASE_DOMAIN.replace("/api", "/Images")}${project.imageUrl}`}
-                 alt={`${project.projectName} Logo`}
-                 style={{
-                   width: "100px",
-                   height: "100px",
-                   objectFit: "contain",
-                   marginBottom: "8px",
-                 }}
-               />
-             ) : (
-               <div
-                 style={{
-                   width: "100px",
-                   height: "100px",
-                   backgroundColor: "#f0f0f0",
-                   borderRadius: "8px",
-                   display: "flex",
-                   justifyContent: "center",
-                   alignItems: "center",
-                   color: "#999",
-                   fontSize: "12px",
-                 }}
-               >
-                 No Logo
-               </div>
-             )}
-             <h4 style={{ margin: 0 }}>{project.projectName}</h4>
-           </Card>
-         </div>
-       );
-     })}
-   </Carousel>
-   
-    ) : (
-      <p>No projects found for this customer.</p>
-    )}
-  </section>
-)}
+        <section style={{ marginTop: 48 }}>
+          <Title level={4}>Projects for {selectedCustomer.customerName}</Title>
+          <Carousel dots slidesToShow={4} swipeToSlide draggable>
+            {selectedCustomer.customerProject?.map((project, index) => (
+              <div key={project.id} style={{ padding: "0 8px" }}>
+                <Card
+                  hoverable
+                  onClick={() => handleProjectClick(project)}
+                  style={{
+                    backgroundColor:
+                      pastelColorsProjects[index % pastelColorsProjects.length],
+                    textAlign: "center",
+                    margin: "4px",
+                    padding: "12px", // Reduced padding
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center", // Align logo and text horizontally
+                    justifyContent: "space-between",
+                    flexDirection: "row",
+                    width: "150px", // Reduced width
+                  }}
+                >
+                  {project.imageUrl ? (
+                    <img
+                      src={`${BASE_DOMAIN.replace("/api", "/Images")}${
+                        project.imageUrl
+                      }`}
+                      alt={`${project.projectName} Logo`}
+                      style={{
+                        width: "40px", // Adjusted size for smaller logo
+                        height: "40px",
+                        objectFit: "contain",
+                        borderRadius: "50%",
+                        marginRight: "8px",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        backgroundColor: "#f0f0f0",
+                        borderRadius: "50%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        marginRight: "8px",
+                      }}
+                    >
+                      No Logo
+                    </div>
+                  )}
+                  <h4 style={{ margin: 0, fontSize: "12px" }}>
+                    {project.projectName}
+                  </h4>{" "}
+                  {/* Adjusted text size */}
+                </Card>
+              </div>
+            ))}
+          </Carousel>
+        </section>
+      )}
 
-
-      {/* Local Questionnaire */}
+      {/* Questionnaire */}
       {selectedProject && (
-        <section style={{ marginTop: 48, maxWidth: 600 }}>
-          <Typography.Title level={4}>
+        <section style={{ marginTop: 48 }}>
+          <Title level={4}>
             Questionnaire for {selectedProject.projectName}
-          </Typography.Title>
+          </Title>
           {questionnaireLoading ? (
             <Spin />
-          ) : localQuestions && localQuestions.length > 0 ? (
-            <Form layout="vertical">
-              {localQuestions.map((q, idx) => (
-                <Form.Item key={idx} label={`Q${idx + 1}: ${q.questionText}`}>
-                  {renderAnswerField(q, idx)}
+          ) : (
+            <Form layout="vertical" onFinish={handleSubmit}>
+              {localQuestions.map((question, index) => (
+                <Form.Item key={index} label={question.questionText}>
+                  {renderAnswerField(question, index)}
                 </Form.Item>
               ))}
-
               <Form.Item>
-                <Button type="primary" onClick={handleSubmit}>
+                <Button type="primary" htmlType="submit">
                   Submit
                 </Button>
               </Form.Item>
             </Form>
-          ) : (
-            <p>No questionnaire data for this project.</p>
           )}
         </section>
       )}

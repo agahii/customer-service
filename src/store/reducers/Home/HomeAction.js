@@ -28,7 +28,11 @@ export const submitQuestionnaire = createAsyncThunk(
   "questionnaire/submitQuestionnaire",
   async (payload, { rejectWithValue }) => {
     try {
-      const response = await API.post("Answer/Add", payload); // Ensure the endpoint is correct
+      // Convert payload object to query string
+      const queryString = new URLSearchParams(payload).toString();
+
+      // Send the request with query string
+      const response = await API.get(`Answer/Add?${queryString}`); // Use GET with query string
       if (response.data.status === 0) {
         return response.data; // Adjust based on API response
       } else {
