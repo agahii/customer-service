@@ -24,15 +24,11 @@ export const fetchCustomers = createAsyncThunk(
 
 
 
-export const submitQuestionnaire = createAsyncThunk(
+export const submitQuestionnairexxxxxx = createAsyncThunk(
   "questionnaire/submitQuestionnaire",
   async (payload, { rejectWithValue }) => {
     try {
-      // Convert payload object to query string
-      const queryString = new URLSearchParams(payload).toString();
-
-      // Send the request with query string
-      const response = await API.get(`Answer/Add?${queryString}`); // Use GET with query string
+      const response = await API.post("Answer/Add", payload); // Ensure the endpoint is correct
       if (response.data.status === 0) {
         return response.data; // Adjust based on API response
       } else {
@@ -45,7 +41,57 @@ export const submitQuestionnaire = createAsyncThunk(
   }
 );
 
+export const submitQuestionnaire = createAsyncThunk(
+  "questionnaire/submitQuestionnaire",
+  async (payload, { rejectWithValue }) => {
+    try {
+      // Create FormData to match the Postman request
+      const formData = new FormData();
 
+      // Add FK_CustomerProject_ID
+      formData.append("FK_CustomerProject_ID", payload.fK_CustomerProject_ID);
+
+      // Add AnswerDetailInp items
+      payload.answerDetailInp.forEach((answer, index) => {
+        debugger;
+        formData.append(`AnswerDetailInp[${index}].QuestionText`, answer.questionText);
+        formData.append(
+          `AnswerDetailInp[${index}].AnswerText`,
+          answer.answerText || null // Sends "" if the value is null or undefined
+        );
+
+        answer.answerImageInp.forEach((image, imgIndex) => {
+          formData.append(
+            `AnswerDetailInp[${index}].AnswerImageInp[${imgIndex}].files`,
+            image.files
+          );
+          formData.append(
+            `AnswerDetailInp[${index}].AnswerImageInp[${imgIndex}].ImageUrl`,
+            image.imageUrl
+          );
+        });
+      });
+
+      // Send POST request with FormData
+      const response = await API.post("Answer/Add", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data", // Required for FormData
+        },
+      });
+
+      // Handle success
+      if (response.data.status === 0) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.reasonPhrase || "Submission failed.");
+      }
+    } catch (error) {
+      // Handle error
+      const errorMessage = error.response?.data?.reasonPhrase || "Submission failed.";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
 
 
 

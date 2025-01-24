@@ -239,14 +239,15 @@ const Home = () => {
                         index % pastelColorsCustomers.length
                       ],
                     textAlign: "center",
-                    margin: "4px",
-                    padding: "16px",
-                    borderRadius: "8px",
+                    margin: "8px", // Increased margin for spacing
+                    padding: "16px", // Adjusted padding for a larger card
+                    borderRadius: "12px", // Slightly rounded corners for better visuals
                     display: "flex",
-                    alignItems: "center", // Align logo and text horizontally
-                    justifyContent: "space-between",
-                    flexDirection: "row",
-                    width: "150px", // Reduced width
+                    alignItems: "center", // Vertically center
+                    justifyContent: "center", // Horizontally center
+                    flexDirection: "row", // Keep logo and text side by side
+                    width: "300px", // Increased card width
+                    height: "120px", // Increased card height
                   }}
                 >
                   {customer.imageUrl ? (
@@ -256,33 +257,33 @@ const Home = () => {
                       }`}
                       alt={`${customer.customerName} Logo`}
                       style={{
-                        width: "40px", // Adjusted size for smaller logo
-                        height: "40px",
+                        width: "60px", // Increased logo size
+                        height: "60px",
                         objectFit: "contain",
                         borderRadius: "50%",
-                        marginRight: "8px",
+                        marginRight: "16px", // Add more space between logo and text
                       }}
                     />
                   ) : (
                     <div
                       style={{
-                        width: "40px",
-                        height: "40px",
+                        width: "60px", // Increased placeholder size
+                        height: "60px",
                         backgroundColor: "#f0f0f0",
                         borderRadius: "50%",
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",
-                        marginRight: "8px",
+                        marginRight: "16px",
                       }}
                     >
                       No Logo
                     </div>
                   )}
-                  <h4 style={{ margin: 0, fontSize: "12px" }}>
+                  <h4 style={{ margin: 0, fontSize: "16px" }}>
                     {customer.customerName}
                   </h4>{" "}
-                  {/* Adjusted text size */}
+                  {/* Increased text size */}
                 </Card>
               </div>
             ))}
@@ -304,14 +305,15 @@ const Home = () => {
                     backgroundColor:
                       pastelColorsProjects[index % pastelColorsProjects.length],
                     textAlign: "center",
-                    margin: "4px",
-                    padding: "12px", // Reduced padding
-                    borderRadius: "8px",
+                    margin: "8px", // Increased margin for spacing
+                    padding: "16px", // Adjusted padding for a larger card
+                    borderRadius: "12px", // Slightly rounded corners for better visuals
                     display: "flex",
-                    alignItems: "center", // Align logo and text horizontally
-                    justifyContent: "space-between",
-                    flexDirection: "row",
-                    width: "150px", // Reduced width
+                    alignItems: "center", // Vertically center
+                    justifyContent: "center", // Horizontally center
+                    flexDirection: "row", // Keep logo and text side by side
+                    width: "300px", // Increased card width
+                    height: "120px", // Increased card height
                   }}
                 >
                   {project.imageUrl ? (
@@ -321,33 +323,33 @@ const Home = () => {
                       }`}
                       alt={`${project.projectName} Logo`}
                       style={{
-                        width: "40px", // Adjusted size for smaller logo
-                        height: "40px",
+                        width: "60px", // Increased logo size
+                        height: "60px",
                         objectFit: "contain",
                         borderRadius: "50%",
-                        marginRight: "8px",
+                        marginRight: "16px", // Add more space between logo and text
                       }}
                     />
                   ) : (
                     <div
                       style={{
-                        width: "40px",
-                        height: "40px",
+                        width: "60px", // Increased placeholder size
+                        height: "60px",
                         backgroundColor: "#f0f0f0",
                         borderRadius: "50%",
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",
-                        marginRight: "8px",
+                        marginRight: "16px",
                       }}
                     >
                       No Logo
                     </div>
                   )}
-                  <h4 style={{ margin: 0, fontSize: "12px" }}>
+                  <h4 style={{ margin: 0, fontSize: "16px" }}>
                     {project.projectName}
                   </h4>{" "}
-                  {/* Adjusted text size */}
+                  {/* Increased text size */}
                 </Card>
               </div>
             ))}
