@@ -197,7 +197,7 @@ const Home = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit =async  () =>  {
     if (!selectedProject) {
       message.error("Please select a project.");
       return;
@@ -212,7 +212,36 @@ const Home = () => {
       })),
     };
 
-    dispatch(submitQuestionnaire(payload));
+    const result = await dispatch(submitQuestionnaire(payload));
+
+
+    if (submitQuestionnaire.fulfilled.match(result)) {
+      // Check response code and message
+      const { responseCode, message: responseMessage } = result.payload;
+  
+      if (responseCode === 1000 && responseMessage === "") {
+        // Reset fields
+        setAnswers({});
+        setLocalQuestions([]);
+        setSelectedProject(null); // Optional: Reset the selected project
+  
+        // Show success message
+        message.success("Questionnaire saved successfully!");
+      }
+    } else {
+      // Show error message
+      message.error(result.payload || "Failed to save the questionnaire.");
+    }
+
+
+
+
+
+
+
+
+
+
   };
 
   return (

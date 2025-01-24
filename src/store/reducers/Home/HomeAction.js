@@ -53,7 +53,7 @@ export const submitQuestionnaire = createAsyncThunk(
 
       // Add AnswerDetailInp items
       payload.answerDetailInp.forEach((answer, index) => {
-        debugger;
+      
         formData.append(`AnswerDetailInp[${index}].QuestionText`, answer.questionText);
         formData.append(
           `AnswerDetailInp[${index}].AnswerText`,
@@ -80,14 +80,13 @@ export const submitQuestionnaire = createAsyncThunk(
       });
 
       // Handle success
-      if (response.data.status === 0) {
-        return response.data;
+      if (response.data.responseCode === 1000 && response.data.message === "") {
+        return response.data; // Return the response to handle success
       } else {
-        return rejectWithValue(response.data.reasonPhrase || "Submission failed.");
+        return rejectWithValue(response.data.message || "Submission failed.");
       }
     } catch (error) {
-      // Handle error
-      const errorMessage = error.response?.data?.reasonPhrase || "Submission failed.";
+      const errorMessage = error.response?.data?.message || "Submission failed.";
       return rejectWithValue(errorMessage);
     }
   }
