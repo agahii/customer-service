@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { BASE_DOMAIN } from "../utills/services";
+import { ExclamationCircleOutlined, ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons"
+//import "./TicketDashboard.css"
 import {
   Carousel,
   Card,
@@ -40,7 +42,45 @@ const pastelColorsProjects = [
   "#e0aaff",
   "#bbf7d0",
 ];
+const dashboardStyle = {
+  display: "flex",
+  flexDirection: "row",
+  justifyContent: "space-between",
+  flexWrap: "wrap",
+  gap: "16px",
+}
 
+const cardStyle = {
+  flex: "1 1 300px",
+  minWidth: "300px",
+}
+
+const cardBodyStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+}
+
+const iconStyle = {
+  fontSize: "24px",
+  marginRight: "16px",
+}
+
+const contentStyle = {
+  display: "flex",
+  flexDirection: "column",
+}
+
+const titleStyle = {
+  margin: 0,
+  fontSize: "14px",
+  fontWeight: 500,
+}
+
+const valueStyle = {
+  fontSize: "24px",
+  fontWeight: 700,
+}
 const Home = () => {
   const dispatch = useDispatch();
 
@@ -234,14 +274,6 @@ const Home = () => {
     }
 
 
-
-
-
-
-
-
-
-
   };
 
   return (
@@ -249,6 +281,29 @@ const Home = () => {
       <Title level={2} style={{ textAlign: "center", marginBottom: 24 }}>
         Customer & Project Questionnaire
       </Title>
+{/* Tickets Count */}
+<div style={dashboardStyle}>
+      <TicketCard
+        title="Unassigned Tickets"
+        value={5}
+        icon={<ExclamationCircleOutlined style={{ ...iconStyle, color: "#faad14" }} />}
+        //loading={loading}
+      />
+      <TicketCard
+        title="Pending Tickets"
+        value={3}
+        icon={<ClockCircleOutlined style={{ ...iconStyle, color: "#fa8c16" }} />}
+        //loading={loading}
+      />
+      <TicketCard
+        title="Solved Tickets"
+        value={6}
+        icon={<CheckCircleOutlined style={{ ...iconStyle, color: "#52c41a" }} />}
+        //loading={loading}
+      />
+    </div>
+  
+
 
       {/* Customer Carousel */}
       <section>
@@ -412,6 +467,19 @@ const Home = () => {
       )}
     </div>
   );
+
+  function TicketCard({ title, value, icon, loading }) {
+    return (
+      <Card style={cardStyle} bodyStyle={cardBodyStyle} loading={loading}>
+        {icon}
+        <div style={contentStyle}>
+          <h3 style={titleStyle}>{title}</h3>
+          <div style={valueStyle}>{value}</div>
+        </div>
+      </Card>
+    )
+  }
+  
 };
 
 export default Home;

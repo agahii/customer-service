@@ -6,6 +6,7 @@ import industryRegistrationReducer from "./reducers/IndustryRegistration/Industr
 import employeeRegistrationReducer from "./reducers/EmployeeRegistration/EmployeeRegistrationSlice";
 import questionnaireReducer from "./reducers/Questionnaire/QuestionnaireSlice";
 import questionTypeReducer from "./reducers/QuestionType/QuestionTypeSlice";
+import ticketStatusReducer from "./reducers/TicketStatus/TicketStatusSlice";
 import homeReducer from "./reducers/Home/HomeSlice"; // Import the Home reducer
 
 const store = configureStore({
@@ -15,6 +16,7 @@ const store = configureStore({
     employeeRegistration: employeeRegistrationReducer,
     questionnaire: questionnaireReducer,
     questionType: questionTypeReducer,
+    ticketStatusType:ticketStatusReducer,
     home: homeReducer, // Add Home to the store
   },
   devTools: process.env.NODE_ENV !== "production",
