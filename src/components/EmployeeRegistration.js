@@ -10,13 +10,22 @@ import {
   deleteEmployeeRegistration,
 } from "../store/reducers/EmployeeRegistration/EmployeeRegistrationAction";
 
+
+
+
 const EmployeeRegistration = () => {
+  
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
+  
+
   const [form] = Form.useForm();
   const dispatch = useDispatch();
+
+ 
 
   const { entities, loading, error, total } = useSelector(
     (state) => state.employeeRegistration
@@ -28,6 +37,8 @@ const EmployeeRegistration = () => {
     take: 10,
   });
 
+
+  
   const showAddModal = () => {
     form.resetFields();
     setSelectedRecord(null);
@@ -175,6 +186,7 @@ const EmployeeRegistration = () => {
       key: "contactPersonName",
       width: "15%",
     },
+    
     {
       title: "Actions",
       key: "actions",
@@ -352,6 +364,8 @@ const EmployeeRegistration = () => {
               {isEditing ? "Update" : "Add"}
             </Button>
           </Form.Item>
+
+          
         </Form>
       </Modal>
     </div>

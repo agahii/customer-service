@@ -3,7 +3,9 @@
 import axios from "axios";
 
 // Base URL from environment variable or default
-export const BASE_DOMAIN = process.env.REACT_APP_API_BASE_URL || "http://135.181.22.115:2323/api/";
+//export const BASE_DOMAIN = process.env.REACT_APP_API_BASE_URL || "http://135.181.22.115:2323/api/";
+
+export const BASE_DOMAIN = process.env.REACT_APP_API_BASE_URL || "http://localhost:5045/api/";
 export const BASE_URL = BASE_DOMAIN;
 
 // Create an Axios instance
@@ -41,3 +43,15 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+
+
+export const AccountTypeModel = [
+  { id: 1, name: "Admin" },
+  { id: 2, name: "Customer Agent" },
+  { id: 3, name: "Gcc Supervisor" },
+  { id: 4, name: "Customer Supervisor" },
+  { id: 5, name: "Gcc Agent" },
+
+];
+

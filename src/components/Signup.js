@@ -1,19 +1,29 @@
 // src/components/Signup.js
 
 import React, { useState } from "react";
-import { Button, Form, Input, Typography, Layout, message } from "antd";
+import { Button, Form, Input, Typography, Layout, message,Select } from "antd";
 import { API } from "../utills/services"; // Import the API instance
 import { useNavigate } from "react-router-dom";
-
+import { selectAccountTypes } from "../store/reducers/AccountType/AccountTypeSlice";
+import { useSelector } from "react-redux";
+import FormItem from "antd/es/form/FormItem";
 const { Content } = Layout;
 const { Title, Text } = Typography;
-
+const { Option } = Select;
 const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const handleChange = (value) => {
+    console.log("Selected Account Type ID:", value);
+    
+  };
 
+  const accountType = useSelector(selectAccountTypes);
   const handleSignup = async (values) => {
     setIsLoading(true);
+
+
+  
     try {
       const response = await API.post("/Account/signup", {
         firstName: values.firstName,
@@ -22,6 +32,7 @@ const Signup = () => {
         password: values.password,
         confirmPassword: values.confirmPassword,
         mobileNumber: values.mobileNumber,
+        accountType:values.accountType
       });
 
       message.success("Registration successful! Please log in.");
@@ -118,6 +129,24 @@ const Signup = () => {
             >
               <Input.Password placeholder="Confirm Password" />
             </Form.Item>
+            <FormItem name="accountype"
+              label={<Text style={{ color: "#e0e0e0" }}>Account Type</Text>}
+              rules={[
+                { required: true, message: "Please Account Type" },
+                
+              ]}>
+            <Select
+        placeholder="Select an Account Type"
+        style={{ width: "100%" }}
+        onChange={handleChange}
+      >
+        {accountType.map((type) => (
+          <Option key={type.id} value={type.id}>
+            {type.name}
+          </Option>
+        ))}
+      </Select>
+      </FormItem>
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={isLoading} block>
                 {isLoading ? "Signing up..." : "Sign Up"}
