@@ -95,6 +95,7 @@ const Signup = () => {
               rules={[
                 { required: true, message: "Please enter your mobile number" },
                 { pattern: /^\d+$/, message: "Mobile number must be numeric" },
+                { len: 8 },
               ]}
             >
               <Input placeholder="Mobile Number" />

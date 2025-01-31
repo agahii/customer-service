@@ -101,7 +101,7 @@ const Login = ({ onLogin }) => {
             <Form.Item>
               <Button
                 type="link"
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate("/signup1")}
                 style={{ color: "#ffffff" }}
               >
                 Don't have an account? Sign Up
