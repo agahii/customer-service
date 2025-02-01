@@ -103,15 +103,15 @@ const HomePage = () => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider
+      {/* <Sider
         collapsible
         collapsed={collapsed}
         onCollapse={() => setCollapsed(!collapsed)}
       >
         <Menu theme="dark" mode="inline" items={filteredMenu} onClick={() => navigate('/industries')}  style={{ background: 'transparent', marginTop: '20px' }}/>
-      </Sider>
+      </Sider> */}
       <Layout>
-        <Header
+        {/* <Header
           style={{
             backgroundColor: "rgb(165, 29, 45)",
             display: "flex",
@@ -150,7 +150,7 @@ const HomePage = () => {
               </div>
             </div>
           </Dropdown>
-        </Header>
+        </Header> */}
         <Content
           style={{ margin: "20px", background: "#fff", padding: "20px" }}
         >

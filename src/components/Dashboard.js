@@ -1,7 +1,7 @@
 import React from "react";
 import { Layout, Typography } from "antd";
 import Navbar from "./Navbar";
-import Sidebar from "./Sidebar";
+import Sidebar from "Sidebar";
 
 
 const { Sider, Content } = Layout;
