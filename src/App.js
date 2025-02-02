@@ -8,6 +8,8 @@ import HeaderBar from "./components/HeaderBar";
 import IndustriesPage from "./components/IndustryPage";
 
 import IndustryRegistration from "./components/IndustryRegistration";
+import CustomerPage from "./components/customer";
+import CustomerRegistration from "./components/CustomerRegistration";
 import { Layout } from "antd";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -25,7 +27,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/industries" element={<IndustriesPage />} />
             
-            <Route path="/IndustryRegistration" element={<IndustryRegistration />} />
+            <Route path="/customer" element={<CustomerPage />} />
+            <Route path="/customer1" element={<CustomerRegistration />} />
           </Route>
         </Route>
       </Routes>

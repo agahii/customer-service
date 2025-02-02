@@ -1,6 +1,6 @@
 // src/components/CustomerRegistration.js
 import { Upload } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { UploadOutlined, EditOutlined,DeleteOutlined } from "@ant-design/icons";
 import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -14,6 +14,7 @@ import {
   Switch,
   Row,
   Col,
+ 
 } from "antd";
 import {
   addCustomerRegistration,
@@ -27,6 +28,13 @@ import { fetchIndustry } from "../store/reducers/IndustryRegistration/IndustryRe
 import { fetchEmployee } from "../store/reducers/EmployeeRegistration/EmployeeRegistrationAction";
 import { BASE_DOMAIN } from "../utills/services";
 const { Option } = Select;
+
+
+
+
+
+
+
 
 // Reusable Employee Select Component
 const EmployeeSelect = ({
@@ -299,8 +307,6 @@ const CustomerRegistration = () => {
 
   // Columns definition
   const columns = [
-  
-
     {
       title: "Logo",
       key: "logo",
@@ -308,8 +314,8 @@ const CustomerRegistration = () => {
         <div
           style={{
             display: "flex",
-            alignItems: "center", // Vertically center-align
-            gap: "12px", // Add space between thumbnail and button
+            alignItems: "center",
+            gap: "12px",
           }}
         >
           {record.imageUrl ? (
@@ -319,9 +325,9 @@ const CustomerRegistration = () => {
               style={{
                 width: 50,
                 height: 50,
-                borderRadius: "50%", // Makes the image round
-                objectFit: "cover", // Ensures proper fit within the round shape
-                border: "2px solid #ddd", // Optional: Adds a border for styling
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "2px solid #ddd",
               }}
             />
           ) : (
@@ -345,7 +351,7 @@ const CustomerRegistration = () => {
           <Upload
             beforeUpload={(file) => {
               handleLogoUpload(record.id, file);
-              return false; // Prevent auto-upload by Ant Design
+              return false;
             }}
             showUploadList={false}
           >
@@ -354,40 +360,38 @@ const CustomerRegistration = () => {
         </div>
       ),
     },
-    
-
     {
-      title: "Customer Name",
+      title: "Name",
       dataIndex: "customerName",
       key: "customerName",
       width: 200,
     },
     {
-      title: "Customer Code",
+      title: "Code",
       dataIndex: "customerCode",
       key: "customerCode",
       width: 150,
     },
     {
-      title: "Customer Address",
+      title: "Address",
       dataIndex: "customerAddress",
       key: "customerAddress",
       width: 200,
     },
     {
-      title: "Mobile Number",
+      title: "Mobile#",
       dataIndex: "mobileNumber",
       key: "mobileNumber",
       width: 150,
     },
     {
-      title: "Contact Person Name",
+      title: "Contact Person",
       dataIndex: "contactPersonName",
       key: "contactPersonName",
       width: 200,
     },
     {
-      title: "Email Address",
+      title: "Email",
       dataIndex: "emailAddress",
       key: "emailAddress",
       width: 200,
@@ -401,32 +405,25 @@ const CustomerRegistration = () => {
     {
       title: "Actions",
       key: "actions",
-      width: 150, // Adjust width as per your grid design
+      width: 150,
       render: (_, record) => (
-        <div style={{ display: "flex", gap: "8px" }}>
-          <Button
-          type="primary"
-            onClick={() => handleEdit(record)}
-            style={{
-              width: 80, // Set the same width for both buttons
-            }}
-          >
-            Edit
-          </Button>
-          <Button
-            danger
-            onClick={() => handleDelete(record.id)}
-            style={{
-              width: 80, // Match the width with the Edit button
-            }}
-          >
-            Delete
-          </Button>
-        </div>
+        <>
+        <Button 
+            type="link" 
+            icon={<EditOutlined />} 
+            onClick={() => handleEdit(record)} 
+        />
+        <Button 
+            type="link" 
+            icon={<DeleteOutlined />} 
+            danger 
+            onClick={() => handleDelete(record.id)} 
+        />
+    </>
       ),
     },
-    
   ];
+  
 
   const handleLogoUpload = async (id, file) => {
     if (file) {
@@ -507,7 +504,7 @@ const CustomerRegistration = () => {
           scrollToFirstError
         >
           <Row gutter={16}>
-            <Col xs={24} sm={12}>
+            <Col xs={24} sm={12} width={50}>
               <Form.Item
                 name="customerName"
                 label="Customer Name"
@@ -518,17 +515,7 @@ const CustomerRegistration = () => {
                 <Input />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="customerCode"
-                label="Customer Code"
-                rules={[
-                  { required: true, message: "Please enter the customer code" },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
+           
           </Row>
 
           <Row gutter={16}>
@@ -587,6 +574,8 @@ const CustomerRegistration = () => {
                 <Input.TextArea rows={2} />
               </Form.Item>
             </Col>
+
+            
           </Row>
 
           <Row gutter={16}>

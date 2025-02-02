@@ -83,6 +83,7 @@ const HomePage = () => {
   const menuItems = [
     { key: "home", label: "HomePage" },
     { key: "industry", label: "Industries" },
+    
     { key: "customer", label: "Customer" },
     { key: "reports", label: "Reports" },
   ];
@@ -103,54 +104,9 @@ const HomePage = () => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      {/* <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={() => setCollapsed(!collapsed)}
-      >
-        <Menu theme="dark" mode="inline" items={filteredMenu} onClick={() => navigate('/industries')}  style={{ background: 'transparent', marginTop: '20px' }}/>
-      </Sider> */}
+    
       <Layout>
-        {/* <Header
-          style={{
-            backgroundColor: "rgb(165, 29, 45)",
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "0 20px",
-          }}
-        >
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{ color: "white" }}
-          />
-          <Dropdown overlay={userMenu}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
-              
-              <Avatar src={imageUrl} icon={<UserOutlined />} />
-              <div style={{
-                display: "flex",
-                flexDirection:"row",
-                alignItems: "center",
-                color: "white",
-                cursor: "pointer",
-              }}
-              
-              >
-              <span style={{ marginLeft: 10 }}>{name}</span>
-              <span style={{ marginLeft: 10 }}>{emailAddress}</span>
-              </div>
-            </div>
-          </Dropdown>
-        </Header> */}
+       
         <Content
           style={{ margin: "20px", background: "#fff", padding: "20px" }}
         >

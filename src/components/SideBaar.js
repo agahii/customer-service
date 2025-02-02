@@ -29,9 +29,15 @@ const Sidebar = ({ collapsed }) => {
     },
     {
       key: "customer",
-      label: "OldIndustries",
-      icon: <AppstoreOutlined />,
-      path: "/IndustryRegisteration",
+      label: "Customer",
+      icon: <UserOutlined />,
+      path: "/customer",
+    },
+    {
+      key: "customer1",
+      label: "CustomerOld",
+      icon: <UserOutlined />,
+      path: "/customer1",
     },
     {
       key: "reports",
@@ -47,37 +53,10 @@ const Sidebar = ({ collapsed }) => {
       ? menuItems
       : menuItems.filter((item) => item.key !== "reports");
 
-  // Restrict menu items based on user role
-  // if (userRole !== 'admin') {
-  //   menuItems.pop(); // Remove Industries for non-admin users
-  // }
+ 
 
   return (
-    // <Sider
-    //   breakpoint="lg"
-    //   collapsedWidth="80"
-    //   style={{
-    //     background: 'linear-gradient(180deg, rgba(165,29,45,1) 0%, rgba(100,10,20,1) 100%)',
-    //     minHeight: '100vh',
-    //   }}
-    // >
-    //   <div className="logo" style={{ color: '#fff', textAlign: 'center', padding: '20px', fontSize: '18px' }}>
-    //     My App
-    //   </div>
-    //   <Menu theme="dark" mode="inline" defaultSelectedKeys={['home']}>
-    //     {menuItems.map((item) => (
-    //       <Menu.Item key={item.key} icon={item.icon}>
-    //         <Link to={item.path}>{item.label}</Link>
-    //       </Menu.Item>
-    //     ))}
-    //   </Menu>
-    // </Sider>
-
-    <Sider collapsible collapsed={collapsed} width={250} onCollapse={() => collapsed} 
-      //collapsible
-      //collapsed={collapsed}
-      //onCollapse={() => setCollapsed(!collapsed)}
-    >
+    <Sider collapsible collapsed={collapsed} width={250} onCollapse={() => collapsed} >
       {/* <Menu theme="dark" mode="inline"  defaultSelectedKeys={["home"]} style={{color:'grey'}}> */}
       <Menu theme="dark" mode="inline"  style={{color:'grey'}}>
         {filteredMenu.map((item) => (

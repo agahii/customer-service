@@ -12,6 +12,7 @@ import homeReducer from "./reducers/Home/HomeSlice"; // Import the Home reducer
 import signInReducer from "./reducers/Signup/SignupSlice";
 import loginReducer from "./reducers/Login/LoginSlice";
 import industriesReducer from "./reducers/Industries/IndustriesSlice"
+import customersReducer from "./reducers/customer/customerSlice"
 const store = configureStore({
   reducer: {
     industryRegistration: industryRegistrationReducer,
@@ -24,7 +25,8 @@ const store = configureStore({
     home: homeReducer, // Add Home to the store
     signIn:signInReducer,
     login:loginReducer,
-    industry:industriesReducer
+    industry:industriesReducer,
+    customer:customersReducer
   },
   devTools: process.env.NODE_ENV !== "production",
 });

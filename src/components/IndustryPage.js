@@ -1,79 +1,199 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Table, Button, Modal, Form, Input, Upload, Switch } from "antd";
-import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import {
-  fetchIndustries,
-  addIndustry,
-  updateIndustry,
-  deleteIndustry,
-  downloadIndustries,
+    fetchIndustry,
+    addIndustryRegistration,
+    updateIndustryRegistration,
+    deleteIndustryRegistration,
+    uploadIndustryLogo
 } from "../store/reducers/Industries/IndustriesSlice";
+import { Button, Input, Table, Spin, message, Modal, Form, Switch,Avatar,Upload } from "antd";
+import { EditOutlined, DeleteOutlined,UploadOutlined } from "@ant-design/icons";
 
-const IndustryPage = () => {
-  const dispatch = useDispatch();
-  const { industries, status } = useSelector((state) => state.industry);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingIndustry, setEditingIndustry] = useState(null);
-  const [form] = Form.useForm();
+const IndustryRegistration = () => {
+    const dispatch = useDispatch();
+    const { entities, loading, error, total } = useSelector((state) => state.industryRegistration);
+    const [form] = Form.useForm();
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [editItem, setEditItem] = React.useState(null);
+    const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+    const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    dispatch(fetchIndustries({ take: 10, skip: 0 }));
-  }, [dispatch]);
+    useEffect(() => {
+        fetchData();
+    }, [pagination.current, pagination.pageSize, search]);
 
-  const showModal = (industry = null) => {
-    setEditingIndustry(industry);
-    setIsModalVisible(true);
-    form.setFieldsValue(industry || { industryType: "", isActive: true });
-  };
+    const fetchData = () => {
+        dispatch(fetchIndustry({ 
+            pagingInfo: { skip: (pagination.current - 1) * pagination.pageSize, take: pagination.pageSize }, 
+            controller: new AbortController(),
+            search: search,
+        }));
+    };
 
-  const handleOk = () => {
-    form.validateFields().then((values) => {
-      if (editingIndustry) {
-        dispatch(updateIndustry({ id: editingIndustry.id, data: values }));
-      } else {
-        console.log(values.values)
-        dispatch(addIndustry(values.values));
-      }
-      setIsModalVisible(false);
-      form.resetFields();
-    });
-  };
+    const handleAdd = async (values) => {
+        dispatch(addIndustryRegistration(values))
+            .unwrap()
+            .then(() => {
+                message.success("Industry added successfully");
+                setIsModalOpen(false);
+                form.resetFields();
+                fetchData();
+            })
+            .catch((err) => message.error(err));
+    };
 
-  const handleDelete = (id) => {
-    dispatch(deleteIndustry(id));
-  };
+    const handleEdit = async (values) => {
+        dispatch(updateIndustryRegistration({ ...editItem, ...values }))
+            .unwrap()
+            .then(() => {
+                message.success("Industry updated successfully");
+                setIsModalOpen(false);
+                setEditItem(null);
+                form.resetFields();
+                fetchData();
+            })
+            .catch((err) => message.error(err));
+    };
 
-  const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Industry Type", dataIndex: "industryType", key: "industryType" },
-    { title: "Image URL", dataIndex: "imageUrl", key: "imageUrl", render: (url) => <img src={url} alt="Industry" width={50} /> },
-    { title: "Active", dataIndex: "isActive", key: "isActive", render: (active) => (active ? "Yes" : "No") },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <>
-          <Button onClick={() => showModal(record)}>Edit</Button>
-          <Button onClick={() => handleDelete(record.id)} danger>Delete</Button>
-        </>
-      ),
-    },
-  ];
+    const handleDelete = (id,industryType) => {
+        Modal.confirm({
+            title: `Are you sure you want to delete this industry ${industryType}?`,
+            onOk: () => {
+                dispatch(deleteIndustryRegistration(id))
+                    .unwrap()
+                    .then(() => {
+                        message.success("Industry deleted successfully");
+                        fetchData();
+                    })
+                    .catch((err) => message.error(err));
+            },
+        });
+    };
 
-  return (
-    <div>
-      <Button type="primary" onClick={() => showModal()} icon={<PlusOutlined />}>Add Industry</Button>
-      <Button onClick={() => dispatch(downloadIndustries())} style={{ marginLeft: 10 }}>Download Excel</Button>
-      <Table dataSource={industries} columns={columns} rowKey="id" pagination={{ pageSize: 10 }} />
-      <Modal title={editingIndustry ? "Edit Industry" : "Add Industry"} visible={isModalVisible} onOk={handleOk} onCancel={() => setIsModalVisible(false)}>
-        <Form form={form} layout="vertical">
-          <Form.Item name="industryType" label="Industry Type" rules={[{ required: true, message: "Please enter industry type" }]}> <Input /> </Form.Item>
-          <Form.Item name="isActive" label="Active" valuePropName="checked"> <Switch /> </Form.Item>
-        </Form>
-      </Modal>
-    </div>
-  );
+    const handleTableChange = (pagination) => {
+        setPagination(pagination);
+    };
+
+    const handleSearch = (e) => {
+        setSearch(e.target.value);
+    };
+   
+
+
+  const handleLogoUpload = async (id, file) => {
+      if (file) {
+        try {
+          
+                await dispatch(uploadIndustryLogo({ id, file })).unwrap();
+          
+          
+                message.success("Project logo uploaded successfully!");
+                fetchData();
+              } catch (error) {
+                message.error(`Project logo upload failed: ${error}`);
+              }
+            }
+          };
+
+    const columns = [
+        {
+            title: "Image",
+            dataIndex: "imageUrl",
+            key: "imageUrl",
+            width:300,
+            render: (_, record) => (
+              <div style={{ display: "flex", alignItems: "center" }}>
+                  <Avatar src={record.imageUrl} size={50} />
+                  <div style={{ marginLeft: 10 }}>
+                      <Upload
+                      accept="image/*"
+                                  beforeUpload={(file) => {
+                                    handleLogoUpload(record.id, file);
+                                    return false; // Prevent auto-upload by Ant Design
+                                  }}
+                                  showUploadList={false}
+                                >
+                                  <Button icon={<UploadOutlined />}>Upload Logo</Button>
+                                </Upload>
+                  </div>
+              </div>
+          ),
+      },
+        { title: "ID", dataIndex: "id", key: "id" ,hidden:"true"},
+        { title: "Name", dataIndex: "industryType", key: "industryType",width:250 },
+        {
+            title: "InActive",
+            dataIndex: "inActive",
+            key: "inActive",
+            render: (inActive, record) => (
+                <Switch 
+                    checked={!inActive} 
+                    onChange={(checked) => {
+                        const updatedRecord = { ...record, inActive: !checked };
+                        dispatch(updateIndustryRegistration(updatedRecord))
+                            .unwrap()
+                            .then(() => fetchData())
+                            .catch((err) => message.error(err));
+                    }}
+                />
+            ),
+        },
+        {
+            title: "Actions",
+            key: "actions",
+            render: (_, record) => (
+                <>
+                    <Button 
+                        type="link" 
+                        icon={<EditOutlined />} 
+                        onClick={() => { setEditItem(record); setIsModalOpen(true); form.setFieldsValue(record); }} 
+                    />
+                    <Button 
+                        type="link" 
+                        icon={<DeleteOutlined />} 
+                        danger 
+                        onClick={() => handleDelete(record.id,record.industryType)} 
+                    />
+                </>
+            ),
+        },
+    ];
+
+    return (
+        <div className="p-4">
+            <h2 className="text-xl font-bold mb-4">Industry Registration</h2>
+            <Input 
+                placeholder="Search by Name" 
+                value={search} 
+                onChange={handleSearch} 
+                className="mb-4" 
+            />
+            <Button type="primary" onClick={() => { setIsModalOpen(true); form.resetFields(); }}>Add Industry</Button>
+            <Spin spinning={loading} className="block mt-4">
+                <Table 
+                    columns={columns} 
+                    dataSource={entities} 
+                    rowKey="id" 
+                    pagination={{ current: pagination.current, pageSize: pagination.pageSize, total }} 
+                    onChange={handleTableChange} 
+                />
+            </Spin>
+            {error && <p className="text-red-500 mt-2">{error}</p>}
+            <Modal
+                title={editItem ? "Edit Industry" : "Add Industry"}
+                open={isModalOpen}
+                onCancel={() => { setIsModalOpen(false); setEditItem(null); }}
+                onOk={() => form.submit()}
+            >
+                <Form form={form} layout="vertical" onFinish={editItem ? handleEdit : handleAdd}>
+                    <Form.Item name="industryType" label="Industry Name" rules={[{ required: true, message: "Please enter industry name" }]}> 
+                        <Input />
+                    </Form.Item>
+                </Form>
+            </Modal>
+        </div>
+    );
 };
 
-export default IndustryPage;
+export default IndustryRegistration;
