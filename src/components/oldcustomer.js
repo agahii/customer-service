@@ -211,7 +211,7 @@ const CustomerRegistration = () => {
       id: isEditing ? selectedRecord.id : undefined, // The top-level "id"
       fK_Industry_ID: values.fK_Industry_ID,
       customerName: values.customerName,
-      customerCode: values.customerCode,
+      // customerCode: values.customerCode,
       customerAddress: values.customerAddress,
       mobileNumber: values.mobileNumber,
       contactPersonName: values.contactPersonName,

@@ -48,6 +48,7 @@ export const updateCustomerRegistration = createAsyncThunk(
   "customerRegistration/updateCustomer",
   async (payload, { rejectWithValue }) => {
     try {
+      console.log(payload)
       const response = await API.put("Customer/Update", payload);
       return response.data.data;
     } catch (error) {
