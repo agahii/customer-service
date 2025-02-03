@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./components/Login1";
-import HomePage from "./components/Home1";
+import HomePage from "./components/Home";
 import SignInPage from "./components/Signup1";
 
 import Sidebar from "./components/SideBaar";
@@ -10,6 +10,10 @@ import IndustriesPage from "./components/IndustryPage";
 import IndustryRegistration from "./components/IndustryRegistration";
 import CustomerPage from "./components/customer";
 import CustomerRegistration from "./components/CustomerRegistration";
+import Questionnaire from "./components/Questionnaire";
+import Answer from "./components/Answer";
+
+
 import { Layout } from "antd";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -28,7 +32,9 @@ function App() {
             <Route path="/industries" element={<IndustriesPage />} />
             
             <Route path="/customer" element={<CustomerPage />} />
-            <Route path="/customer1" element={<CustomerRegistration />} />
+            {/* <Route path="/customer1" element={<CustomerRegistration />} /> */}
+            <Route path="/question" element={<Questionnaire />} />
+            <Route path="/answer" element={<Answer />} />
           </Route>
         </Route>
       </Routes>

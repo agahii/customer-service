@@ -103,41 +103,65 @@ const HomePage = () => {
   );
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-    
-      <Layout>
-       
-        <Content
-          style={{ margin: "20px", background: "#fff", padding: "20px" }}
-        >
-          <Row gutter={[16, 16]}>
-            <Col span={8}>
-              <Card title="Unassigned Tickets">{ticketStats.unassigned}
-                
+    <Layout style={{ minHeight: "100vh", background: "#f4f4f4" }}>
+    <Layout>
+      <Content style={{ margin: "20px", padding: "20px" }}>
+        <Row gutter={[16, 16]}>
+          {[
+            { title: "Unassigned Tickets", count: ticketStats.unassigned },
+            { title: "Pending Tickets", count: ticketStats.pending },
+            { title: "Resolved Tickets", count: ticketStats.resolved },
+          ].map((stat, index) => (
+            <Col span={8} key={index}>
+              <Card
+                title={stat.title}
+                style={{
+                  borderRadius: "15px",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                  background: "#fff",
+                  textAlign: "center",
+                }}
+              >
+                <Title level={2} style={{ margin: 0 }}>
+                  {stat.count}
+                </Title>
               </Card>
             </Col>
-            <Col span={8}>
-              <Card title="Pending Tickets">{ticketStats.pending}</Card>
+          ))}
+        </Row>
+
+        <Title level={3} style={{ marginTop: 20 }}>Registered Clients</Title>
+
+        <Row gutter={[16, 16]}>
+          {clients.map((client) => (
+            <Col key={client.id} span={6}>
+              <Card
+                cover={
+                  <img
+                    alt={client.name}
+                    src={client.image}
+                    style={{
+                      borderTopLeftRadius: "15px",
+                      borderTopRightRadius: "15px",
+                      height: "150px",
+                      objectFit: "cover",
+                    }}
+                  />
+                }
+                style={{
+                  borderRadius: "15px",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                  textAlign: "center",
+                }}
+              >
+                <Card.Meta title={client.name} description={client.email} />
+              </Card>
             </Col>
-            <Col span={8}>
-              <Card title="Resolved Tickets">{ticketStats.resolved}</Card>
-            </Col>
-          </Row>
-          <Title level={3} style={{ marginTop: 20 }}>
-            Registered Clients
-          </Title>
-          <Row gutter={[16, 16]}>
-            {clients.map((client) => (
-              <Col key={client.id} span={6}>
-                <Card cover={<img alt={client.name} src={client.image} />}>
-                  <Card.Meta title={client.name} description={client.email} />
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        </Content>
-      </Layout>
+          ))}
+        </Row>
+      </Content>
     </Layout>
+  </Layout>
   );
 
 
