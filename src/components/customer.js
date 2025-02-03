@@ -1,6 +1,6 @@
 // src/components/CustomerRegistration.js
 import { Upload } from "antd";
-import { UploadOutlined, EditOutlined,DeleteOutlined } from "@ant-design/icons";
+import { UploadOutlined } from "@ant-design/icons";
 import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -14,7 +14,6 @@ import {
   Switch,
   Row,
   Col,
- 
 } from "antd";
 import {
   addCustomerRegistration,
@@ -29,13 +28,6 @@ import { fetchEmployee } from "../store/reducers/EmployeeRegistration/EmployeeRe
 import { BASE_DOMAIN } from "../utills/services";
 const { Option } = Select;
 
-
-
-
-
-
-
-
 // Reusable Employee Select Component
 const EmployeeSelect = ({
   label,
@@ -43,9 +35,7 @@ const EmployeeSelect = ({
   employees,
   fetchEmployees,
   initialEmployees,
-  
   required,
-
 }) => (
   <Form.List name={name}>
     {(fields, { add, remove }) => (
@@ -63,7 +53,6 @@ const EmployeeSelect = ({
                 showSearch
                 placeholder={`Select ${label}`}
                 optionFilterProp="children"
-                
                 filterOption={(input, option) =>
                   option.children.toLowerCase().includes(input.toLowerCase())
                 }
@@ -169,7 +158,6 @@ const CustomerRegistration = () => {
         gccAgents: project.gccAgent?.map((agent) => ({
           fK_Employee_ID: agent.fK_Employee_ID,
         })) || [],
-        
         customerAgents: project.customerAgent?.map((agent) => ({
           fK_Employee_ID: agent.fK_Employee_ID,
         })) || [],
@@ -182,7 +170,7 @@ const CustomerRegistration = () => {
       })),
       isActive: record.isActive,
     });
-    
+
     setIsModalVisible(true);
   };
 
@@ -226,50 +214,50 @@ const CustomerRegistration = () => {
           : null;
 
         return {
-          id: existingProject ? existingProject.id : "string", // "id": "string" if new
-          projectName: project.projectName || "string",
+          id: existingProject ? existingProject.id : "", // "id": "string" if new
+          projectName: project.projectName || "",
           fK_Customer_ID: existingProject
             ? existingProject.fK_Customer_ID
-            : "string",
+            : "",
           isActive: true,
           gccAgent: project.gccAgents?.map((agent, i) => {
             const existingAgent = existingProject?.gccAgent?.[i];
             return {
-              id: existingAgent ? existingAgent.id : "string",
+              id: existingAgent ? existingAgent.id : "",
               fK_CustomerProject_ID: existingProject
                 ? existingProject.id
-                : "string",
-              fK_Employee_ID: agent.fK_Employee_ID || "string",
+                : "",
+              fK_Employee_ID: agent.fK_Employee_ID || "",
             };
           }) || [],
           customerAgent: project.customerAgents?.map((agent, i) => {
             const existingAgent = existingProject?.customerAgent?.[i];
             return {
-              id: existingAgent ? existingAgent.id : "string",
+              id: existingAgent ? existingAgent.id : "",
               fK_CustomerProject_ID: existingProject
                 ? existingProject.id
-                : "string",
-              fK_Employee_ID: agent.fK_Employee_ID || "string",
+                : "",
+              fK_Employee_ID: agent.fK_Employee_ID || "",
             };
           }) || [],
           gccSupervisor: project.gccSupervisors?.map((sup, i) => {
             const existingSup = existingProject?.gccSupervisor?.[i];
             return {
-              id: existingSup ? existingSup.id : "string",
+              id: existingSup ? existingSup.id : "",
               fK_CustomerProject_ID: existingProject
                 ? existingProject.id
-                : "string",
-              fK_Employee_ID: sup.fK_Employee_ID || "string",
+                : "",
+              fK_Employee_ID: sup.fK_Employee_ID || "",
             };
           }) || [],
           customerSupervisor: project.customerSupervisors?.map((sup, i) => {
             const existingSup = existingProject?.customerSupervisor?.[i];
             return {
-              id: existingSup ? existingSup.id : "string",
+              id: existingSup ? existingSup.id : "",
               fK_CustomerProject_ID: existingProject
                 ? existingProject.id
-                : "string",
-              fK_Employee_ID: sup.fK_Employee_ID || "string",
+                : "",
+              fK_Employee_ID: sup.fK_Employee_ID || "",
             };
           }) || [],
         };
@@ -311,6 +299,8 @@ const CustomerRegistration = () => {
 
   // Columns definition
   const columns = [
+  
+
     {
       title: "Logo",
       key: "logo",
@@ -318,8 +308,8 @@ const CustomerRegistration = () => {
         <div
           style={{
             display: "flex",
-            alignItems: "center",
-            gap: "12px",
+            alignItems: "center", // Vertically center-align
+            gap: "12px", // Add space between thumbnail and button
           }}
         >
           {record.imageUrl ? (
@@ -329,9 +319,9 @@ const CustomerRegistration = () => {
               style={{
                 width: 50,
                 height: 50,
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: "2px solid #ddd",
+                borderRadius: "50%", // Makes the image round
+                objectFit: "cover", // Ensures proper fit within the round shape
+                border: "2px solid #ddd", // Optional: Adds a border for styling
               }}
             />
           ) : (
@@ -355,7 +345,7 @@ const CustomerRegistration = () => {
           <Upload
             beforeUpload={(file) => {
               handleLogoUpload(record.id, file);
-              return false;
+              return false; // Prevent auto-upload by Ant Design
             }}
             showUploadList={false}
           >
@@ -364,38 +354,40 @@ const CustomerRegistration = () => {
         </div>
       ),
     },
+    
+
     {
-      title: "Name",
+      title: "Customer Name",
       dataIndex: "customerName",
       key: "customerName",
       width: 200,
     },
     {
-      title: "Code",
+      title: "Customer Code",
       dataIndex: "customerCode",
       key: "customerCode",
       width: 150,
     },
     {
-      title: "Address",
+      title: "Customer Address",
       dataIndex: "customerAddress",
       key: "customerAddress",
       width: 200,
     },
     {
-      title: "Mobile#",
+      title: "Mobile Number",
       dataIndex: "mobileNumber",
       key: "mobileNumber",
       width: 150,
     },
     {
-      title: "Contact Person",
+      title: "Contact Person Name",
       dataIndex: "contactPersonName",
       key: "contactPersonName",
       width: 200,
     },
     {
-      title: "Email",
+      title: "Email Address",
       dataIndex: "emailAddress",
       key: "emailAddress",
       width: 200,
@@ -409,25 +401,32 @@ const CustomerRegistration = () => {
     {
       title: "Actions",
       key: "actions",
-      width: 150,
+      width: 150, // Adjust width as per your grid design
       render: (_, record) => (
-        <>
-        <Button 
-            type="link" 
-            icon={<EditOutlined />} 
-            onClick={() => handleEdit(record)} 
-        />
-        <Button 
-            type="link" 
-            icon={<DeleteOutlined />} 
-            danger 
-            onClick={() => handleDelete(record.id)} 
-        />
-    </>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <Button
+          type="primary"
+            onClick={() => handleEdit(record)}
+            style={{
+              width: 80, // Set the same width for both buttons
+            }}
+          >
+            Edit
+          </Button>
+          <Button
+            danger
+            onClick={() => handleDelete(record.id)}
+            style={{
+              width: 80, // Match the width with the Edit button
+            }}
+          >
+            Delete
+          </Button>
+        </div>
       ),
     },
+    
   ];
-  
 
   const handleLogoUpload = async (id, file) => {
     if (file) {
@@ -456,9 +455,9 @@ const CustomerRegistration = () => {
   
         // form.setFieldsValue({ customerProjectInp: updatedProjects });
   
-        message.success("Department logo uploaded successfully!");
+        message.success("Project logo uploaded successfully!");
       } catch (error) {
-        message.error(`Department logo upload failed: ${error}`);
+        message.error(`Project logo upload failed: ${error}`);
       }
     }
   };
@@ -508,7 +507,7 @@ const CustomerRegistration = () => {
           scrollToFirstError
         >
           <Row gutter={16}>
-            <Col xs={24} sm={12} width={50}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="customerName"
                 label="Customer Name"
@@ -519,7 +518,17 @@ const CustomerRegistration = () => {
                 <Input />
               </Form.Item>
             </Col>
-           
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="customerCode"
+                label="Customer Code"
+                rules={[
+                  { required: true, message: "Please enter the customer code" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
           </Row>
 
           <Row gutter={16}>
@@ -578,8 +587,6 @@ const CustomerRegistration = () => {
                 <Input.TextArea rows={2} />
               </Form.Item>
             </Col>
-
-            
           </Row>
 
           <Row gutter={16}>
@@ -661,7 +668,7 @@ const CustomerRegistration = () => {
           <Form.List name="customerProjectInp">
             {(fields, { add, remove }) => (
               <div>
-                <label style={{ fontWeight: "bold" }}>Departments</label>
+                <label style={{ fontWeight: "bold" }}>Projects</label>
                 {fields.map(({ key, name, ...restField }) => {
                   // Use the existing project data from 'selectedRecord' to show the employees' names
                   const project = selectedRecord?.customerProject?.[name];
@@ -691,15 +698,15 @@ const CustomerRegistration = () => {
                           <Form.Item
                             {...restField}
                             name={[name, "projectName"]}
-                            label="Department Name"
+                            label="Project Name"
                             rules={[
                               {
                                 required: true,
-                                message: "Please enter the department name",
+                                message: "Please enter the project name",
                               },
                             ]}
                           >
-                            <Input placeholder="Department Name" />
+                            <Input placeholder="Project Name" />
                           </Form.Item>
                         </Col>
 
@@ -820,7 +827,7 @@ const CustomerRegistration = () => {
                 })}
                 <Form.Item>
                   <Button type="primary" onClick={() => add()} block>
-                    Add Department
+                    Add Project
                   </Button>
                 </Form.Item>
               </div>
