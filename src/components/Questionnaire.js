@@ -117,7 +117,9 @@ const Questionnaire = () => {
 
   // ---------- SUBMIT FORM ----------
   const onFinish = async (values) => {
-    const { customerProject } = values;
+    const { customerProject} = values;
+    
+
     if (questions.length === 0) {
       message.error("Please add at least one question before submitting.");
       return;
@@ -125,6 +127,7 @@ const Questionnaire = () => {
 
     const finalPayload = {
       fK_CustomerProject_ID: customerProject,
+      timeToResolve:values.timeToResolve,
       questionDetailInp: questions.map((q, idx) => ({
         questionText: q.questionText,
         fK_QuestionType_ID: q.questionTypeId,
@@ -513,6 +516,15 @@ const Questionnaire = () => {
                 ))}
           </Select>
         </Form.Item>
+
+                <Form.Item
+                name="timeToResolve"
+                label="Time To Resolve"
+                //rules={[{ required: true, message: "Please select a project" }]}
+      
+                >
+                  <Input defaultValue={1} min={1} max={8} />
+                </Form.Item>
 
         {/* Add Question Button */}
         <Form.Item>

@@ -651,6 +651,7 @@ const CustomerRegistration = () => {
               <Form.Item
                 name="mobileNumber"
                 label="Mobile Number"
+                length={8}
                 rules={[
                   { required: true, message: "Please enter the mobile number" },
                   {
