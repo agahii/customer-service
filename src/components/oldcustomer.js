@@ -1,6 +1,6 @@
 // src/components/CustomerRegistration.js
 import { Upload } from "antd";
-import { UploadOutlined,EditOutlined,DeleteOutlined } from "@ant-design/icons";
+import { UploadOutlined, EditOutlined,DeleteOutlined } from "@ant-design/icons";
 import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -14,6 +14,7 @@ import {
   Switch,
   Row,
   Col,
+ 
 } from "antd";
 import {
   addCustomerRegistration,
@@ -28,6 +29,13 @@ import { fetchEmployee } from "../store/reducers/EmployeeRegistration/EmployeeRe
 import { BASE_DOMAIN } from "../utills/services";
 const { Option } = Select;
 
+
+
+
+
+
+
+
 // Reusable Employee Select Component
 const EmployeeSelect = ({
   label,
@@ -35,7 +43,9 @@ const EmployeeSelect = ({
   employees,
   fetchEmployees,
   initialEmployees,
+  
   required,
+
 }) => (
   <Form.List name={name}>
     {(fields, { add, remove }) => (
@@ -53,6 +63,7 @@ const EmployeeSelect = ({
                 showSearch
                 placeholder={`Select ${label}`}
                 optionFilterProp="children"
+                
                 filterOption={(input, option) =>
                   option.children.toLowerCase().includes(input.toLowerCase())
                 }
@@ -158,6 +169,7 @@ const CustomerRegistration = () => {
         gccAgents: project.gccAgent?.map((agent) => ({
           fK_Employee_ID: agent.fK_Employee_ID,
         })) || [],
+        
         customerAgents: project.customerAgent?.map((agent) => ({
           fK_Employee_ID: agent.fK_Employee_ID,
         })) || [],
@@ -170,7 +182,7 @@ const CustomerRegistration = () => {
       })),
       isActive: record.isActive,
     });
-
+    
     setIsModalVisible(true);
   };
 
@@ -214,106 +226,50 @@ const CustomerRegistration = () => {
           : null;
 
         return {
-          id: existingProject ? existingProject.id : "", // "id": "string" if new
-          projectName: project.projectName || "",
+          id: existingProject ? existingProject.id : "string", // "id": "string" if new
+          projectName: project.projectName || "string",
           fK_Customer_ID: existingProject
             ? existingProject.fK_Customer_ID
-            : "",
+            : "string",
           isActive: true,
           gccAgent: project.gccAgents?.map((agent, i) => {
             const existingAgent = existingProject?.gccAgent?.[i];
             return {
-              id: existingAgent ? existingAgent.id : "",
+              id: existingAgent ? existingAgent.id : "string",
               fK_CustomerProject_ID: existingProject
                 ? existingProject.id
-                : "",
-              fK_Employee_ID: agent.fK_Employee_ID || "",
+                : "string",
+              fK_Employee_ID: agent.fK_Employee_ID || "string",
             };
           }) || [],
           customerAgent: project.customerAgents?.map((agent, i) => {
             const existingAgent = existingProject?.customerAgent?.[i];
             return {
-              id: existingAgent ? existingAgent.id : "",
+              id: existingAgent ? existingAgent.id : "string",
               fK_CustomerProject_ID: existingProject
                 ? existingProject.id
-                : "",
-              fK_Employee_ID: agent.fK_Employee_ID || "",
+                : "string",
+              fK_Employee_ID: agent.fK_Employee_ID || "string",
             };
           }) || [],
           gccSupervisor: project.gccSupervisors?.map((sup, i) => {
             const existingSup = existingProject?.gccSupervisor?.[i];
             return {
-              id: existingSup ? existingSup.id : "",
+              id: existingSup ? existingSup.id : "string",
               fK_CustomerProject_ID: existingProject
                 ? existingProject.id
-                : "",
-              fK_Employee_ID: sup.fK_Employee_ID || "",
+                : "string",
+              fK_Employee_ID: sup.fK_Employee_ID || "string",
             };
           }) || [],
           customerSupervisor: project.customerSupervisors?.map((sup, i) => {
             const existingSup = existingProject?.customerSupervisor?.[i];
             return {
-              id: existingSup ? existingSup.id : "",
+              id: existingSup ? existingSup.id : "string",
               fK_CustomerProject_ID: existingProject
                 ? existingProject.id
-                : "",
-              fK_Employee_ID: sup.fK_Employee_ID || "",
-            };
-          }) || [],
-        };
-      }),
-    };
-
-    const payloadAdd = {
-      id: isEditing ? selectedRecord.id : undefined, // The top-level "id"
-      fK_Industry_ID: values.fK_Industry_ID,
-      customerName: values.customerName,
-      // customerCode: values.customerCode,
-      customerAddress: values.customerAddress,
-      mobileNumber: values.mobileNumber,
-      contactPersonName: values.contactPersonName,
-      emailAddress: values.emailAddress,
-      webAddress: values.webAddress,
-      imageUrl: values.imageUrl,
-      
-      customerProjectInp: values.customerProjectInp?.map((project, index) => {
-        // If editing, we retrieve the existing ID from the selected record's projects
-        const existingProject = isEditing
-          ? selectedRecord.customerProject?.[index]
-          : null;
-
-        return {
-          
-          projectName: project.projectName || "",
-          
-          gccAgentInp: project.gccAgents?.map((agent, i) => {
-            const existingAgent = existingProject?.gccAgent?.[i];
-            return {
-              
-              fK_Employee_ID: agent.fK_Employee_ID || "",
-            };
-          }) || [],
-
-          
-          customerAgentInp: project.customerAgents?.map((agent, i) => {
-            const existingAgent = existingProject?.customerAgent?.[i];
-            return {
-             
-              fK_Employee_ID: agent.fK_Employee_ID || "",
-            };
-          }) || [],
-          gccSupervisorInp: project.gccSupervisors?.map((sup, i) => {
-            const existingSup = existingProject?.gccSupervisor?.[i];
-            return {
-            
-              fK_Employee_ID: sup.fK_Employee_ID || "",
-            };
-          }) || [],
-          customerSupervisorInp: project.customerSupervisors?.map((sup, i) => {
-            const existingSup = existingProject?.customerSupervisor?.[i];
-            return {
-             
-              fK_Employee_ID: sup.fK_Employee_ID || "",
+                : "string",
+              fK_Employee_ID: sup.fK_Employee_ID || "string",
             };
           }) || [],
         };
@@ -333,7 +289,7 @@ const CustomerRegistration = () => {
           setSubmitting(false);
         });
     } else {
-      dispatch(addCustomerRegistration(payloadAdd))
+      dispatch(addCustomerRegistration(payload))
         .unwrap()
         .then(() => {
           message.success("Customer added successfully");
@@ -350,15 +306,7 @@ const CustomerRegistration = () => {
     form.resetFields();
     setIsEditing(false);
     setSelectedRecord(null);
-
   };
-  useEffect(() => {
-    const controller = new AbortController();
-    dispatch(fetchCustomerRegistration({ pagingInfo, controller }));
-    return () => {
-      controller.abort();
-    };
-  }, [dispatch, pagingInfo]);
   // ***** END handleSubmit ***** //
 
   // Columns definition
@@ -479,6 +427,7 @@ const CustomerRegistration = () => {
       ),
     },
   ];
+  
 
   const handleLogoUpload = async (id, file) => {
     if (file) {
@@ -507,9 +456,9 @@ const CustomerRegistration = () => {
   
         // form.setFieldsValue({ customerProjectInp: updatedProjects });
   
-        message.success("Project logo uploaded successfully!");
+        message.success("Department logo uploaded successfully!");
       } catch (error) {
-        message.error(`Project logo upload failed: ${error}`);
+        message.error(`Department logo upload failed: ${error}`);
       }
     }
   };
@@ -557,35 +506,20 @@ const CustomerRegistration = () => {
           layout="vertical"
           onFinish={handleSubmit}
           scrollToFirstError
-          width="500px"
         >
           <Row gutter={16}>
-            <Col xs={24} sm={12}>
+            <Col xs={24} sm={12} width={50}>
               <Form.Item
                 name="customerName"
                 label="Customer Name"
                 rules={[
                   { required: true, message: "Please enter the customer name" },
                 ]}
-               
-              >
-                <Input/>
-              </Form.Item>
-            </Col>
-            {/* <Col xs={24} sm={12}>
-              <Form.Item
-                name="customerCode"
-                label="Customer Code"
-                rules={[
-                  { required: true, message: "Please enter the customer code" },
-                ]}
               >
                 <Input />
               </Form.Item>
-            </Col> */}
-
-
-            
+            </Col>
+           
           </Row>
 
           <Row gutter={16}>
@@ -644,6 +578,8 @@ const CustomerRegistration = () => {
                 <Input.TextArea rows={2} />
               </Form.Item>
             </Col>
+
+            
           </Row>
 
           <Row gutter={16}>
@@ -755,15 +691,15 @@ const CustomerRegistration = () => {
                           <Form.Item
                             {...restField}
                             name={[name, "projectName"]}
-                            label="Project Name"
+                            label="Department Name"
                             rules={[
                               {
                                 required: true,
-                                message: "Please enter the project name",
+                                message: "Please enter the department name",
                               },
                             ]}
                           >
-                            <Input placeholder="Project Name" />
+                            <Input placeholder="Department Name" />
                           </Form.Item>
                         </Col>
 

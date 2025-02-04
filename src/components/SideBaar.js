@@ -5,6 +5,8 @@ import {
   UserOutlined,
   HomeOutlined,
   AppstoreOutlined,
+  QuestionCircleOutlined,
+  MessageOutlined
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 
@@ -34,10 +36,17 @@ const Sidebar = ({ collapsed }) => {
       path: "/customer",
     },
     {
-      key: "customer1",
-      label: "CustomerOld",
-      icon: <UserOutlined />,
-      path: "/customer1",
+      key: "questionnaire",
+      label: "Questions",
+      icon: <QuestionCircleOutlined />,
+      path: "/question",
+    },
+
+    {
+      key: "answer",
+      label: "Answer",
+      icon: <MessageOutlined />,
+      path: "/answer",
     },
     {
       key: "reports",
