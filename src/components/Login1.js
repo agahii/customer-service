@@ -84,7 +84,10 @@ const LoginPage = () => {
   return (
     <Layout style={{ height: '100vh' }}>
       <Header style={{ backgroundColor: 'rgb(165, 29, 45)', padding: '0 20px' }}>
-        <img src="logo.png" alt="Logo" style={{ width: 100, height: 'auto' }} />
+        <div style={{display:'flex',flexDirection:"row"}}>
+        <img src="/gcc.jpg" alt="Logo" style={{ width: 100, height: 'auto' }} />
+        <h4 style={{color:"black"}}>Gcc Ticketing System</h4>
+        </div>
       </Header>
       <Content
         style={{
@@ -105,7 +108,7 @@ const LoginPage = () => {
             textAlign: 'center',
           }}
         >
-          <img src="\gcc.jpg" alt="Logo" style={{ width: 100, height: 'auto', marginBottom: '20px' }} />
+          <img src="\gcc.jpg" alt="Logo" style={{ width: 300, height: 'auto', marginBottom: '20px' }} />
           <Typography.Title level={3}>Login</Typography.Title>
           <Form>
             <Form.Item>
