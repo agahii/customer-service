@@ -5,7 +5,8 @@ import axios from "axios";
 // Base URL from environment variable or default
 //export const BASE_DOMAIN = process.env.REACT_APP_API_BASE_URL || "http://135.181.22.115:2323/api/";
 
-export const BASE_DOMAIN = process.env.REACT_APP_API_BASE_URL || "http://localhost:5045/api/";
+//export const BASE_DOMAIN = process.env.REACT_APP_API_BASE_URL || "http://localhost:5045/api/";
+export const BASE_DOMAIN = process.env.REACT_APP_API_BASE_URL || "http://localhost/api/";
 export const BASE_URL = BASE_DOMAIN;
 
 // Create an Axios instance
@@ -15,8 +16,8 @@ export const API = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  
 });
-
 // Add a request interceptor to include the auth token if available
 API.interceptors.request.use(
   (config) => {
