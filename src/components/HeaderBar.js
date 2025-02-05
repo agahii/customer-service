@@ -13,10 +13,17 @@ const { Header, Sider, Content } = Layout;
 const HeaderBar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const emailAddress = useSelector((state) => state.login.email);
-    const accountType = useSelector((state) => state.login.accountType);
-    const imageUrl = useSelector((state) => state.login.imageURL);
-    const name = useSelector((state) => state.login.fullName);
+  //const emailAddress = useSelector((state) => state.login.email);
+    // const accountType = useSelector((state) => state.login.accountType);
+    // const imageUrl = useSelector((state) => state.login.imageURL);
+    // const name = useSelector((state) => state.login.fullName);
+
+    const emailAddress= localStorage.getItem("email")||null
+    // token: localStorage.getItem("authToken") || null,
+    const accountType= localStorage.getItem("accountType")||6
+    const imageURL= localStorage.getItem("imageURL")||null
+    const name= localStorage.getItem("fullName")||null
+
 const [collapsed, setCollapsed] = useState(false);
   const handleLogout = () => {
     dispatch(logout());
