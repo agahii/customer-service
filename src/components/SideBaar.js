@@ -13,13 +13,10 @@ import { useSelector } from "react-redux";
 const { Sider } = Layout;
 
 const Sidebar = ({ collapsed }) => {
-  //const [collapsed, setCollapsed] = useState(false);
+
   const accountType = useSelector((state) => state.login.accountType); // Get user role
-  const navigate = useNavigate();
-  // const menuItems = [
-  //   { key: 'home', label: 'Home', icon: <HomeOutlined />, path: '/' },
-  //   { key: 'industries', label: 'Industries', icon: <AppstoreOutlined />, path: '/industries' },
-  // ];
+ 
+
 
   const menuItems = [
     { key: "home", label: "HomePage", icon: <HomeOutlined />, path: "/" },
@@ -56,7 +53,7 @@ const Sidebar = ({ collapsed }) => {
     },
   ];
 
-  //   const filteredMenu = user?.role === 'admin' ? menuItems : menuItems.filter(item => item.key !== 'reports');
+  
   const filteredMenu =
     accountType == 1
       ? menuItems
