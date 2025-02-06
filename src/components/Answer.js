@@ -219,24 +219,37 @@ const Home = () => {
             ))}
           </Select>
         );
-      case "datepicker":
+        case "datetime": // **Fix for Date Picker**
         return (
           <DatePicker
-            style={{ width: 200 }}
+            showTime // Enables time selection
+            format="YYYY-MM-DD HH:mm:ss" // Customize format
+            style={{ width: "100%" }}
             value={value ? moment(value) : null}
             onChange={(date, dateString) => handleAnswerChange(dateString)}
           />
         );
-      case "image":
-        return question.imageUrl ? (
-          <img
-            src={question.imageUrl}
-            alt="Question"
-            style={{ maxWidth: "100%", marginTop: 8 }}
+        case "image": // **Fix for File Upload**
+        return (
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  handleAnswerChange({
+                    file,
+                    previewUrl: reader.result, // Store preview URL
+                  });
+                };
+                reader.readAsDataURL(file);
+              }
+            }}
           />
-        ) : (
-          <p>No image provided.</p>
         );
+
       default:
         return (
           <p style={{ color: "#999" }}>No input available for this type.</p>
