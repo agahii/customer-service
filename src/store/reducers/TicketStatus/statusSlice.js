@@ -4,15 +4,15 @@ import { API } from "../../../utills/services";
 // Async thunk to fetch ticket statuses
 export const fetchticketstatus = createAsyncThunk(
   "status/fetch",
-  async (projectId, thunkAPI) => {
+  async (fK_CustomerProject_ID, { rejectWithValue }) => {
     try {
       const response = await API.get("/Answer/Status", {
-        params: { projectId },
+        params: { fK_CustomerProject_ID },
       });
-      
+     
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response.data);
+      return rejectWithValue(error.response.data);
     }
   }
 );
@@ -20,7 +20,7 @@ export const fetchticketstatus = createAsyncThunk(
 const statusSlice = createSlice({
   name: "status",
   initialState: {
-    statuses: [],
+    data: [],
     loading: false,
     error: null,
   },

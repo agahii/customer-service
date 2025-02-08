@@ -54,20 +54,23 @@ const LoginPage = () => {
             dispatch(login(data, token));
             //console.log(dispatch(login(data,token)));
             // Navigate to the home page after successful login
+            console.log(data.accountType +"dsfsdf")
             switch (data.accountType) {
-              case data.accountType === 1:
+              
+              case data.accountType == 1:
+                console.log("sdcfsfsdaf")
                 navigate("/");
                 break;
-              case data.accountType === 2:
+              case data.accountType == 2:
                 navigate("/AgentDashboard");
                 break;
-              case data.accountType === 3:
+              case data.accountType == 3:
                 navigate("/AgentDashboard");
                 break;
               case data.accountType == 4:
                 navigate("/AgentDashboard");
                 break;
-              case data.accountType === 5:
+              case data.accountType == 5:
                 navigate("/AgentDashboard");
                 break;
               default:
@@ -75,7 +78,7 @@ const LoginPage = () => {
                 break;
             }
 
-            // navigate("/"); // Change '/home' to your actual route for the homepage
+             navigate("/"); // Change '/home' to your actual route for the homepage
           }
           break;
         case 2000:

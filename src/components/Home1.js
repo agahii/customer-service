@@ -22,6 +22,7 @@ import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import { logout } from "../store/reducers/Login/LoginSlice";
 import StatusCards from "./StatusCards";
+
 //import { status } from "../store/reducers/TicketStatus/statusSlice";
 
 const { Header, Sider, Content } = Layout;
@@ -113,7 +114,8 @@ const HomePage = () => {
     <Layout style={{ minHeight: "100vh", background: "#f4f4f4" }}>
       <Layout>
         <Content style={{ margin: "20px", padding: "20px" }}>
-          <StatusCards projectId={null} />
+          <StatusCards fk_CustomerProject_Id={null} />
+          
           <Title level={3} style={{ marginTop: 20 }}>
             Registered Clients
           </Title>
