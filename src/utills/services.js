@@ -6,7 +6,7 @@ import axios from "axios";
 //export const BASE_DOMAIN = process.env.REACT_APP_API_BASE_URL || "http://135.181.22.115:2323/api/";
 
 //export const BASE_DOMAIN = process.env.REACT_APP_API_BASE_URL || "https://localhost:7131/api/";
-export const BASE_DOMAIN = process.env.REACT_APP_API_BASE_URL || "http://localhost:5045/api/";
+export const BASE_DOMAIN = process.env.REACT_APP_API_BASE_URL || "http://207.180.200.61:7131/api/";
 export const BASE_URL = BASE_DOMAIN;
 
 // Create an Axios instance
