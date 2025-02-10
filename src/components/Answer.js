@@ -229,7 +229,7 @@ const Home = () => {
             onChange={(date, dateString) => handleAnswerChange(dateString)}
           />
         );
-        case "image": // **Fix for File Upload**
+        case "image": // Handle image file upload
         return (
           <Input
             type="file"
@@ -240,8 +240,8 @@ const Home = () => {
                 const reader = new FileReader();
                 reader.onload = () => {
                   handleAnswerChange({
-                    file,
-                    previewUrl: reader.result, // Store preview URL
+                    file, // Include the file object
+                    imageUrl: reader.result, // For preview purposes
                   });
                 };
                 reader.readAsDataURL(file);
@@ -249,7 +249,6 @@ const Home = () => {
             }}
           />
         );
-
       default:
         return (
           <p style={{ color: "#999" }}>No input available for this type.</p>
@@ -267,8 +266,10 @@ const Home = () => {
       fK_CustomerProject_ID: selectedProject.id,
       answerDetailInp: localQuestions.map((q, idx) => ({
         questionText: q.questionText,
-        answerText: answers[idx] || "",
-        answerImageInp: q.answerImages || [],
+        answerText: typeof answers[idx] === "string" ? answers[idx] : answers[idx]?.file ? "" : answers[idx]?.imageUrl, // Handle answerText separately
+        answerImageInp: answers[idx]?.file
+          ? [{ files: answers[idx].file, imageUrl: "" }]
+          : [],
       })),
     };
 
