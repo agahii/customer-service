@@ -348,7 +348,7 @@ const Home = () => {
               flexDirection: "column",
               justifyContent: "center",
               position: "relative",
-              width: "220px",
+              width: "300px",
               height: "140px", // Fixed card height
               margin: "0 auto",
               padding: "12px",
@@ -419,13 +419,13 @@ const Home = () => {
                 {customer.customerName}
               </h4>
               <p style={{ margin: "4px 0", fontSize: "14px" }}>
-                Questions recorded: {customer.totalQuestions || 0}
+              📋Questions recorded: {customer.totalQuestions || 0}
               </p>
               <p style={{ margin: "4px 0", fontSize: "14px" }}>
-                Questions Assigned: {customer.Assigned || 0}
+              👥Questions Assigned: {customer.Assigned || 0}
               </p>
               <p style={{ margin: "4px 0", fontSize: "14px" }}>
-                Questions Fulfilled: {customer.fulfilled || 0}
+              ✅Questions Fulfilled: {customer.fulfilled || 0}
               </p>
             </div>
           </Card>
