@@ -304,70 +304,138 @@ const Home = () => {
     <div style={{ padding: 2 }}>
    
 
-
-      <section>
-      {/* <Title level={4} style={{ textAlign: "center", marginBottom: 10 }}>Customers</Title> */}
-      {customersLoading ? (
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <Spin size="medium" />
-        </div>
-      ) : (
-        <Carousel dots slidesToShow={slidesToShow} swipeToSlide draggable>
-        {customers.map((customer, index) => (
-          <div key={customer.id} style={{ padding: "8px" }}>
-            <Card
-              hoverable
-              onClick={() => handleCustomerClick(customer)}
+   <section
+  style={{
+    height: "200px", // Strict height for the section
+    overflow: "hidden", // Prevents overflow
+    padding: "8px 0", // Adjust padding to avoid extra height
+    position: "relative", // Ensures proper layout
+  }}
+>
+  {customersLoading ? (
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <Spin size="medium" />
+    </div>
+  ) : (
+    <Carousel
+      dots
+      slidesToShow={slidesToShow}
+      swipeToSlide
+      draggable
+      style={{
+        height: "200px", // Match the section height
+        overflow: "hidden",
+      }}
+    >
+      {customers.map((customer, index) => (
+        <div
+          key={customer.id}
+          style={{
+            padding: "8px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Card
+            hoverable
+            onClick={() => handleCustomerClick(customer)}
+            style={{
+              backgroundColor:
+                pastelColorsCustomers[index % pastelColorsCustomers.length],
+              textAlign: "center",
+              borderRadius: "16px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              position: "relative",
+              width: "220px",
+              height: "140px", // Fixed card height
+              margin: "0 auto",
+              padding: "12px",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)", // Shadow for depth
+              overflow: "hidden", // Prevent card overflow
+            }}
+          >
+            {/* Logo */}
+            {customer.imageUrl ? (
+              <img
+                src={`${BASE_DOMAIN.replace("/api", "/Images")}${
+                  customer.imageUrl
+                }`}
+                alt={`${customer.customerName} Logo`}
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  objectFit: "contain",
+                  borderRadius: "8px",
+                  position: "absolute",
+                  top: "8px",
+                  left: "8px",
+                  backgroundColor: "#ffffff",
+                  padding: "4px",
+                  zIndex: 2,
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  backgroundColor: "#f0f0f0",
+                  borderRadius: "8px",
+                  position: "absolute",
+                  top: "8px",
+                  left: "8px",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  fontSize: "12px",
+                  color: "#999",
+                  zIndex: 2,
+                }}
+              >
+                Default Logo
+              </div>
+            )}
+            {/* Content */}
+            <div
               style={{
-                backgroundColor: pastelColorsCustomers[index % pastelColorsCustomers.length],
+                position: "relative",
+                zIndex: 3,
                 textAlign: "center",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "column",
-                width: "200px",
-                height: "200px",
-                maxWidth: "200px",
-                margin: "auto",
-                padding: "8px",
+                color: "#000",
               }}
             >
-              {customer.imageUrl ? (
-                <img
-                  src={`${BASE_DOMAIN.replace("/api", "/Images")}${customer.imageUrl}`}
-                  alt={`${customer.customerName} Logo`}
-                  style={{
-                    width: "50px",
-                    height: "50px",
-                    objectFit: "contain",
-                    borderRadius: "50%",
-                    marginBottom: "8px",
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "50px",
-                    height: "50px",
-                    backgroundColor: "#f0f0f0",
-                    borderRadius: "50%",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    marginBottom: "8px",
-                  }}
-                >
-                  No Logo
-                </div>
-              )}
-              <h4 style={{ margin: 0, fontSize: "12px" }}>{customer.customerName}</h4>
-            </Card>
-          </div>
-        ))}
-      </Carousel>
-      )}
-    </section>
+              <h4
+                style={{
+                  margin: "0 0 8px 0",
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {customer.customerName}
+              </h4>
+              <p style={{ margin: "4px 0", fontSize: "14px" }}>
+                Questions recorded: {customer.totalQuestions || 0}
+              </p>
+              <p style={{ margin: "4px 0", fontSize: "14px" }}>
+                Questions Assigned: {customer.Assigned || 0}
+              </p>
+              <p style={{ margin: "4px 0", fontSize: "14px" }}>
+                Questions Fulfilled: {customer.fulfilled || 0}
+              </p>
+            </div>
+          </Card>
+        </div>
+      ))}
+    </Carousel>
+  )}
+</section>
+
+
 
       {/* Customer Carousel */}
     
