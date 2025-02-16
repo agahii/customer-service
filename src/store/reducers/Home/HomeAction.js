@@ -45,52 +45,52 @@ export const submitQuestionnaire = createAsyncThunk(
   "questionnaire/submitQuestionnaire",
   async (payload, { rejectWithValue }) => {
     try {
-      // Create FormData to match the Postman request
       const formData = new FormData();
-
-      // Add FK_CustomerProject_ID
       formData.append("FK_CustomerProject_ID", payload.fK_CustomerProject_ID);
 
-      // Add AnswerDetailInp items
       payload.answerDetailInp.forEach((answer, index) => {
-      
-        formData.append(`AnswerDetailInp[${index}].QuestionText`, answer.questionText);
+        formData.append(
+          `AnswerDetailInp[${index}].QuestionText`,
+          answer.questionText
+        );
         formData.append(
           `AnswerDetailInp[${index}].AnswerText`,
-          answer.answerText || null // Sends "" if the value is null or undefined
+          answer.answerText || null
         );
 
-        answer.answerImageInp.forEach((image, imgIndex) => {
-          formData.append(
-            `AnswerDetailInp[${index}].AnswerImageInp[${imgIndex}].files`,
-            image.files
-          );
-          formData.append(
-            `AnswerDetailInp[${index}].AnswerImageInp[${imgIndex}].ImageUrl`,
-            image.imageUrl
-          );
-        });
+        if (answer.answerImageInp && answer.answerImageInp.length > 0) {
+          answer.answerImageInp.forEach((image, imgIndex) => {
+            if (image.files) {
+              formData.append(
+                `AnswerDetailInp[${index}].AnswerImageInp[${imgIndex}].files`,
+                image.files
+              );
+            }
+            formData.append(
+              `AnswerDetailInp[${index}].AnswerImageInp[${imgIndex}].ImageUrl`,
+              image.imageUrl || ""
+            );
+          });
+        }
       });
 
-      // Send POST request with FormData
       const response = await API.post("Answer/Add", formData, {
         headers: {
-          "Content-Type": "multipart/form-data", // Required for FormData
+          "Content-Type": "multipart/form-data",
         },
       });
 
-      // Handle success
       if (response.data.responseCode === 1000 && response.data.message === "") {
-        return response.data; // Return the response to handle success
+        return response.data;
       } else {
         return rejectWithValue(response.data.message || "Submission failed.");
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Submission failed.";
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(error.response?.data?.message || "Submission failed.");
     }
   }
 );
+
 
 
 
