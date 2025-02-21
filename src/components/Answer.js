@@ -255,7 +255,11 @@ const Home = () => {
         );
     }
   };
-
+  const showQuestionnaires = (project) => {
+    console.log(`Showing questionnaires for ${project.projectName}`);
+    // Add logic to display the questionnaires
+  };
+  
   const handleSubmit =async  () =>  {
     if (!selectedProject) {
       message.error("Please select a project.");
@@ -419,13 +423,13 @@ const Home = () => {
                 {customer.customerName}
               </h4>
               <p style={{ margin: "4px 0", fontSize: "14px" }}>
-              📋Questions recorded: {customer.totalQuestions || 0}
+              Questions recorded: {customer.totalQuestions || 0}
               </p>
               <p style={{ margin: "4px 0", fontSize: "14px" }}>
-              👥Questions Assigned: {customer.Assigned || 0}
+              Questions Assigned: {customer.Assigned || 0}
               </p>
               <p style={{ margin: "4px 0", fontSize: "14px" }}>
-              ✅Questions Fulfilled: {customer.fulfilled || 0}
+              Questions Fulfilled: {customer.fulfilled || 0}
               </p>
             </div>
           </Card>
@@ -449,54 +453,107 @@ const Home = () => {
           <Carousel dots slidesToShow={slidesToShow} swipeToSlide draggable>
             {selectedCustomer.customerProject?.map((project, index) => (
               <div key={project.id} style={{ padding: "8px" }}>
-                <Card
-                  hoverable
-                  onClick={() => handleProjectClick(project)}
-                  style={{
-                    backgroundColor: pastelColorsProjects[index % pastelColorsProjects.length],
-                    textAlign: "center",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexDirection: "column",
-                    width: "100px",
-                    height: "100px",
-                    maxWidth: "120px",
-                    margin: "auto",
-                    padding: "8px",
-                  }}
-                >
-                  {project.imageUrl ? (
-                    <img
-                      src={`${BASE_DOMAIN.replace("/api", "/Images")}${project.imageUrl}`}
-                      alt={`${project.projectName} Logo`}
-                      style={{
-                        width: "50px",
-                        height: "50px",
-                        objectFit: "contain",
-                        borderRadius: "50%",
-                        marginBottom: "8px",
-                      }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: "50px",
-                        height: "50px",
-                        backgroundColor: "#f0f0f0",
-                        borderRadius: "50%",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      No Logo
-                    </div>
-                  )}
-                  <h4 style={{ margin: 0, fontSize: "12px" }}>{project.projectName}</h4>
-                </Card>
+              <div style={{ textAlign: "center", width: "220px", margin: "auto" }}>
+  {/* Project Card */}
+  <Card
+    hoverable
+    onClick={() => handleProjectClick(project)}
+    style={{
+      backgroundColor: pastelColorsProjects[index % pastelColorsProjects.length],
+      textAlign: "center",
+      borderRadius: "16px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      position: "relative",
+      width: "220px", // Fixed width
+      height: "120px", // Adjusted for button placement
+      margin: "0 auto",
+      padding: "10px",
+      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+      overflow: "hidden",
+    }}
+  >
+    {/* Logo in Top-Left Corner */}
+    {project.imageUrl ? (
+      <img
+        src={`${BASE_DOMAIN.replace("/api", "/Images")}${project.imageUrl}`}
+        alt={`${project.projectName} Logo`}
+        style={{
+          width: "32px",
+          height: "32px",
+          objectFit: "contain",
+          borderRadius: "6px",
+          position: "absolute",
+          top: "6px",
+          left: "6px",
+          backgroundColor: "#ffffff",
+          padding: "3px",
+          zIndex: 2,
+        }}
+      />
+    ) : (
+      <div
+        style={{
+          width: "32px",
+          height: "32px",
+          backgroundColor: "#f0f0f0",
+          borderRadius: "6px",
+          position: "absolute",
+          top: "6px",
+          left: "6px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "10px",
+          color: "#999",
+          zIndex: 2,
+        }}
+      >
+        No Logo
+      </div>
+    )}
+
+    {/* Content */}
+    <div style={{ textAlign: "center", flex: "1", color: "#000" }}>
+      <h4
+        style={{
+          margin: "0 0 6px 0",
+          fontSize: "14px",
+          fontWeight: "600",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {project.projectName}
+      </h4>
+      <p style={{ margin: "2px 0", fontSize: "12px" }}>
+        Questions recorded: {project.totalQuestions || 0}
+      </p>
+      <p style={{ margin: "2px 0", fontSize: "12px" }}>
+        Questions Assigned: {project.Assigned || 0}
+      </p>
+      <p style={{ margin: "2px 0", fontSize: "12px" }}>
+        Questions Fulfilled: {project.fulfilled || 0}
+      </p>
+    </div>
+  </Card>
+
+  {/* Button Below the Card with Same Width */}
+  <Button
+    type="primary"
+    size="small"
+    style={{
+      marginTop: "8px",
+      width: "220px", // Same width as card
+    }}
+    onClick={() => showQuestionnaires(project)}
+  >
+    Show Questionnaires
+  </Button>
+</div>
+
               </div>
             ))}
           </Carousel>
