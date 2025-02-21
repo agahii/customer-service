@@ -7,19 +7,19 @@ import ResizeObserver from "resize-observer-polyfill";
 import { ExclamationCircleOutlined, ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons"
 //import "./TicketDashboard.css"
 import {
-    Carousel,
-    Card,
-    Spin,
-    message,
-    Typography,
-    Input,
-    Radio,
-    Checkbox,
-    Select,
-    DatePicker,
-    Button,
-    Form,
-    Grid
+  Carousel,
+  Card,
+  Spin,
+  message,
+  Typography,
+  Input,
+  Radio,
+  Checkbox,
+  Select,
+  DatePicker,
+  Button,
+  Form,
+  Grid
 } from "antd";
 import moment from "moment";
 
@@ -143,7 +143,7 @@ const Home = () => {
       const questions = response?.data?.data?.questionDetail || [];
       setLocalQuestions(questions);
     } catch (error) {
-        
+
       console.error("Error fetching project questionnaire:", error);
       message.error("Failed to load questionnaire for this project.");
     } finally {
@@ -219,7 +219,7 @@ const Home = () => {
             ))}
           </Select>
         );
-        case "datetime": // **Fix for Date Picker**
+      case "datetime": // **Fix for Date Picker**
         return (
           <DatePicker
             showTime // Enables time selection
@@ -229,7 +229,7 @@ const Home = () => {
             onChange={(date, dateString) => handleAnswerChange(dateString)}
           />
         );
-        case "image": // Handle image file upload
+      case "image": // Handle image file upload
         return (
           <Input
             type="file"
@@ -259,8 +259,8 @@ const Home = () => {
     console.log(`Showing questionnaires for ${project.projectName}`);
     // Add logic to display the questionnaires
   };
-  
-  const handleSubmit =async  () =>  {
+
+  const handleSubmit = async () => {
     if (!selectedProject) {
       message.error("Please select a project.");
       return;
@@ -283,13 +283,13 @@ const Home = () => {
     if (submitQuestionnaire.fulfilled.match(result)) {
       // Check response code and message
       const { responseCode, message: responseMessage } = result.payload;
-  
+
       if (responseCode === 1000 && responseMessage === "") {
         // Reset fields
         setAnswers({});
         setLocalQuestions([]);
         setSelectedProject(null); // Optional: Reset the selected project
-  
+
         // Show success message
         message.success("Questionnaire saved successfully!");
       }
@@ -306,146 +306,145 @@ const Home = () => {
   const slidesToShow = screens.xl ? 4 : screens.lg ? 3 : screens.md ? 2 : 1;
   return (
     <div style={{ padding: 2 }}>
-   
 
-   <section
-  style={{
-    height: "200px", // Strict height for the section
-    overflow: "hidden", // Prevents overflow
-    padding: "8px 0", // Adjust padding to avoid extra height
-    position: "relative", // Ensures proper layout
-  }}
->
-  {customersLoading ? (
-    <div style={{ display: "flex", justifyContent: "center" }}>
-      <Spin size="medium" />
-    </div>
-  ) : (
-    <Carousel
-      dots
-      slidesToShow={slidesToShow}
-      swipeToSlide
-      draggable
-      style={{
-        height: "200px", // Match the section height
-        overflow: "hidden",
-      }}
-    >
-      {customers.map((customer, index) => (
-        <div
-          key={customer.id}
-          style={{
-            padding: "8px",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <Card
-            hoverable
-            onClick={() => handleCustomerClick(customer)}
+
+      <section
+        style={{
+          height: "200px", // Strict height for the section
+          overflow: "hidden", // Prevents overflow
+          padding: "8px 0", // Adjust padding to avoid extra height
+          position: "relative", // Ensures proper layout
+        }}
+      >
+        {customersLoading ? (
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <Spin size="medium" />
+          </div>
+        ) : (
+          <Carousel
+            dots
+            slidesToShow={slidesToShow}
+            swipeToSlide
+            draggable
             style={{
-              backgroundColor:
-                pastelColorsCustomers[index % pastelColorsCustomers.length],
-              textAlign: "center",
-              borderRadius: "16px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              position: "relative",
-              width: "300px",
-              height: "140px", // Fixed card height
-              margin: "0 auto",
-              padding: "12px",
-              boxShadow: "0 4px 6px rgba(0,0,0,0.1)", // Shadow for depth
-              overflow: "hidden", // Prevent card overflow
+              height: "200px", // Match the section height
+              overflow: "hidden",
             }}
           >
-            {/* Logo */}
-            {customer.imageUrl ? (
-              <img
-                src={`${BASE_DOMAIN.replace("/api", "/Images")}${
-                  customer.imageUrl
-                }`}
-                alt={`${customer.customerName} Logo`}
-                style={{
-                  width: "40px",
-                  height: "40px",
-                  objectFit: "contain",
-                  borderRadius: "8px",
-                  position: "absolute",
-                  top: "8px",
-                  left: "8px",
-                  backgroundColor: "#ffffff",
-                  padding: "4px",
-                  zIndex: 2,
-                }}
-              />
-            ) : (
+            {customers.map((customer, index) => (
               <div
+                key={customer.id}
                 style={{
-                  width: "40px",
-                  height: "40px",
-                  backgroundColor: "#f0f0f0",
-                  borderRadius: "8px",
-                  position: "absolute",
-                  top: "8px",
-                  left: "8px",
+                  padding: "8px",
                   display: "flex",
                   justifyContent: "center",
-                  alignItems: "center",
-                  fontSize: "12px",
-                  color: "#999",
-                  zIndex: 2,
                 }}
               >
-                Default Logo
+                <Card
+                  hoverable
+                  onClick={() => handleCustomerClick(customer)}
+                  style={{
+                    backgroundColor:
+                      pastelColorsCustomers[index % pastelColorsCustomers.length],
+                    textAlign: "center",
+                    borderRadius: "16px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    position: "relative",
+                    width: "300px",
+                    height: "140px", // Fixed card height
+                    margin: "0 auto",
+                    padding: "12px",
+                    boxShadow: "0 4px 6px rgba(0,0,0,0.1)", // Shadow for depth
+                    overflow: "hidden", // Prevent card overflow
+                  }}
+                >
+                  {/* Logo */}
+                  {customer.imageUrl ? (
+                    <img
+                      src={`${BASE_DOMAIN.replace("/api", "/Images")}${customer.imageUrl
+                        }`}
+                      alt={`${customer.customerName} Logo`}
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        objectFit: "contain",
+                        borderRadius: "8px",
+                        position: "absolute",
+                        top: "8px",
+                        left: "8px",
+                        backgroundColor: "#ffffff",
+                        padding: "4px",
+                        zIndex: 2,
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        backgroundColor: "#f0f0f0",
+                        borderRadius: "8px",
+                        position: "absolute",
+                        top: "8px",
+                        left: "8px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        fontSize: "12px",
+                        color: "#999",
+                        zIndex: 2,
+                      }}
+                    >
+                      Default Logo
+                    </div>
+                  )}
+                  {/* Content */}
+                  <div
+                    style={{
+                      position: "relative",
+                      zIndex: 3,
+                      textAlign: "center",
+                      color: "#000",
+                    }}
+                  >
+                    <h4
+                      style={{
+                        margin: "0 0 8px 0",
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {customer.customerName}
+                    </h4>
+                    <p style={{ margin: "4px 0", fontSize: "14px" }}>
+                      Questions recorded: {customer.totalQuestions || 0}
+                    </p>
+                    <p style={{ margin: "4px 0", fontSize: "14px" }}>
+                      Questions Assigned: {customer.Assigned || 0}
+                    </p>
+                    <p style={{ margin: "4px 0", fontSize: "14px" }}>
+                      Questions Fulfilled: {customer.fulfilled || 0}
+                    </p>
+                  </div>
+                </Card>
               </div>
-            )}
-            {/* Content */}
-            <div
-              style={{
-                position: "relative",
-                zIndex: 3,
-                textAlign: "center",
-                color: "#000",
-              }}
-            >
-              <h4
-                style={{
-                  margin: "0 0 8px 0",
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {customer.customerName}
-              </h4>
-              <p style={{ margin: "4px 0", fontSize: "14px" }}>
-              Questions recorded: {customer.totalQuestions || 0}
-              </p>
-              <p style={{ margin: "4px 0", fontSize: "14px" }}>
-              Questions Assigned: {customer.Assigned || 0}
-              </p>
-              <p style={{ margin: "4px 0", fontSize: "14px" }}>
-              Questions Fulfilled: {customer.fulfilled || 0}
-              </p>
-            </div>
-          </Card>
-        </div>
-      ))}
-    </Carousel>
-  )}
-</section>
+            ))}
+          </Carousel>
+        )}
+      </section>
 
 
 
       {/* Customer Carousel */}
-    
+
 
       {/* Project Carousel */}
-     
+
 
       {selectedCustomer && (
         <section style={{ marginTop: 10 }}>
@@ -453,106 +452,106 @@ const Home = () => {
           <Carousel dots slidesToShow={slidesToShow} swipeToSlide draggable>
             {selectedCustomer.customerProject?.map((project, index) => (
               <div key={project.id} style={{ padding: "8px" }}>
-              <div style={{ textAlign: "center", width: "220px", margin: "auto" }}>
-  {/* Project Card */}
-  <Card
-    hoverable
-    onClick={() => handleProjectClick(project)}
-    style={{
-      backgroundColor: pastelColorsProjects[index % pastelColorsProjects.length],
-      textAlign: "center",
-      borderRadius: "16px",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      position: "relative",
-      width: "220px", // Fixed width
-      height: "120px", // Adjusted for button placement
-      margin: "0 auto",
-      padding: "10px",
-      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-      overflow: "hidden",
-    }}
-  >
-    {/* Logo in Top-Left Corner */}
-    {project.imageUrl ? (
-      <img
-        src={`${BASE_DOMAIN.replace("/api", "/Images")}${project.imageUrl}`}
-        alt={`${project.projectName} Logo`}
-        style={{
-          width: "32px",
-          height: "32px",
-          objectFit: "contain",
-          borderRadius: "6px",
-          position: "absolute",
-          top: "6px",
-          left: "6px",
-          backgroundColor: "#ffffff",
-          padding: "3px",
-          zIndex: 2,
-        }}
-      />
-    ) : (
-      <div
-        style={{
-          width: "32px",
-          height: "32px",
-          backgroundColor: "#f0f0f0",
-          borderRadius: "6px",
-          position: "absolute",
-          top: "6px",
-          left: "6px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "10px",
-          color: "#999",
-          zIndex: 2,
-        }}
-      >
-        No Logo
-      </div>
-    )}
+                <div style={{ textAlign: "center", width: "220px", margin: "auto" }}>
+                  {/* Project Card */}
+                  <Card
+                    hoverable
+                    onClick={() => handleProjectClick(project)}
+                    style={{
+                      backgroundColor: pastelColorsProjects[index % pastelColorsProjects.length],
+                      textAlign: "center",
+                      borderRadius: "16px",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      position: "relative",
+                      width: "220px", // Fixed width
+                      height: "120px", // Adjusted for button placement
+                      margin: "0 auto",
+                      padding: "10px",
+                      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {/* Logo in Top-Left Corner */}
+                    {project.imageUrl ? (
+                      <img
+                        src={`${BASE_DOMAIN.replace("/api", "/Images")}${project.imageUrl}`}
+                        alt={`${project.projectName} Logo`}
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          objectFit: "contain",
+                          borderRadius: "6px",
+                          position: "absolute",
+                          top: "6px",
+                          left: "6px",
+                          backgroundColor: "#ffffff",
+                          padding: "3px",
+                          zIndex: 2,
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          backgroundColor: "#f0f0f0",
+                          borderRadius: "6px",
+                          position: "absolute",
+                          top: "6px",
+                          left: "6px",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          fontSize: "10px",
+                          color: "#999",
+                          zIndex: 2,
+                        }}
+                      >
+                        No Logo
+                      </div>
+                    )}
 
-    {/* Content */}
-    <div style={{ textAlign: "center", flex: "1", color: "#000" }}>
-      <h4
-        style={{
-          margin: "0 0 6px 0",
-          fontSize: "14px",
-          fontWeight: "600",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        }}
-      >
-        {project.projectName}
-      </h4>
-      <p style={{ margin: "2px 0", fontSize: "12px" }}>
-        Questions recorded: {project.totalQuestions || 0}
-      </p>
-      <p style={{ margin: "2px 0", fontSize: "12px" }}>
-        Questions Assigned: {project.Assigned || 0}
-      </p>
-      <p style={{ margin: "2px 0", fontSize: "12px" }}>
-        Questions Fulfilled: {project.fulfilled || 0}
-      </p>
-    </div>
-  </Card>
+                    {/* Content */}
+                    <div style={{ textAlign: "center", flex: "1", color: "#000" }}>
+                      <h4
+                        style={{
+                          margin: "0 0 6px 0",
+                          fontSize: "14px",
+                          fontWeight: "600",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {project.projectName}
+                      </h4>
+                      <p style={{ margin: "2px 0", fontSize: "12px" }}>
+                        Questions recorded: {project.totalQuestions || 0}
+                      </p>
+                      <p style={{ margin: "2px 0", fontSize: "12px" }}>
+                        Questions Assigned: {project.Assigned || 0}
+                      </p>
+                      <p style={{ margin: "2px 0", fontSize: "12px" }}>
+                        Questions Fulfilled: {project.fulfilled || 0}
+                      </p>
+                    </div>
+                  </Card>
 
-  {/* Button Below the Card with Same Width */}
-  <Button
-    type="primary"
-    size="small"
-    style={{
-      marginTop: "8px",
-      width: "220px", // Same width as card
-    }}
-    onClick={() => showQuestionnaires(project)}
-  >
-    Show Questionnaires
-  </Button>
-</div>
+                  {/* Button Below the Card with Same Width */}
+                  <Button
+                    type="primary"
+                    size="small"
+                    style={{
+                      marginTop: "8px",
+                      width: "220px", // Same width as card
+                    }}
+                    onClick={() => showQuestionnaires(project)}
+                  >
+                    Show Questionnaires
+                  </Button>
+                </div>
 
               </div>
             ))}
@@ -598,7 +597,7 @@ const Home = () => {
       </Card>
     )
   }
-  
+
 };
 
 export default Home;
