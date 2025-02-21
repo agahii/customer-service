@@ -19,7 +19,10 @@ import {
   DatePicker,
   Button,
   Form,
-  Grid
+  Grid,
+  Modal,
+  Tabs, 
+  Table,
 } from "antd";
 import moment from "moment";
 
@@ -96,7 +99,7 @@ const Home = () => {
   const [localQuestions, setLocalQuestions] = useState([]);
   const [questionnaireLoading, setQuestionnaireLoading] = useState(false);
   const [answers, setAnswers] = useState({});
-
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const {
     entities: customers,
     loading: customersLoading,
@@ -255,11 +258,83 @@ const Home = () => {
         );
     }
   };
+
+
+
+
+
+  const assignedQuestions = [
+    {
+      key: "1",
+      question: "What is the issue?",
+      agent: "Agent A",
+      status: "Pending",
+    },
+    {
+      key: "2",
+      question: "Describe the problem?",
+      agent: "Agent B",
+      status: "In Progress",
+    },
+  ];
+
+  const fulfilledQuestions = [
+    {
+      key: "1",
+      question: "What is the issue?",
+      agent: "Agent A",
+      status: "Resolved",
+    },
+    {
+      key: "2",
+      question: "Describe the problem?",
+      agent: "Agent B",
+      status: "Closed",
+    },
+  ];
+
+  // Table Columns for Assigned & Fulfilled Questions
+  const columns = [
+    {
+      title: "Question",
+      dataIndex: "question",
+      key: "question",
+    },
+    {
+      title: "Agent",
+      dataIndex: "agent",
+      key: "agent",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+    },
+  ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const showQuestionnaires = (project) => {
     console.log(`Showing questionnaires for ${project.projectName}`);
+    setIsModalVisible(true);
     // Add logic to display the questionnaires
   };
-
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
   const handleSubmit = async () => {
     if (!selectedProject) {
       message.error("Please select a project.");
@@ -551,6 +626,38 @@ const Home = () => {
                   >
                     Show Questionnaires
                   </Button>
+
+
+                  {/* Modal with Tabs */}
+                  <Modal
+                    title={`Questionnaires for ${project.projectName}`}
+                    visible={isModalVisible}
+                    onCancel={handleCancel}
+                    footer={null}
+                    width={600} // Adjust width as needed
+                  >
+                    <Tabs defaultActiveKey="1">
+                      {/* Questions Assigned Tab */}
+                      <Tabs.TabPane tab="Questions Assigned" key="1">
+                        <Table
+                          columns={columns}
+                          dataSource={assignedQuestions}
+                          pagination={{ pageSize: 5 }}
+                        />
+                      </Tabs.TabPane>
+
+                      {/* Questions Fulfilled Tab */}
+                      <Tabs.TabPane tab="Questions Fulfilled" key="2">
+                        <Table
+                          columns={columns}
+                          dataSource={fulfilledQuestions}
+                          pagination={{ pageSize: 5 }}
+                        />
+                      </Tabs.TabPane>
+                    </Tabs>
+                  </Modal>
+
+
                 </div>
 
               </div>
